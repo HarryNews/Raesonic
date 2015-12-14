@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Raesonic</title>
+	<link href="http://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet" type="text/css">
+	<link href="/css/raesonic.css" rel="stylesheet" type="text/css">
+	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
+	<script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jquery.cookie.js"></script>
+	<script src="/js/jquery.history.js"></script>
+	<script src="/js/raesonic.js"></script>
+</head>
+
+<body>
+	<div id="header">
+		<div id="header-left" class="button">
+			<div id="playlist-name" class="name"></div>
+			<div id="playlist-details" class="details"></div>
+		</div>
+		<img src="/img/logo.png" class="logo" alt="Raesonic">
+		<div id="header-right" class="button">
+			<img src="http://www.gravatar.com/avatar/030158089c00cdd4b7501502864560b2?s=43" id="user-avatar">
+			<div id="user-name" class="name">Fkids</div>
+			<div id="user-details" class="details">member</div>
+		</div>
+	</div>
+	<div id="content">
+		<div id="content-left" class="side">
+			<input id="search" type="text" placeholder="Enter a search query or content URL">
+			<div id="items"></div>
+			<div id="overlay" class="hidden">
+				<div id="window"></div>
+			</div>
+		</div>
+		<div id="content-right" class="side">
+			<div id="media">
+				<div id="video"></div>
+				<div id="cover"></div>
+			</div>
+			<div id="meta-artist" class="meta"></div>
+			<div id="meta-title" class="meta"></div>
+		</div>
+	</div>
+	<div id="controls">
+		<div id="previous" class="icon fa fa-chevron-left"></div>
+		<div id="play" class="icon fa fa-play"></div>
+		<div id="pause" class="icon fa fa-pause"></div>
+		<div id="next" class="icon fa fa-chevron-right"></div>
+		<div id="current-time" class="time">00:00</div>
+		<div id="seekbar" class="bar">
+			<div id="seekbar-fill" class="fill"></div>
+		</div>
+		<div id="total-time" class="time">00:00</div>
+		<div id="speaker" class="icon silent fa fa-volume-up"></div>
+		<div id="volume" class="bar">
+			<div id="volume-fill" class="fill"></div>
+		</div>
+	</div>
+	<div id="loading">
+		<div id="spinner">
+			<span></span>
+		</div>
+	</div>
+</body>
+
+</html>
