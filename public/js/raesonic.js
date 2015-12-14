@@ -198,6 +198,12 @@ $(document).ready(function()
 		$("#playlist-details").text((amount || $(".item").length) + " tracks");
 	}
 
+	function togglePlayState()
+	{
+		if($("#play").is(":visible")) return $("#play").click();
+		$("#pause").click();
+	}
+
 	// Handlers
 	function playItem()
 	{
@@ -241,11 +247,11 @@ $(document).ready(function()
 				{
 					$("#cover")
 						.append($("<img>").attr("src", imageUrl.replace("large", "t500x500"))
-						.addClass("back")
+						.addClass("back").click(togglePlayState)
 					);
 					$("#cover")
 						.append($("<img>").attr("src", imageUrl.replace("large", "t300x300"))
-						.addClass("front")
+						.addClass("front").click(togglePlayState)
 					);
 				}
 				$("#cover")
