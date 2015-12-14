@@ -495,12 +495,12 @@ body
 }
 #play
 {
-	margin: 0 7px 0 12px !important;
+	margin: 0 6px 0 12px !important;
 	font-size: 21px !important;
 }
 #pause
 {
-	margin: 0 8px 0 10px !important;
+	margin: 0 7px 0 10px !important;
 	font-size: 21px !important;
 	display: none;
 }
@@ -552,6 +552,7 @@ body
 
 #speaker
 {
+	font-size: 18px !important;
 	min-width: 17px;
 	display: block;
 }
