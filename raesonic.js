@@ -4,10 +4,13 @@ var bodyParser = require("body-parser");
 
 var async = require("async");
 
+var config = require("./config");
+var db = config.database;
+
 var Sequelize = require("sequelize");
-var sequelize = new Sequelize("raesonic", "user", "password",
+var sequelize = new Sequelize(db.name, db.user, db.password,
 {
-	host: "localhost",
+	host: db.host,
 	dialect: "mysql",
 	pool:
 	{
