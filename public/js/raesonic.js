@@ -98,8 +98,8 @@ $(document).ready(function()
 			var playlist = response[0];
 			var items = response[1];
 			$("#playlist-name").text(playlist[0]);
-			$("#playlist-details").text(items.length + " tracks");
 			setItems(items);
+			updatePlaylistCounter(items.length);
 		}
 	});
 
@@ -154,6 +154,7 @@ $(document).ready(function()
 				var title = response[2];
 				var itemId = response[3];
 				addItem(0, [trackId, artist, title, itemId, sourceId, externalId], true);
+				updatePlaylistCounter();
 				$("#search").val("");
 			}
 		});
@@ -190,6 +191,11 @@ $(document).ready(function()
 		}
 		$("#items").append($item);
 		// todo: scroll to top
+	}
+
+	function updatePlaylistCounter(amount)
+	{
+		$("#playlist-details").text((amount || $(".item").length) + " tracks");
 	}
 
 	// Handlers
@@ -347,6 +353,7 @@ $(document).ready(function()
 				var $item = $(".item[data-itemId=\"" + itemId.toString() + "\"]");
 				if($item.is(".active")) $("#next").click();
 				$item.remove();
+				updatePlaylistCounter();
 				$("#overlay").click();
 			}
 		});
