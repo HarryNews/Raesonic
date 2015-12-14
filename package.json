@@ -10,6 +10,10 @@
     "music"
   ],
   "author": "Fkids <contact@fkids.net>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Fkids/Raesonic.git"
+  },
   "license": "MPL-2.0",
   "dependencies": {
     "async": "^1.4.2",
