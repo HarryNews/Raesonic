@@ -471,7 +471,7 @@ body
 
 #controls
 {
-	background-color: #3B374A;
+	background-color: #3A3549;
 	width: 100%;
 	height: 50px;
 	display: flex;
@@ -485,7 +485,8 @@ body
 {
 	color: #FFF;
 	cursor: pointer;
-	margin: 18px;
+	padding: 10px;
+	margin: 8px;
 	font-size: 17px;
 }
 #controls .icon:hover
@@ -494,26 +495,21 @@ body
 }
 #play
 {
-	margin-right: 13px !important;
+	margin: 0 7px 0 12px !important;
 	font-size: 21px !important;
-	padding: 5px;
 }
 #pause
 {
-	margin-right: 12px !important;
+	margin: 0 8px 0 10px !important;
 	font-size: 21px !important;
 	display: none;
-	padding: 5px;
-	padding-right: 4.5px;
 }
 
 #controls .time
 {
-	color: #BDBCBF;
+	margin: 0 10px 1px 10px;
 	font-size: 14px;
-	margin-left: 10px;
-	margin-right: 10px;
-	margin-bottom: 1px;
+	color: #BDBCBF;
 }
 
 .bar
@@ -525,7 +521,7 @@ body
 	vertical-align: 4px;
 	cursor: pointer;
 	border-radius: 2px;
-	margin-left: 5px;
+	margin: 0 3px;
 }
 .bar .fill
 {
@@ -551,7 +547,7 @@ body
 #volume
 {
 	width: 15%;
-	margin-left: 0px;
+	margin: 0;
 }
 
 #speaker
