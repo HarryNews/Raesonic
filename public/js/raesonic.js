@@ -1,8 +1,15 @@
 scriptsLoaded = 0;
 
 // Cookies
-$.cookie.defaults.path = "/"
-var volume = $.cookie("volume") || 80;
+$.cookie.defaults.path = "/";
+function loadCookie(name, defaultValue)
+{
+	var value = $.cookie(name);
+	if(typeof value == "undefined") return defaultValue;
+	return JSON.parse(value);
+}
+var volume = loadCookie("volume", 80);
+var hd = loadCookie("hd", true);
 
 // Variables
 var lastVolume = volume;
@@ -19,7 +26,7 @@ var youtubePlayer;
 var youtubeReady = false;
 function onYouTubeIframeAPIReady()
 {
-	youtubePlayer = new YT.Player("video",
+	youtubePlayer = new YT.Player("video-iframe",
 	{
 		width: "480",
 		height: "270",
@@ -37,9 +44,16 @@ function onYouTubeIframeAPIReady()
 		}
 	});
 }
+function updateQuality()
+{
+	youtubePlayer.setPlaybackQuality(hd ? "hd720" : "large");
+	if(hd) return $("#hd").removeClass("disabled");
+	$("#hd").addClass("disabled");
+}
 function onPlayerReady(event)
 {
 	youtubeReady = true;
+	updateQuality();
 	loaded();
 }
 function onPlayerStateChange(event)
@@ -81,7 +95,7 @@ $(document).ready(function()
 		clearInterval(dragInterval);
 		if(changingVolume)
 		{
-			$.cookie("volume", Math.round(volume));
+			$.cookie("volume", Math.round(volume).toString());
 			changingVolume = false;
 			return;
 		}
@@ -96,6 +110,22 @@ $(document).ready(function()
 			return;
 		}
 		youtubePlayer.seekTo(seek * youtubePlayer.getDuration(), true);
+	});
+
+	$("#video").hover(function()
+	{
+		$("#hd").stop(true).fadeIn(200);
+	},
+	function()
+	{
+		$("#hd").stop(true).delay(5000).fadeOut(2000);
+	});
+
+	$("#hd").click(function()
+	{
+		hd = !hd;
+		$.cookie("hd", hd.toString());
+		updateQuality();
 	});
 
 	// Retrieve Playlist

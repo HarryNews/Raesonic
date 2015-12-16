@@ -378,7 +378,28 @@ body
 #video
 {
 	display: none;
+	position: relative;
 }
+
+#hd
+{
+	position: absolute;
+	left: 14px;
+	bottom: 12px;
+	color: rgba(255, 255, 255, 0.55);
+	text-shadow: rgba(0, 0, 0, 0.05) 1px 1px 0px;
+	font-size: 32px;
+	font-weight: bold;
+	cursor: pointer;
+	display: none;
+}
+#hd:hover { color: rgba(255, 255, 255, 0.8); }
+#hd.disabled
+{
+	color: rgba(255, 255, 255, 0.15);
+	text-shadow: rgba(0, 0, 0, 0.02) 1px 1px 0px;
+}
+#hd.disabled:hover { color: rgba(255, 255, 255, 0.4); }
 
 #cover
 {
