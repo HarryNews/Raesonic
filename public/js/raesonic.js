@@ -1,7 +1,8 @@
 scriptsLoaded = 0;
 
 // Cookies
-var volume = 80;
+$.cookie.defaults.path = "/"
+var volume = $.cookie("volume") || 80;
 
 // Variables
 var lastVolume = volume;
@@ -67,6 +68,7 @@ $(document).ready(function()
 {
 	// Misc
 	var seeking = false;
+	var changingVolume = false;
 	var freeze = false;
 	var mouseX = 0;
 	$(document).mousemove(function(e)
@@ -77,6 +79,12 @@ $(document).ready(function()
 	{
 		if(typeof dragInterval == "undefined") return;
 		clearInterval(dragInterval);
+		if(changingVolume)
+		{
+			$.cookie("volume", Math.round(volume));
+			changingVolume = false;
+			return;
+		}
 		if(!seeking) return;
 		seeking = false;
 		setTimeout(function() { freeze = false; }, 500);
@@ -498,6 +506,7 @@ $(document).ready(function()
 		if(e.which != 1) return;
 		updateVolume();
 		dragInterval = setInterval(updateVolume, 10);
+		changingVolume = true;
 	});
 
 	function updateSeekbar()
