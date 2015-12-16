@@ -507,6 +507,7 @@ $(document).ready(function()
 		updateVolume();
 		dragInterval = setInterval(updateVolume, 10);
 		changingVolume = true;
+		muted = false;
 	});
 
 	function updateSeekbar()
