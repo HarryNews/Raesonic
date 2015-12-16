@@ -3,6 +3,10 @@ scriptsLoaded = 0;
 // Cookies
 var volume = 80;
 
+// Variables
+var lastVolume = volume;
+var muted = false;
+
 // YouTube API
 var tag = document.createElement("script");
 tag.src = "https://www.youtube.com/iframe_api";
@@ -455,6 +459,8 @@ $(document).ready(function()
 		if(volume == 0) state = "silent";
 		else if(volume < 30) state = "quiet";
 		$("#speaker").attr("class", "icon " + state + " fa fa-volume-" + volumeStates[state]);
+		if(muted) return $("#muted").show();
+		$("#muted").hide();
 	}
 	updateVolumeDisplay();
 
@@ -467,6 +473,24 @@ $(document).ready(function()
 		dragInterval = setInterval(updateSeekbar, 10);
 		seeking = true;
 		freeze = true;
+	});
+
+	$("#speaker").click(function()
+	{
+		if(muted && volume < 1)
+		{
+			volume = lastVolume;
+			$("#volume-fill").width(volume / 100 * $("#volume").width());
+			muted = false;
+		}
+		else
+		{
+			lastVolume = volume;
+			volume = 0;
+			$("#volume-fill").width(0);
+			muted = true;
+		}
+		updateVolume(true);
 	});
 
 	$("#volume").mousedown(function(e)
@@ -498,9 +522,10 @@ $(document).ready(function()
 		$("#current-time").text(date.toISOString().substr(14, 5));
 	}
 
-	function updateVolume()
+	function updateVolume(skipVar)
 	{
-		volume = Math.max(Math.min((mouseX - $("#volume").offset().left) / $("#volume").width(), 1), 0) * 100;
+		if(!skipVar) volume = Math.max(Math.min((mouseX - $("#volume").offset().left) /
+			$("#volume").width(), 1), 0) * 100;
 		updateVolumeDisplay();
 		if(soundcloudPlayer) soundcloudPlayer.setVolume(volume / 100);
 		if(!youtubeReady) return;
