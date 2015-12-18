@@ -350,11 +350,13 @@ $(document).ready(function()
 		var title = "";
 		function updateWindowButton()
 		{
-			if($("#edit-artist").val() != artist || $("#edit-title").val() != title)
+			var artistChanged = ($("#edit-artist").val() != artist);
+			var titleChanged = ($("#edit-title").val() != title);
+			if((trackId != -1) ? (artistChanged || titleChanged) : (artistChanged && titleChanged))
 			{
 				$("#window-button").text("SAVE").unbind().click(function()
 				{
-					renameItem(itemId, trackId, $("#edit-artist").val(), $("#edit-title").val());
+					renameItem(itemId, trackId, $("#edit-artist").val(), $("#edit-title").val(), artistChanged, titleChanged);
 				});
 				return;
 			}
@@ -407,15 +409,21 @@ $(document).ready(function()
 		});
 	}
 
-	function renameItem(itemId, trackId, artist, title)
+	function renameItem(itemId, trackId, artist, title, artistChanged, titleChanged)
 	{
 		var tracksUrl = "/tracks/";
 		if(trackId != -1) tracksUrl = tracksUrl + trackId.toString() + "/";
+		var trackExists = (trackId != -1);
 		$.ajax
 		({
 			url: tracksUrl,
-			type: (trackId != -1) ? "PUT" : "POST",
-			data: { itemId: itemId, artist: artist, title: title },
+			type: trackExists ? "PUT" : "POST",
+			data:
+			{
+				itemId: itemId,
+				artist: trackExists ? [artist, artistChanged] : artist,
+				title: trackExists ? [title, titleChanged] : title
+			},
 			success: function(response)
 			{
 				if(response.error) return;

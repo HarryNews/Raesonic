@@ -30,12 +30,16 @@ var Track = sequelize.define("Track",
 	artist: Sequelize.STRING(50),
 	title: Sequelize.STRING(50)
 });
+
 var Content = sequelize.define("Content",
 {
 	contentId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 	sourceId: Sequelize.INTEGER(1),
 	externalId: Sequelize.STRING(20)
 });
+Track.hasMany(Content, { foreignKey: "trackId" });
+Content.belongsTo(Track, { foreignKey: "trackId" });
+
 var Playlist = sequelize.define("Playlist",
 {
 	playlistId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -43,26 +47,36 @@ var Playlist = sequelize.define("Playlist",
 	name: Sequelize.STRING(50),
 	access: { type: Sequelize.INTEGER(1), defaultValue: 1 }
 });
+
 var Item = sequelize.define("Item",
 {
 	itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true }
 });
+Content.hasMany(Item, { foreignKey: "contentId" });
+Item.belongsTo(Content, { foreignKey: "contentId" });
+Playlist.hasMany(Item, { foreignKey: "playlistId" });
+Item.belongsTo(Playlist, { foreignKey: "playlistId" });
+
 var Relation = sequelize.define("Relation",
 {
 	relationId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 	trust: Sequelize.INTEGER,
 	doubt: Sequelize.INTEGER
 });
-Track.hasMany(Content, { foreignKey: "trackId" });
-Content.belongsTo(Track, { foreignKey: "trackId" });
 Track.hasMany(Relation, { foreignKey: "trackId" });
 Relation.belongsTo(Track, { foreignKey: "trackId" });
 Track.hasMany(Relation, { foreignKey: "linkedId" });
 Relation.belongsTo(Track, { foreignKey: "linkedId" });
-Content.hasMany(Item, { foreignKey: "contentId" });
-Item.belongsTo(Content, { foreignKey: "contentId" });
-Playlist.hasMany(Item, { foreignKey: "playlistId" });
-Item.belongsTo(Playlist, { foreignKey: "playlistId" });
+
+var TrackEdit = sequelize.define("TrackEdit",
+{
+	editId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+	artist: Sequelize.STRING(50),
+	title: Sequelize.STRING(50),
+	userId: Sequelize.INTEGER
+});
+Track.hasMany(TrackEdit, { foreignKey: "trackId" });
+TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
 
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -210,6 +224,7 @@ app.route("/tracks/")
 {
 	if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
+	// todo: return error if artist/title contain restricted characters
 	Track.findOrCreate
 	({
 		where:
@@ -240,14 +255,29 @@ app.route("/tracks/")
 			});
 			res.json(track.trackId);
 		});
+		if(!created) return;
+		// todo: use actual user id
+		TrackEdit.create
+		({
+			artist: req.body.artist,
+			title: req.body.title,
+			userId: 1,
+			trackId: track.trackId
+		})
 	});
 });
 
 app.route("/tracks/:trackId(\\d+)")
 .put(function(req, res)
 {
-	if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title) return res.status(500).json({ error: true });
+	if(!req.body) return res.status(500).json({ error: true });
+	var artist = req.body["artist[]"];
+	var title = req.body["title[]"];
+	if(!req.body.itemId || ((!artist || artist.length != 2) && (!title || title.length != 2)) return res.status(500).json({ error: true });
+	artist = { text: artist[0], changed: artist[1] == "true" }
+	title = { text: title[0], changed: title[1] == "true" }
 	// todo: return error if not logged in
+	// todo: return error if artist/title contain restricted characters
 	// todo: return error if not enough trust to submit edits
 	Content.count
 	({
@@ -255,15 +285,16 @@ app.route("/tracks/:trackId(\\d+)")
 	})
 	.then(function(amount)
 	{
+		if(amount == 0) return res.status(500).json({ error: true });
+		var changes = {};
 		// If the track belongs to a single content, it is simply updated, otherwise a new track is created and linked
 		// That should prevent erroneous track changes, when the content is linked to mismatching tracks
 		if(amount == 1)
 		{
+			if(artist.changed) changes.artist = artist.text;
+			if(title.changed) changes.title = title.text;
 			Track.update
-			({
-				artist: req.body.artist,
-				title: req.body.title
-			},
+			(changes,
 			{
 				where: { trackId: req.params.trackId }
 			})
@@ -271,13 +302,15 @@ app.route("/tracks/:trackId(\\d+)")
 			{
 				res.json(req.params.trackId);
 			});
+			// todo: use actual user id
+			changes.userId = 1;
+			changes.trackId = req.params.trackId;
+			TrackEdit.create(changes);
 			return;
 		}
-		Track.create
-		({
-			artist: req.body.artist,
-			title: req.body.title
-		})
+		changes.artist = artist.text;
+		changes.title = title.text;
+		Track.create(changes)
 		.then(function(track)
 		{
 			Content.findOne
@@ -300,6 +333,10 @@ app.route("/tracks/:trackId(\\d+)")
 				});
 				res.json(track.trackId);
 			});
+			// todo: use actual user id
+			changes.userId = 1;
+			changes.trackId = track.trackId;
+			TrackEdit.create(changes);
 		});
 	});
 });
