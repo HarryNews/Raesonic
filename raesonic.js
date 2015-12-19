@@ -273,7 +273,7 @@ app.route("/tracks/:trackId(\\d+)")
 	if(!req.body) return res.status(500).json({ error: true });
 	var artist = req.body["artist[]"];
 	var title = req.body["title[]"];
-	if(!req.body.itemId || ((!artist || artist.length != 2) && (!title || title.length != 2)) return res.status(500).json({ error: true });
+	if(!req.body.itemId || ((!artist || artist.length != 2) && (!title || title.length != 2))) return res.status(500).json({ error: true });
 	artist = { text: artist[0], changed: artist[1] == "true" }
 	title = { text: title[0], changed: title[1] == "true" }
 	// todo: return error if not logged in
