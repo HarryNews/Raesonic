@@ -78,6 +78,69 @@ var TrackEdit = sequelize.define("TrackEdit",
 Track.hasMany(TrackEdit, { foreignKey: "trackId" });
 TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
 
+function linkContent(itemId, trackId, res)
+{
+	Content.findOne
+	({
+		attributes: ["contentId", "trackId"],
+		include:
+		[{
+			model: Item,
+			where: { itemId: itemId }
+		}]
+	})
+	.then(function(content)
+	{
+		var previousTrackId = content.trackId;
+		Content.update
+		({
+			trackId: trackId
+		},
+		{
+			where: { contentId: content.contentId }
+		})
+		.then(function()
+		{
+			// Remove the previous track if it has no references
+			Relation.count
+			({
+				where:
+				{
+					$or:
+					[
+						{ trackId: previousTrackId },
+						{ linkedId: previousTrackId }
+					]
+				}
+			})
+			.then(function(relationCount)
+			{
+				if(relationCount > 0) return;
+				Content.count
+				({
+					where: { trackId: previousTrackId }
+				})
+				.then(function(contentCount)
+				{
+					if(contentCount > 0) return;
+					Track.destroy
+					({
+						where: { trackId: previousTrackId }
+					});
+				});
+			});
+			res.json(trackId);
+			// todo: use actual user id
+			// ContentLink.create
+			// ({
+			// 	userId: 1,
+			// 	contentId: content.contentId,
+			// 	trackId: trackId
+			// });
+		});
+	});
+}
+
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -287,52 +350,55 @@ app.route("/tracks/:trackId(\\d+)")
 	{
 		if(amount == 0) return res.status(500).json({ error: true });
 		var changes = {};
-		// If the track belongs to a single content, it is simply updated, otherwise a new track is created and linked
+		// If the track belongs to a single content, it is updated, otherwise a new track is created and linked
 		// That should prevent erroneous track changes, when the content is linked to mismatching tracks
 		if(amount == 1)
 		{
 			if(artist.changed) changes.artist = artist.text;
 			if(title.changed) changes.title = title.text;
-			Track.update
-			(changes,
-			{
-				where: { trackId: req.params.trackId }
+			// Check if a track with that name already exists
+			Track.findOne
+			({
+				where:
+				{
+					artist: artist.text,
+					title: title.text
+				}
 			})
-			.then(function()
+			.then(function(track)
 			{
-				res.json(req.params.trackId);
+				if(!track)
+				{
+					// No track with that name, update ours
+					Track.update(changes,
+					{
+						where: { trackId: req.params.trackId }
+					})
+					.then(function()
+					{
+						res.json(req.params.trackId);
+					});
+					// todo: use actual user id
+					changes.userId = 1;
+					changes.trackId = req.params.trackId;
+					TrackEdit.create(changes);
+					return;
+				}
+				// Track already exists, link content with it
+				linkContent(req.body.itemId, track.trackId, res);
 			});
-			// todo: use actual user id
-			changes.userId = 1;
-			changes.trackId = req.params.trackId;
-			TrackEdit.create(changes);
 			return;
 		}
 		changes.artist = artist.text;
 		changes.title = title.text;
-		Track.create(changes)
-		.then(function(track)
+		Track.findOrCreate
+		({
+			where: changes
+		})
+		.spread(function(track, created)
 		{
-			Content.findOne
-			({
-				attributes: ["contentId"],
-				include:
-				[{
-					model: Item,
-					where: { itemId: req.body.itemId }
-				}]
-			})
-			.then(function(content)
-			{
-				Content.update
-				({
-					trackId: track.trackId
-				},
-				{
-					where: { contentId: content.contentId }
-				});
-				res.json(track.trackId);
-			});
+			linkContent(req.body.itemId, track.trackId, res);
+			if(!created) return;
 			// todo: use actual user id
 			changes.userId = 1;
 			changes.trackId = track.trackId;
@@ -348,10 +414,7 @@ app.route("/items/:itemId(\\d+)")
 	// todo: include playlist and check user for ownership
 	Item.destroy
 	({
-		where:
-		{
-			itemId: req.params.itemId
-		}
+		where: { itemId: req.params.itemId }
 	})
 	.then(function(amount)
 	{
