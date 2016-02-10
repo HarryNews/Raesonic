@@ -165,7 +165,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.route("/playlists")
-.post(function(req, res)
+.post(function(req, res) // Create a new playlist
 {
 	if(!req.body || !req.body.name) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
@@ -179,7 +179,7 @@ app.route("/playlists")
 });
 
 app.route("/playlists/:playlistId(\\d+)")
-.get(function(req, res)
+.get(function(req, res) // Retrieve playlist information and items
 {
 	Playlist.findOne
 	({
@@ -223,7 +223,7 @@ app.route("/playlists/:playlistId(\\d+)")
 		res.json(response);
 	});
 })
-.post(function(req, res)
+.post(function(req, res) // Add content as a new playlist item
 {
 	if(!req.body || !req.body.sourceId || !req.body.externalId) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
@@ -264,7 +264,7 @@ app.route("/playlists/:playlistId(\\d+)")
 });
 
 app.route("/search/:query")
-.get(function(req, res)
+.get(function(req, res) // Search for a track
 {
 	var query = "%" + decodeURIComponent(req.params.query.replace(/\+/g, "%20")) + "%";
 	Track.all
@@ -300,7 +300,7 @@ app.route("/search/:query")
 });
 
 app.route("/tracks/")
-.post(function(req, res)
+.post(function(req, res) // Change playlist item name (no track attached)
 {
 	if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
@@ -355,7 +355,7 @@ app.route("/tracks/")
 });
 
 app.route("/tracks/:trackId(\\d+)")
-.put(function(req, res)
+.put(function(req, res) // Change playlist item name (track attached)
 {
 	if(!req.body) return res.status(500).json({ error: true });
 	var artist = req.body["artist[]"];
@@ -432,7 +432,7 @@ app.route("/tracks/:trackId(\\d+)")
 });
 
 app.route("/items/:itemId(\\d+)")
-.delete(function(req, res)
+.delete(function(req, res) // Remove item from a playlist
 {
 	// todo: return error if not logged in
 	// todo: include playlist and check user for ownership
@@ -455,7 +455,7 @@ app.use(function(req, res)
 
 sequelize.sync().then(function()
 {
-	// Newly created contents are assigned to this track
+	// Newly created content is assigned to this track
 	Track.findOrCreate
 	({
 		where:
