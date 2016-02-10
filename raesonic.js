@@ -24,6 +24,7 @@ var sequelize = new Sequelize(db.name, db.user, db.password,
 	}
 });
 
+// Track is a musical creation
 var Track = sequelize.define("Track",
 {
 	trackId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -31,6 +32,7 @@ var Track = sequelize.define("Track",
 	title: Sequelize.STRING(50)
 });
 
+// Content is an audio or video content, linked to a Track
 var Content = sequelize.define("Content",
 {
 	contentId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -40,6 +42,7 @@ var Content = sequelize.define("Content",
 Track.hasMany(Content, { foreignKey: "trackId" });
 Content.belongsTo(Track, { foreignKey: "trackId" });
 
+// Playlist is a collection of Items, owned by a User
 var Playlist = sequelize.define("Playlist",
 {
 	playlistId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -48,6 +51,7 @@ var Playlist = sequelize.define("Playlist",
 	access: { type: Sequelize.INTEGER(1), defaultValue: 1 }
 });
 
+// Item is a reference to Content
 var Item = sequelize.define("Item",
 {
 	itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true }
@@ -57,6 +61,7 @@ Item.belongsTo(Content, { foreignKey: "contentId" });
 Playlist.hasMany(Item, { foreignKey: "playlistId" });
 Item.belongsTo(Playlist, { foreignKey: "playlistId" });
 
+// Relation is a connection between two similar Tracks
 var Relation = sequelize.define("Relation",
 {
 	relationId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -68,6 +73,7 @@ Relation.belongsTo(Track, { foreignKey: "trackId" });
 Track.hasMany(Relation, { foreignKey: "linkedId" });
 Relation.belongsTo(Track, { foreignKey: "linkedId" });
 
+// TrackEdit is created when Track information is changed
 var TrackEdit = sequelize.define("TrackEdit",
 {
 	editId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -78,6 +84,18 @@ var TrackEdit = sequelize.define("TrackEdit",
 });
 Track.hasMany(TrackEdit, { foreignKey: "trackId" });
 TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
+
+// ContentLink is created when a Content is linked to a Track
+var ContentLink = sequelize.define("ContentLink",
+{
+	linkId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+	userId: Sequelize.INTEGER,
+	date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+});
+Track.hasMany(ContentLink, { foreignKey: "trackId" });
+ContentLink.belongsTo(Track, { foreignKey: "trackId" });
+Content.hasMany(ContentLink, { foreignKey: "contentId" });
+ContentLink.belongsTo(Content, { foreignKey: "contentId" });
 
 function linkContent(itemId, trackId, res)
 {
@@ -130,12 +148,12 @@ function linkContent(itemId, trackId, res)
 			});
 			res.json(trackId);
 			// todo: use actual user id
-			// ContentLink.create
-			// ({
-			// 	userId: 1,
-			// 	contentId: content.contentId,
-			// 	trackId: trackId
-			// });
+			ContentLink.create
+			({
+				trackId: trackId,
+				userId: 1,
+				contentId: content.contentId
+			});
 		});
 	});
 }
@@ -316,6 +334,13 @@ app.route("/tracks/")
 				where: { contentId: content.contentId }
 			});
 			res.json(track.trackId);
+			// todo: use actual user id
+			ContentLink.create
+			({
+				trackId: track.trackId,
+				userId: 1,
+				contentId: content.contentId
+			});
 		});
 		if(!created) return;
 		// todo: use actual user id
