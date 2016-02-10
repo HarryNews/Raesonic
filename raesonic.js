@@ -124,10 +124,8 @@ function linkContent(itemId, trackId, res)
 				.then(function(contentCount)
 				{
 					if(contentCount > 0) return;
-					Track.destroy
-					({
-						where: { trackId: previousTrackId }
-					});
+					TrackEdit.destroy({ where: { trackId: previousTrackId } });
+					Track.destroy({ where: { trackId: previousTrackId } });
 				});
 			});
 			res.json(trackId);
