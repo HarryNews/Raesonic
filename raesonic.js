@@ -73,7 +73,8 @@ var TrackEdit = sequelize.define("TrackEdit",
 	editId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 	artist: Sequelize.STRING(50),
 	title: Sequelize.STRING(50),
-	userId: Sequelize.INTEGER
+	userId: Sequelize.INTEGER,
+	date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
 });
 Track.hasMany(TrackEdit, { foreignKey: "trackId" });
 TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
