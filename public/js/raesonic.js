@@ -254,7 +254,6 @@ $(document).ready(function()
 		$("#meta-artist").html($item.find(".artist").html());
 		$("#meta-title").html($item.find(".title").html());
 		$("#items .item").removeClass("active");
-		$item.addClass("active");
 		// todo: scroll to track if in playlist view
 		if(soundcloudPlayer)
 		{
@@ -265,6 +264,29 @@ $(document).ready(function()
 		$("#seekbar-fill").stop(true, true).width(0);
 		$("#current-time").text("00:00");
 		$("#total-time").text("00:00");
+		if(!$item.attr("data-sourceId"))
+		{
+			$.ajax
+			({
+				url: "/tracks/" + $item.attr("data-trackId") + "/content/",
+				type: "GET",
+				success: function(response)
+				{
+					if(response.error) return;
+					var nearest = response[0];
+					if(!nearest) return;
+					$item.attr
+					({
+						"data-sourceId": nearest[0],
+						"data-externalId": nearest[1]
+					});
+					$(":nth-child(1)", $item).click();
+					// todo: store complete array for switching between later on
+				}
+			});
+			return;
+		}
+		$item.addClass("active");
 		if($item.attr("data-sourceId") == "1")
 		{
 			$("#cover").empty().hide();
@@ -363,7 +385,7 @@ $(document).ready(function()
 			if(!itemId) return $("#window-button").text("");
 			$("#window-button").text("REMOVE").unbind().click(function()
 			{
-				removeItem(itemId)
+				removeItem(itemId);
 			});
 		}
 		if(trackId != -1)

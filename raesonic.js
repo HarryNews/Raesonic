@@ -431,6 +431,34 @@ app.route("/tracks/:trackId(\\d+)")
 	});
 });
 
+app.route("/tracks/:trackId(\\d+)/content")
+.get(function(req, res) // Retrieve content linked to a track
+{
+	Content.all
+	({
+		attributes: ["sourceId", "externalId"],
+		limit: 20,
+		include:
+		[{
+			model: Track,
+			where: { trackId: req.params.trackId }
+		}]
+	})
+	.then(function(content)
+	{
+		var response = [];
+		for(var index in content)
+		{
+			response[index] =
+			[
+				content[index].sourceId,
+				content[index].externalId
+			];
+		}
+		res.json(response);
+	});
+});
+
 app.route("/items/:itemId(\\d+)")
 .delete(function(req, res) // Remove item from a playlist
 {
