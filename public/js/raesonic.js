@@ -148,9 +148,13 @@ $(document).ready(function()
 	// Search
 	$("#search").keyup(function(e)
 	{
-		// todo: hide tracks not matching query
-		if(e.keyCode != 13) return;
 		var query = $(this).val();
+		if(e.keyCode != 13)
+		{
+			(query.length > 0) ? $("#search-clear").fadeIn(200) : $("#search-clear").fadeOut(200);
+			// todo: hide tracks not matching query
+			return;
+		}
 		var match = /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/.exec(query);
 		if(match && match[5])
 		{
@@ -175,9 +179,15 @@ $(document).ready(function()
 				if(response.error) return;
 				var items = response;
 				setItems(items);
-				// todo: clicking x or clearing input should show previous items, without requerying server
 			}
 		});
+	});
+
+	$("#search-clear").click(function()
+	{
+		$("#search").val("");
+		$(this).hide();
+		// todo: show previous items, without requerying server
 	});
 
 	function addContent(sourceId, externalId)
