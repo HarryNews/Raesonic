@@ -167,7 +167,7 @@ app.use(bodyParser.json());
 app.route("/playlists")
 .post(function(req, res) // Create a new playlist
 {
-	if(!req.body || !req.body.name) return res.status(500).json({ error: true });
+	if(!req.body || !req.body.name || req.body.name.length > 50) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
 	// todo: return error if playlist name contains restricted characters
 	// todo: use actual user id
@@ -226,6 +226,7 @@ app.route("/playlists/:playlistId(\\d+)")
 .post(function(req, res) // Add content as a new playlist item
 {
 	if(!req.body || !req.body.sourceId || !req.body.externalId) return res.status(500).json({ error: true });
+	// todo: check sourceId to be 1/2, make sure externalId is a string/int in valid range
 	// todo: return error if not logged in
 	// todo: return error if playlist does not belong to that user
 	Content.findOrCreate
@@ -266,6 +267,7 @@ app.route("/playlists/:playlistId(\\d+)")
 app.route("/search/:query")
 .get(function(req, res) // Search for a track
 {
+	if(req.params.query.length > 150) return res.status(500).json({ error: true });
 	var query = "%" + decodeURIComponent(req.params.query.replace(/\+/g, "%20")) + "%";
 	Track.all
 	({
@@ -302,7 +304,8 @@ app.route("/search/:query")
 app.route("/tracks/")
 .post(function(req, res) // Change playlist item name (no track attached)
 {
-	if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title) return res.status(500).json({ error: true });
+	if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title ||
+		req.body.artist.length > 50 || req.body.title.length > 50) return res.status(500).json({ error: true });
 	// todo: return error if not logged in
 	// todo: return error if artist/title contain restricted characters
 	Track.findOrCreate
@@ -360,7 +363,8 @@ app.route("/tracks/:trackId(\\d+)")
 	if(!req.body) return res.status(500).json({ error: true });
 	var artist = req.body["artist[]"];
 	var title = req.body["title[]"];
-	if(!req.body.itemId || ((!artist || artist.length != 2) && (!title || title.length != 2))) return res.status(500).json({ error: true });
+	if(!req.body.itemId || ((!artist || artist.length != 2) && (!title || title.length != 2)) ||
+		artist[0].length > 50 || title[0].length > 50) return res.status(500).json({ error: true });
 	artist = { text: artist[0], changed: artist[1] == "true" }
 	title = { text: title[0], changed: title[1] == "true" }
 	// todo: return error if not logged in

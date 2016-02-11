@@ -161,12 +161,12 @@ body
 #search
 {
 	background-color: #DBDBDB;
-	width: calc(100% - 9px);
+	width: calc(100% - 37px);
 	height: 35px;
 	border: 0;
 	font-size: 14px;
 	color: #444;
-	padding-left: 8px;
+	padding: 1px 28px 1px 8px;
 	border-right: 1px solid #2C2831;
 	border-bottom: 1px solid #2C2831;
 	-webkit-transition: background-color ease-out 200ms;

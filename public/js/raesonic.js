@@ -12,6 +12,7 @@ var volume = loadCookie("volume", 80);
 var hd = loadCookie("hd", true);
 
 // Variables
+var itemStorage = [];
 var lastVolume = volume;
 var muted = false;
 
@@ -149,9 +150,10 @@ $(document).ready(function()
 	$("#search").keyup(function(e)
 	{
 		var query = $(this).val();
-		if(e.keyCode != 13)
+		var length = query.length;
+		if(e.keyCode != 13 || length < 3)
 		{
-			(query.length > 0) ? $("#search-clear").fadeIn(200) : $("#search-clear").fadeOut(200);
+			length ? $("#search-clear").fadeIn(200) : $("#search-clear").click();
 			// todo: hide tracks not matching query
 			return;
 		}
@@ -178,7 +180,7 @@ $(document).ready(function()
 			{
 				if(response.error) return;
 				var items = response;
-				setItems(items);
+				setItems(items, true);
 			}
 		});
 	});
@@ -187,7 +189,13 @@ $(document).ready(function()
 	{
 		$("#search").val("");
 		$(this).hide();
-		// todo: show previous items, without requerying server
+		if(itemStorage.length < 1) return;
+		$("#items").empty();
+		itemStorage.forEach(function($item)
+		{
+			$("#items").append($item);
+		});
+		itemStorage = [];
 	});
 
 	function addContent(sourceId, externalId)
@@ -212,8 +220,15 @@ $(document).ready(function()
 		});
 	}
 
-	function setItems(items)
+	function setItems(items, store)
 	{
+		if(store && itemStorage.length < 1)
+		{
+			$(".item").each(function()
+			{
+				itemStorage.push($(this).detach());
+			});
+		}
 		$("#items").empty();
 		$.each(items, addItem);
 	}
@@ -406,9 +421,9 @@ $(document).ready(function()
 		$("#window")
 			.empty()
 			.append($("<div>").attr("id", "window-header").text("Edit track"))
-			.append($("<input>").attr({ "id": "edit-artist", "type": "text", "placeholder": "Artist" })
+			.append($("<input>").attr({ "id": "edit-artist", "type": "text", "maxlength": 50, "placeholder": "Artist" })
 				.val(artist).keyup(updateWindowButton))
-			.append($("<input>").attr({ "id": "edit-title", "type": "text", "placeholder": "Title" })
+			.append($("<input>").attr({ "id": "edit-title", "type": "text", "maxlength": 50, "placeholder": "Title" })
 				.val(title).keyup(updateWindowButton))
 			.prepend($("<button>").attr("id", "window-button")
 		);
