@@ -215,14 +215,14 @@ $(document).ready(function()
 		$item.append($("<div>").addClass("title").html(item[2].replace(/\((.+)\)/g, "<span>$1</span>")));
 		$item.append($("<div>").addClass("icon edit fa fa-pencil").click(editItem));
 		$item.append($("<div>").addClass("icon add fa fa-plus"));
-		$item.attr("data-trackId", item[0]);
+		$item.data("trackId", item[0]);
 		if(item[3])
 		{
-			$item.attr
+			$item.data
 			({
-				"data-itemId": item[3],
-				"data-sourceId": item[4],
-				"data-externalId": item[5]
+				"itemId": item[3],
+				"sourceId": item[4],
+				"externalId": item[5]
 			});
 		}
 		$item.children().slice(0, 2).click(playItem);
@@ -264,21 +264,21 @@ $(document).ready(function()
 		$("#seekbar-fill").stop(true, true).width(0);
 		$("#current-time").text("00:00");
 		$("#total-time").text("00:00");
-		if(!$item.attr("data-sourceId"))
+		if(!$item.data("sourceId"))
 		{
 			$.ajax
 			({
-				url: "/tracks/" + $item.attr("data-trackId") + "/content/",
+				url: "/tracks/" + $item.data("trackId") + "/content/",
 				type: "GET",
 				success: function(response)
 				{
 					if(response.error) return;
 					var nearest = response[0];
 					if(!nearest) return;
-					$item.attr
+					$item.data
 					({
-						"data-sourceId": nearest[0],
-						"data-externalId": nearest[1]
+						"sourceId": nearest[0],
+						"externalId": nearest[1]
 					});
 					$(":nth-child(1)", $item).click();
 					// todo: store complete array for switching between later on
@@ -287,14 +287,14 @@ $(document).ready(function()
 			return;
 		}
 		$item.addClass("active");
-		if($item.attr("data-sourceId") == "1")
+		if($item.data("sourceId") == "1")
 		{
 			$("#cover").empty().hide();
 			$("#video").show();
-			youtubePlayer.loadVideoById($item.attr("data-externalId"));
+			youtubePlayer.loadVideoById($item.data("externalId"));
 			return;
 		}
-		if($item.attr("data-sourceId") == "2")
+		if($item.data("sourceId") == "2")
 		{
 			if(youtubeReady)
 			{
@@ -303,7 +303,7 @@ $(document).ready(function()
 			}
 			$("#video").hide();
 			$("#cover").empty();
-			var trackString = "/tracks/" + $item.attr("data-externalId");
+			var trackString = "/tracks/" + $item.data("externalId");
 			SC.get(trackString).then(function(response)
 			{
 				var imageUrl = response.artwork_url || response.user.avatar_url;
@@ -319,16 +319,16 @@ $(document).ready(function()
 					);
 				}
 				$("#cover")
-					.append($("<a>").attr("href", response.permalink_url).attr("target", "_blank")
+					.append($("<a>").attr({ "href": response.permalink_url, "target": "_blank" })
 						.click(function()
 						{
 							$("#pause").click();
 						})
-					.append($("<img>").attr("src", "/img/soundcloud.png").attr("id", "soundcloud"))
+					.append($("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" }))
 				);
 				$("#cover")
-					.append($("<a>").attr("href", response.user.permalink_url).attr("target", "_blank")
-					.attr("id", "creator").text(response.user.username).delay(5000).fadeOut(2000))
+					.append($("<a>").attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
+					.text(response.user.username).delay(5000).fadeOut(2000))
 					.show(
 				);
 				$("#cover").unbind().hover(function()
@@ -366,8 +366,8 @@ $(document).ready(function()
 	function editItem()
 	{
 		$item = $(this).parent();
-		var trackId = $item.attr("data-trackId");
-		var itemId = $item.attr("data-itemId");
+		var trackId = $item.data("trackId");
+		var itemId = $item.data("itemId");
 		var artist = "";
 		var title = "";
 		function updateWindowButton()
@@ -396,9 +396,9 @@ $(document).ready(function()
 		$("#window")
 			.empty()
 			.append($("<div>").attr("id", "window-header").text("Edit track"))
-			.append($("<input>").attr("id", "edit-artist").attr("type", "text").attr("placeholder", "Artist")
+			.append($("<input>").attr({ "id": "edit-artist", "type": "text", "placeholder": "Artist" })
 				.val(artist).keyup(updateWindowButton))
-			.append($("<input>").attr("id", "edit-title").attr("type", "text").attr("placeholder", "Title")
+			.append($("<input>").attr({ "id": "edit-title", "type": "text", "placeholder": "Title" })
 				.val(title).keyup(updateWindowButton))
 			.prepend($("<button>").attr("id", "window-button")
 		);
@@ -422,7 +422,7 @@ $(document).ready(function()
 			success: function(response)
 			{
 				if(response.error) return;
-				var $item = $(".item[data-itemId=\"" + itemId.toString() + "\"]");
+				var $item = $(".item").filterByData("itemId", itemId);
 				if($item.is(".active")) $("#next").click();
 				$item.remove();
 				updatePlaylistCounter();
@@ -450,18 +450,18 @@ $(document).ready(function()
 			{
 				if(response.error) return;
 				var trackId = response;
-				var externalId = $(".item[data-itemId=\"" + itemId.toString() + "\"]").attr("data-externalId");
-				var $item = $(".item[data-externalId=\"" + externalId + "\"]");
+				var externalId = $(".item").filterByData("itemId", itemId).data("externalId");
+				var $items = $(".item").filterByData("externalId", externalId)
 				artist = artist.replace(/&\+/g, "<span>&</span>");
 				title = title.replace(/\((.+)\)/g, "<span>$1</span>");
-				$(":nth-child(1)", $item).html(artist);
-				$(":nth-child(2)", $item).html(title);
-				if($item.is(".active"))
+				$(":nth-child(1)", $items).html(artist);
+				$(":nth-child(2)", $items).html(title);
+				if($items.is(".active"))
 				{
 					$("#meta-artist").html(artist);
 					$("#meta-title").html(title);
 				}
-				$item.attr("data-trackId", trackId);
+				$items.data("trackId", trackId);
 				$("#overlay").click();
 			}
 		});
@@ -649,3 +649,8 @@ function loaded()
 	$("#spinner").animate( {"width": "20px", "height": "20px" }, 1000);
 	$("#header .button").fadeIn(500).css("display", "inline-block");
 }
+
+$.fn.filterByData = function(key, value)
+{
+	return $(this).filter(function() { return $(this).data(key) && $(this).data(key) == value; });
+};
