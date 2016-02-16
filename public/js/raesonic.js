@@ -255,8 +255,8 @@ $(document).ready(function()
 		var $item = $("<div>").addClass("item");
 		$item.append($("<div>").addClass("artist").html(item[1].replace(/&\+/g, "<span>&</span>")));
 		$item.append($("<div>").addClass("title").html(item[2].replace(/\((.+)\)/g, "<span>$1</span>")));
-		$item.append($("<div>").addClass("icon edit fa fa-pencil").click(editItem));
 		$item.append($("<div>").addClass("icon add fa fa-plus"));
+		$item.append($("<div>").addClass("icon edit fa fa-pencil").click(editItem));
 		$item.data("trackId", item[0]);
 		if(item[3])
 		{

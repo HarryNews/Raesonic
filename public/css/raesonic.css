@@ -199,11 +199,8 @@ body
 
 .item, .item.odd
 {
-	display: flex;
+	height: 40px;
 	color: #F2F2F2;
-	align-items: center;
-	justify-content: space-between;
-	flex-wrap: nowrap;
 	background-color: #342F3F;
 	font-size: 16px;
 	-webkit-transition: background-color ease-out 200ms, color ease-out 200ms;
@@ -239,29 +236,31 @@ body
 
 .item .artist
 {
-	width: 42%;
-	padding: 10px 8px;
+	width: calc(44% - 70px);
 	cursor: pointer;
 }
 .item .title
 {
-	width: 58%;
-	padding: 10px 8px;
+	width: calc(56% - 70px);
 	margin-right: 20px;
-	cursor: pointer;
 }
 .item .artist, .item .title
 {
+	display: inline-block;
+	padding: 10px 8px;
+	cursor: pointer;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 .item .icon
 {
+	display: inline-block;
 	width: 16px;
 	height: 16px;
-	margin: 0 12px 0 0;
+	margin: 7px 10px 0 0;
 	padding: 5px 5px;
+	float: right;
 	cursor: pointer;
 }
 .item .icon:after
