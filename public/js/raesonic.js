@@ -64,7 +64,7 @@ function onPlayerStateChange(event)
 		$("#pause").hide();
 		$("#play").show();
 		$("#seekbar-fill").finish();
-		if(event.data == YT.PlayerState.ENDED) $("#next").click();
+		if(event.data == YT.PlayerState.ENDED) switchActiveItem(true);
 		return;
 	}
 	$("#play").hide();
@@ -153,7 +153,7 @@ $(document).ready(function()
 		var length = query.length;
 		if(e.keyCode != 13 || length < 3)
 		{
-			length ? $("#search-clear").fadeIn(200) : $("#search-clear").click();
+			length ? $("#search-clear").fadeIn(200) : clearSearch();
 			// todo: hide tracks not matching query
 			return;
 		}
@@ -185,7 +185,7 @@ $(document).ready(function()
 		});
 	});
 
-	$("#search-clear").click(function()
+	function clearSearch()
 	{
 		$("#search").val("");
 		$(this).hide();
@@ -196,7 +196,9 @@ $(document).ready(function()
 			$("#items").append($item);
 		});
 		itemStorage = [];
-	});
+		$(".item.active").removeClass("active");
+	}
+	$("#search-clear").click(clearSearch);
 
 	function addContent(sourceId, externalId)
 	{
@@ -213,7 +215,7 @@ $(document).ready(function()
 				var artist = response[1];
 				var title = response[2];
 				var itemId = response[3];
-				$("#search-clear").click();
+				clearSearch();
 				addItem(0, [trackId, artist, title, itemId, sourceId, externalId], true);
 				updatePlaylistCounter();
 			}
@@ -377,7 +379,7 @@ $(document).ready(function()
 						$("#pause").hide();
 						$("#play").show();
 						$("#seekbar-fill").finish();
-						if(state == "ended") $("#next").click();
+						if(state == "ended") switchActiveItem(true);
 						return;
 					}
 					$("#play").hide();
@@ -448,7 +450,7 @@ $(document).ready(function()
 			{
 				if(response.error) return;
 				var $item = $(".item").filterByData("itemId", itemId);
-				if($item.is(".active")) $("#next").click();
+				if($item.is(".active")) switchActiveItem(true);
 				$item.remove();
 				updatePlaylistCounter();
 				$("#overlay").click();
@@ -530,19 +532,19 @@ $(document).ready(function()
 		$("#seekbar-fill").finish();
 	});
 
-	$("#previous").click(function()
+	function switchActiveItem(forward, manual)
 	{
-		var $prev = $(".item.active").closest(".item").prev();
-		if($prev.length < 1) $prev = $(".item:last");
-		$(":first-child", $prev).click();
-	});
-
-	$("#next").click(function()
-	{
-		var $next = $(".item.active").closest(".item").next();
-		if($next.length < 1) $next = $(".item:first");
-		$(":first-child", $next).click();
-	});
+		var $item = $(".item.active").closest(".item");
+		$item = forward ? $item.next() : $item.prev();
+		if($item.length < 1)
+		{
+			if(!manual) return;
+			$item = forward ? $(".item:first") : $(".item:last");
+		}
+		$(":first-child", $item).click();
+	}
+	$("#previous").click(function() { switchActiveItem(false, true); });
+	$("#next").click(function() { switchActiveItem(true, true); });
 
 	var volumeStates = {silent: "off", quiet: "down", loud: "up"};
 	function updateVolumeDisplay()
