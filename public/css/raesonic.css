@@ -197,7 +197,7 @@ body
 	height: calc(100% - 38px);
 }
 
-.item
+.item, .item.odd
 {
 	display: flex;
 	color: #F2F2F2;
@@ -211,17 +211,21 @@ body
 	-o-transition: background-color ease-out 200ms, color ease-out 200ms;
 	transition: background-color ease-out 200ms, color ease-out 200ms;
 }
-.item:hover
+.item:hover, item.odd:hover
 {
 	background-color: #3A3747;
 }
-.item:nth-child(2n)
+.item:not(.odd):nth-child(even), .item.even
 {
 	background-color: #413A4F;
 }
-.item:nth-child(2n):hover
+.item:not(.odd):nth-child(even):hover, .item.even:hover
 {
 	background-color: #484156;
+}
+.item.hidden
+{
+	display: none;
 }
 .item.active
 {

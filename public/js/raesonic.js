@@ -154,7 +154,22 @@ $(document).ready(function()
 		if(e.keyCode != 13 || length < 3)
 		{
 			length ? $("#search-clear").fadeIn(200) : clearSearch();
-			// todo: hide tracks not matching query
+			if(itemStorage.length) return;
+			var count = 0;
+			$(".item").each(function()
+			{
+				if(!length) return $(this).removeClass("hidden odd even");
+				var hidden = true;
+				$(this).children().slice(0, 2).each(function()
+				{
+					if($(this).text().toLowerCase().indexOf(query) != -1) hidden = false;
+				});
+				$(this).toggleClass("hidden", hidden);
+				$(this).removeClass("odd even");
+				if(hidden) return;
+				(count % 2) ? $(this).addClass("even") : $(this).addClass("odd");
+				count++;
+			});
 			return;
 		}
 		var match = /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/.exec(query);
@@ -189,14 +204,14 @@ $(document).ready(function()
 	{
 		$("#search").val("");
 		$(this).hide();
-		if(itemStorage.length < 1) return;
+		$(".item").removeClass("hidden odd even active");
+		if(!itemStorage.length) return;
 		$("#items").empty();
 		itemStorage.forEach(function($item)
 		{
-			$("#items").append($item);
+			$("#items").append($item.removeClass("hidden odd even active"));
 		});
 		itemStorage = [];
-		$(".item.active").removeClass("active");
 	}
 	$("#search-clear").click(clearSearch);
 
@@ -267,7 +282,7 @@ $(document).ready(function()
 		$("#playlist-details").text((amount || $(".item").length) + " tracks");
 	}
 
-	function togglePlayState()
+	function togglePlaybackState()
 	{
 		if($("#play").is(":visible")) return $("#play").click();
 		$("#pause").click();
@@ -307,7 +322,7 @@ $(document).ready(function()
 						"sourceId": nearest[0],
 						"externalId": nearest[1]
 					});
-					$(":nth-child(1)", $item).click();
+					$(":first-child", $item).click();
 					// todo: store complete array for switching between later on
 				}
 			});
@@ -338,11 +353,11 @@ $(document).ready(function()
 				{
 					$("#cover")
 						.append($("<img>").attr("src", imageUrl.replace("large", "t500x500"))
-						.addClass("back").click(togglePlayState)
+						.addClass("back").click(togglePlaybackState)
 					);
 					$("#cover")
 						.append($("<img>").attr("src", imageUrl.replace("large", "t300x300"))
-						.addClass("front").click(togglePlayState)
+						.addClass("front").click(togglePlaybackState)
 					);
 				}
 				$("#cover")
