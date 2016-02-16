@@ -213,9 +213,9 @@ $(document).ready(function()
 				var artist = response[1];
 				var title = response[2];
 				var itemId = response[3];
+				$("#search-clear").click();
 				addItem(0, [trackId, artist, title, itemId, sourceId, externalId], true);
 				updatePlaylistCounter();
-				$("#search").val("");
 			}
 		});
 	}
