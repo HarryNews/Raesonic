@@ -227,12 +227,12 @@ body
 }
 .item.active
 {
-	background-color: #D8C7FF;
+	background-color: #D8C7FF !important;
 	color: #3A3745;
 }
 .item.active:hover
 {
-	background-color: #DFCEFF;
+	background-color: #DFCEFF !important;
 }
 
 .item .artist
