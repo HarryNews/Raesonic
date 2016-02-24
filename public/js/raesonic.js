@@ -333,7 +333,9 @@ $(document).ready(function()
 		{
 			$("#cover").empty().hide();
 			$("#video").show();
-			youtubePlayer.loadVideoById($item.data("externalId"));
+			var externalId = $item.data("externalId");
+			youtubePlayer.loadVideoById(externalId);
+			$("#sources-image").attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg");
 			return;
 		}
 		if($item.data("sourceId") == "2")
@@ -359,6 +361,11 @@ $(document).ready(function()
 						.append($("<img>").attr("src", imageUrl.replace("large", "t300x300"))
 						.addClass("front").click(togglePlaybackState)
 					);
+					$("#sources-image").attr("src", imageUrl.replace("large", "t300x300"));
+				}
+				else
+				{
+					$("#sources-image").attr("src", "");
 				}
 				$("#cover")
 					.append($("<a>").attr({ "href": response.permalink_url, "target": "_blank" })
