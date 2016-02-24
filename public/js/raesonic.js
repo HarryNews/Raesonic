@@ -509,6 +509,17 @@ $(document).ready(function()
 		});
 	}
 
+	// Tabs
+	$("#tabs-menu div").click(function()
+	{
+		if($(this).is(".active")) return;
+		$("#tabs-menu div").removeClass("active");
+		$("#tabs .tab-contents").removeClass("active");
+		$(this).addClass("active");
+		$("#tabs .tab-contents").eq($(this).index()).addClass("active");
+	});
+
+
 	// Controls
 	$("#play").click(function()
 	{
