@@ -256,6 +256,32 @@ $(document).ready(function()
 		});
 	}
 
+	function requestContent(trackId, assignToItem, switchDirection)
+	{
+		$.ajax
+		({
+			url: "/tracks/" + trackId + "/content/",
+			type: "GET",
+			success: function(response)
+			{
+				var $item = $(".item.active");
+				if(!$item.length) return;
+				if(response.error) return $("#tab-content").data("content", []);
+				$("#tab-content").data("content", response);
+				setActiveTab("content");
+				if(!assignToItem) return switchActiveContent(switchDirection);
+				var nearest = response[0];
+				if(!nearest) return;
+				$item.data
+				({
+					"sourceId": nearest[0],
+					"externalId": nearest[1]
+				});
+				$(":first-child", $item).click();
+			}
+		});
+	}
+
 	function setItems(items, store)
 	{
 		if(store && itemStorage.length < 1)
@@ -325,28 +351,11 @@ $(document).ready(function()
 		$("#seekbar-fill").stop(true, true).width(0);
 		$("#current-time").text("00:00");
 		$("#total-time").text("00:00");
+		$("#tab-content").data("content", []);
+		setContentSwitchEnabled(true);
 		if(!$item.data("sourceId"))
 		{
-			$.ajax
-			({
-				url: "/tracks/" + $item.data("trackId") + "/content/",
-				type: "GET",
-				success: function(response)
-				{
-					if(response.error) return $("#tab-content").data("content", []);
-					$("#tab-content").data("content", response);
-					setActiveTab("content");
-					var nearest = response[0];
-					if(!nearest) return;
-					$item.data
-					({
-						"sourceId": nearest[0],
-						"externalId": nearest[1]
-					});
-					$(":first-child", $item).click();
-				}
-			});
-			return;
+			return requestContent($item.data("trackId"), true);
 		}
 		$item.addClass("active");
 		if($item.data("sourceId") == "1")
@@ -503,7 +512,7 @@ $(document).ready(function()
 	function renameItem(itemId, trackId, artist, title, artistChanged, titleChanged)
 	{
 		var tracksUrl = "/tracks/";
-		if(trackId != -1) tracksUrl = tracksUrl + trackId.toString() + "/";
+		if(trackId != -1) tracksUrl = tracksUrl + trackId + "/";
 		var trackExists = (trackId != -1);
 		$.ajax
 		({
@@ -551,18 +560,24 @@ $(document).ready(function()
 
 
 	// Content Tab
+	function setContentSwitchEnabled(enabled)
+	{
+		var $buttons = $("#content-previous, #content-next");
+		enabled ? $buttons.removeClass("inactive") : $buttons.addClass("inactive");
+	}
+
 	function switchActiveContent(forward)
 	{
+		var $item = $(".item.active");
+		if(!$item.length) return setContentSwitchEnabled(false);
 		var content = $("#tab-content").data("content");
 		if(!content || !content.length)
 		{
-			// todo: request content and call this function again
-			return;
+			return requestContent($item.data("trackId"), false, forward);
 		}
-		if(content.length < 2) return;
+		if(content.length < 2) return setContentSwitchEnabled(false);
+		setContentSwitchEnabled(true);
 		var newContent;
-		var $item = $(".item.active");
-		if(!$item.length) return;
 		for(var index = 0; index < content.length; index++)
 		{
 			if($item.data("sourceId") == content[index][0] && $item.data("externalId") == content[index][1])
@@ -632,7 +647,7 @@ $(document).ready(function()
 	var volumeStates = {silent: "off", quiet: "down", loud: "up"};
 	function updateVolumeDisplay()
 	{
-		$("#volume-fill").width(volume.toString() + "%");
+		$("#volume-fill").width(volume + "%");
 		var state = "loud";
 		if(volume == 0) state = "silent";
 		else if(volume < 30) state = "quiet";
@@ -689,7 +704,7 @@ $(document).ready(function()
 			var milliseconds = seek * soundcloudPlayer.options.duration;
 			if(!soundcloudPlayer.isPlaying()) soundcloudPlayer.play();
 			soundcloudPlayer.seek(milliseconds, false);
-			$("#seekbar-fill").stop(true, true).width((seek * 100).toString() + "%");
+			$("#seekbar-fill").stop(true, true).width((seek * 100) + "%");
 			date.setMilliseconds(milliseconds);
 			$("#current-time").text(date.toISOString().substr(14, 5));
 			return;
@@ -697,7 +712,7 @@ $(document).ready(function()
 		if(!youtubeReady) return;
 		var seconds = seek * youtubePlayer.getDuration();
 		youtubePlayer.seekTo(seconds, false);
-		$("#seekbar-fill").stop(true, true).width((seek * 100).toString() + "%");
+		$("#seekbar-fill").stop(true, true).width((seek * 100) + "%");
 		date.setSeconds(seconds);
 		$("#current-time").text(date.toISOString().substr(14, 5));
 	}
@@ -723,7 +738,7 @@ $(document).ready(function()
 			$("#total-time").text(date.toISOString().substr(14, 5));
 			if(!soundcloudPlayer.isPlaying()) return;
 			$("#seekbar-fill").stop(true, true).animate(
-				{"width": (soundcloudPlayer.currentTime() / soundcloudPlayer.options.duration * 100).toString() + "%"},
+				{"width": (soundcloudPlayer.currentTime() / soundcloudPlayer.options.duration * 100) + "%"},
 				500, "linear"
 			);
 			date = new Date(null);
@@ -739,7 +754,7 @@ $(document).ready(function()
 		$("#total-time").text(date.toISOString().substr(14, 5));
 		if(youtubePlayer.getPlayerState() != YT.PlayerState.PLAYING) return;
 		$("#seekbar-fill").stop(true, true).animate(
-			{"width": (youtubePlayer.getCurrentTime() / duration * 100).toString() + "%"},
+			{"width": (youtubePlayer.getCurrentTime() / duration * 100) + "%"},
 			500, "linear"
 		);
 		date = new Date(null);

@@ -551,6 +551,11 @@ body
 	color: #3D374A;
 	cursor: pointer;
 }
+#tabs .tab-contents .icon.inactive
+{
+	color: rgba(61, 55, 74, 0.2);
+	cursor: default;
+}
 #tabs .column
 {
 	display: flex;
