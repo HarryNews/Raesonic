@@ -153,6 +153,11 @@ $(document).ready(function()
 		var length = query.length;
 		if(e.keyCode != 13 || length < 3)
 		{
+			if(query.indexOf("http") == 0)
+			{
+				$("#search-clear").is(":visible") ? clearSearch(true) : $("#search-clear").fadeIn(200);
+				return;
+			}
 			length ? $("#search-clear").fadeIn(200) : clearSearch();
 			if(itemStorage.length) return;
 			var count = 0;
@@ -200,10 +205,13 @@ $(document).ready(function()
 		});
 	});
 
-	function clearSearch()
+	function clearSearch(keepInput)
 	{
-		$("#search").val("");
-		$(this).hide();
+		if(!keepInput)
+		{
+			$("#search").val("");
+			$("#search-clear").hide();
+		}
 		$(".item").removeClass("hidden odd even active");
 		if(!itemStorage.length) return;
 		$("#items").empty();
@@ -213,7 +221,7 @@ $(document).ready(function()
 		});
 		itemStorage = [];
 	}
-	$("#search-clear").click(clearSearch);
+	$("#search-clear").click(function() { clearSearch(); });
 
 	function addContent(sourceId, externalId)
 	{
