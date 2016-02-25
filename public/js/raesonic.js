@@ -51,6 +51,17 @@ function updateQuality()
 	if(hd) return $("#hd").removeClass("disabled");
 	$("#hd").addClass("disabled");
 }
+function switchActiveItem(forward, manual)
+{
+	var $item = $(".item.active").closest(".item");
+	$item = forward ? $item.next() : $item.prev();
+	if($item.length < 1)
+	{
+		if(!manual) return;
+		$item = forward ? $(".item:first") : $(".item:last");
+	}
+	$(":first-child", $item).click();
+}
 function onPlayerReady(event)
 {
 	youtubeReady = true;
@@ -615,17 +626,6 @@ $(document).ready(function()
 		$("#seekbar-fill").finish();
 	});
 
-	function switchActiveItem(forward, manual)
-	{
-		var $item = $(".item.active").closest(".item");
-		$item = forward ? $item.next() : $item.prev();
-		if($item.length < 1)
-		{
-			if(!manual) return;
-			$item = forward ? $(".item:first") : $(".item:last");
-		}
-		$(":first-child", $item).click();
-	}
 	$("#previous").click(function() { switchActiveItem(false, true); });
 	$("#next").click(function() { switchActiveItem(true, true); });
 
