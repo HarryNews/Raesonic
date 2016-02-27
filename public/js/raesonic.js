@@ -224,7 +224,7 @@ $(document).ready(function()
 			$("#search").val("");
 			$("#search-clear").hide();
 		}
-		$(".item").removeClass("hidden odd even active");
+		$(".item").removeClass("hidden odd even");
 		if(!itemStorage.length) return;
 		$("#items").empty();
 		itemStorage.forEach(function($item)
