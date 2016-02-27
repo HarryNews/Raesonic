@@ -186,6 +186,7 @@ $(document).ready(function()
 				(count % 2) ? $(this).addClass("even") : $(this).addClass("odd");
 				count++;
 			});
+			$("#items").scrollTop(0);
 			return;
 		}
 		var match = /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/.exec(query);
@@ -251,6 +252,7 @@ $(document).ready(function()
 				var itemId = response[3];
 				clearSearch();
 				addItem(0, [trackId, artist, title, itemId, sourceId, externalId], true);
+				$("#items").scrollTop(0);
 				updatePlaylistCounter();
 			}
 		});
@@ -293,6 +295,7 @@ $(document).ready(function()
 		}
 		$("#items").empty();
 		$.each(items, addItem);
+		$("#items").scrollTop(0);
 	}
 
 	function addItem(itemId, item, prepend)
@@ -319,7 +322,6 @@ $(document).ready(function()
 			return;
 		}
 		$("#items").append($item);
-		// todo: scroll to top
 	}
 
 	function updatePlaylistCounter(amount)
@@ -341,7 +343,10 @@ $(document).ready(function()
 		$("#meta-artist").html($item.find(".artist").html());
 		$("#meta-title").html($item.find(".title").html());
 		$("#items .item").removeClass("active");
-		// todo: scroll to track if in playlist view
+		$("#items").animate
+		({
+			scrollTop: Math.max($item.height() * ($item.siblings(":visible").addBack().index($item) - 1), 0)
+		}, 500);
 		if(soundcloudPlayer)
 		{
 			soundcloudPlayer.pause();
