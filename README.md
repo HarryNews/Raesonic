@@ -11,7 +11,20 @@ Raesonic requires [node](http://nodejs.org) and [MySQL 5.6.14+](https://dev.mysq
 
 Database credentials can be edited in [config.js](/config.js).
 
+You can install required packages using
+
 	$ npm install
+	
+[browserify](https://www.npmjs.com/package/browserify) is required to build the client script
+
+	$ npm install -g browserify
+
+To bundle the client-side scripts, use
+
+	$ build
+	
+Now it should be possible to run the server
+
 	$ node raesonic.js
 	
 The application should now be accessible at [localhost:3000](http://localhost:3000).
