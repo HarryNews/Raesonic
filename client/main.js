@@ -17,7 +17,6 @@ $(document).ready(function()
 	Search.init();
 	Tabs.init();
 
-	Player.updateVolume();
 	Playlists.load(Playlists.activeId);
 
 	setTimeout(Loading.complete, 2000);

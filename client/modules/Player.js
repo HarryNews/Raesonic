@@ -24,6 +24,7 @@ Player.play = function()
 		$(".item:first .artist").click();
 		return;
 	}
+
 	if(SoundCloud.player)
 	{
 		SoundCloud.player.play();
@@ -32,11 +33,14 @@ Player.play = function()
 	{
 		if(!YouTube.loaded)
 			return;
+
 		YouTube.player.playVideo();
 	}
+	
+	Player.playing = true;
+
 	$("#play").hide();
 	$("#pause").show();
-	Player.playing = true;
 }
 
 // Pause track playback
@@ -50,12 +54,16 @@ Player.pause = function()
 	{
 		if(!YouTube.loaded)
 			return;
+
 		YouTube.player.pauseVideo();
 	}
+
+	Player.playing = false;
+
 	$("#pause").hide();
 	$("#play").show();
+
 	$("#seekbar-fill").finish();
-	Player.playing = false;
 }
 
 // Toggle playback state
@@ -114,8 +122,10 @@ Player.setItem = function()
 		var externalId = $item.data("externalId");
 		YouTube.player.loadVideoById(externalId);
 		$("#content-image").attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg");
+
 		return;
 	}
+
 	if($item.data("sourceId") == Enum.Source.SoundCloud)
 	{
 		$item.addClass("active");
@@ -134,20 +144,25 @@ Player.setItem = function()
 		SC.get(trackString).then(function(response)
 		{
 			var imageUrl = response.artwork_url || response.user.avatar_url;
+
 			if(imageUrl)
 			{
 				$("#cover")
 					.append(
 						$("<img>")
 							.attr("src", imageUrl.replace("large", "t500x500"))
-							.addClass("back").click(Player.toggle)
+							.addClass("back")
+							.click(Player.toggle)
 					);
+
 				$("#cover")
 					.append(
 						$("<img>")
-						.attr("src", imageUrl.replace("large", "t300x300"))
-						.addClass("front").click(Player.toggle)
+							.attr("src", imageUrl.replace("large", "t300x300"))
+							.addClass("front")
+							.click(Player.toggle)
 					);
+
 				$("#content-image").attr("src", imageUrl.replace("large", "t300x300"));
 			}
 			else
@@ -159,28 +174,25 @@ Player.setItem = function()
 				.append(
 					$("<a>")
 						.attr({ "href": response.permalink_url, "target": "_blank" })
-						.click(function()
-						{
-							$("#pause").click();
-						})
+						.click(Player.pause)
 						.append(
 							$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
 						)
 				);
 
 			$("#cover")
-				.append($("<a>").attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
-				.text(response.user.username).delay(5000).fadeOut(2000))
+				.append(
+					$("<a>")
+						.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
+						.text(response.user.username)
+						.delay(5000)
+						.fadeOut(2000)
+					)
 				.show();
 
-			$("#cover").unbind().hover(function()
-			{
-				$("#creator").stop(true).fadeIn(500);
-			},
-			function()
-			{
-				$("#creator").stop(true).delay(5000).fadeOut(2000);
-			});
+			$("#cover")
+				.unbind()
+				.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
 		});
 
 		SC.stream(trackString).then(function(trackPlayer)
@@ -188,20 +200,7 @@ Player.setItem = function()
 			SoundCloud.player = trackPlayer;
 			SoundCloud.player.play();
 			SoundCloud.player.setVolume(Player.volume / 100);
-
-			SoundCloud.player.on("state-change", function(state)
-			{
-				var playing = (state == "playing" || state == "loading" || state == "seeking");
-				Player.playing = playing;
-				$("#pause").toggle(playing);
-				$("#play").toggle(!playing);
-				if(playing)
-					return;
-				$("#seekbar-fill").finish();
-				if(state != "ended")
-					return;
-				Player.switchItem(Enum.Direction.Next);
-			});
+			SoundCloud.player.on("state-change", SoundCloud.onPlayerStateChange);
 		});
 
 		return;
@@ -508,6 +507,8 @@ Player.init = function()
 	$("#seekbar").mousedown(Player.onSeekbarMouseDown);
 	$("#volume").mousedown(Player.onVolumeMouseDown);
 	$("#speaker").click(Player.onSpeakerClick);
+
+	Player.updateVolume();
 
 	setInterval(Player.onTick, 500);
 }
