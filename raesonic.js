@@ -2,100 +2,23 @@ var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
 
-var async = require("async");
+var config = require("./config.js");
 
-var config = require("./config");
-var db = config.database;
+var controllers = {};
+controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
 
-var Sequelize = require("sequelize");
-var sequelize = new Sequelize(db.name, db.user, db.password,
-{
-	host: db.host,
-	dialect: "mysql",
-	pool:
-	{
-		max: 5,
-		min: 0,
-		idle: 10000
-	},
-	define:
-	{
-		timestamps: false
-	}
-});
+var sequelize = controllers.Sequelize.connection;
+var models = controllers.Sequelize.models;
 
-// Track is a musical creation
-var Track = sequelize.define("Track",
-{
-	trackId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	artist: Sequelize.STRING(50),
-	title: Sequelize.STRING(50)
-});
+// Most of the code below will be moved to controllers on the following commits
 
-// Content is an audio or video content, linked to a Track
-var Content = sequelize.define("Content",
-{
-	contentId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	sourceId: Sequelize.INTEGER(1),
-	externalId: Sequelize.STRING(20)
-});
-Track.hasMany(Content, { foreignKey: "trackId" });
-Content.belongsTo(Track, { foreignKey: "trackId" });
-
-// Playlist is a collection of Items, owned by a User
-var Playlist = sequelize.define("Playlist",
-{
-	playlistId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	userId: Sequelize.INTEGER,
-	name: Sequelize.STRING(50),
-	access: { type: Sequelize.INTEGER(1), defaultValue: 1 }
-});
-
-// Item is a reference to Content
-var Item = sequelize.define("Item",
-{
-	itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true }
-});
-Content.hasMany(Item, { foreignKey: "contentId" });
-Item.belongsTo(Content, { foreignKey: "contentId" });
-Playlist.hasMany(Item, { foreignKey: "playlistId" });
-Item.belongsTo(Playlist, { foreignKey: "playlistId" });
-
-// Relation is a connection between two similar Tracks
-var Relation = sequelize.define("Relation",
-{
-	relationId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	trust: Sequelize.INTEGER,
-	doubt: Sequelize.INTEGER
-});
-Track.hasMany(Relation, { foreignKey: "trackId" });
-Relation.belongsTo(Track, { foreignKey: "trackId" });
-Track.hasMany(Relation, { foreignKey: "linkedId" });
-Relation.belongsTo(Track, { foreignKey: "linkedId" });
-
-// TrackEdit is created when Track information is changed
-var TrackEdit = sequelize.define("TrackEdit",
-{
-	editId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	artist: Sequelize.STRING(50),
-	title: Sequelize.STRING(50),
-	userId: Sequelize.INTEGER,
-	date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
-});
-Track.hasMany(TrackEdit, { foreignKey: "trackId" });
-TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
-
-// ContentLink is created when a Content is linked to a Track
-var ContentLink = sequelize.define("ContentLink",
-{
-	linkId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	userId: Sequelize.INTEGER,
-	date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
-});
-Track.hasMany(ContentLink, { foreignKey: "trackId" });
-ContentLink.belongsTo(Track, { foreignKey: "trackId" });
-Content.hasMany(ContentLink, { foreignKey: "contentId" });
-ContentLink.belongsTo(Content, { foreignKey: "contentId" });
+var Track = models.Track;
+var Content = models.Content;
+var Playlist = models.Playlist;
+var Item = models.Item;
+var Relation = models.Relation;
+var TrackEdit = models.TrackEdit;
+var ContentLink = models.ContentLink;
 
 function linkContent(itemId, trackId, res)
 {
@@ -111,6 +34,7 @@ function linkContent(itemId, trackId, res)
 	.then(function(content)
 	{
 		var previousTrackId = content.trackId;
+
 		Content.update
 		({
 			trackId: trackId
@@ -134,19 +58,25 @@ function linkContent(itemId, trackId, res)
 			})
 			.then(function(relationCount)
 			{
-				if(relationCount > 0) return;
+				if(relationCount > 0)
+					return;
+
 				Content.count
 				({
 					where: { trackId: previousTrackId }
 				})
 				.then(function(contentCount)
 				{
-					if(contentCount > 0) return;
+					if(contentCount > 0)
+						return;
+
 					TrackEdit.destroy({ where: { trackId: previousTrackId } });
 					Track.destroy({ where: { trackId: previousTrackId } });
 				});
 			});
+
 			res.json(trackId);
+
 			// todo: use actual user id
 			ContentLink.create
 			({
