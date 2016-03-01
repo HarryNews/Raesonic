@@ -7,16 +7,13 @@ Raesonic is a [Node.js](http://nodejs.org) web application for listening to favo
 ![Screenshot 2](http://fkids.net/files/projects/raesonic/screenshots/2.png)
 
 # Running Locally
-Raesonic requires [node](http://nodejs.org) and [MySQL 5.6.14+](https://dev.mysql.com/downloads/mysql/) to run. 
+Raesonic requires [node](http://nodejs.org) and [browserify](https://www.npmjs.com/package/browserify) to build. 
 
-Database credentials can be edited in [config.js](/config.js).
+Database and port settings can be changed in the [config.js](/config.js).
 
-You can install required packages using
+Required packages can be installed with
 
 	$ npm install
-	
-[browserify](https://www.npmjs.com/package/browserify) is required to build the client script
-
 	$ npm install -g browserify
 
 To bundle the client-side scripts, use

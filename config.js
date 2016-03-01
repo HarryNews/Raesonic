@@ -6,6 +6,8 @@ module.exports =
 	},
 	database:
 	{
+		// "sqlite" for light development, otherwise use "mysql"
+		dialect: "sqlite",
 		host: "localhost",
 		name: "raesonic",
 		user: "user",

@@ -7,7 +7,8 @@ module.exports = function(config)
 	var sequelize = new Sequelize(db.name, db.user, db.password,
 	{
 		host: db.host,
-		dialect: "mysql",
+		dialect: db.dialect,
+		storage: db.name + ".db",
 		pool:
 		{
 			max: 5,
