@@ -20,13 +20,7 @@ module.exports = function(config)
 		}
 	});
 
-	var models = require("./ModelController.js")(sequelize);
+	require("./ModelController.js")(sequelize);
 
-	var data =
-	{
-		connection: sequelize,
-		models: models
-	};
-
-	return data;
+	return sequelize;
 }
