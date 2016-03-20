@@ -1,6 +1,11 @@
 var Item = require("./Item.js");
 
-var ItemList = {};
+var ItemList =
+{
+	UseStorage: true,
+	Append: false,
+	Prepend: true,
+};
 
 // Set items of the item list
 // If useStorage is true and the storage is empty, it is filled with current items
@@ -18,13 +23,17 @@ ItemList.setItems = function(items, useStorage)
 	}
 
 	$("#items").empty();
-	$.each(items, ItemList.addItem);
+	items.forEach(function addItem(item)
+	{
+		ItemList.addItem(item);
+	});
+
 	$("#items").scrollTop(0);
 }
 
 // Add item to the item list
 // If the boolean is true, item is added to the beginning
-ItemList.addItem = function(itemId, item, prepend)
+ItemList.addItem = function(item, prepend)
 {
 	var Player = require("./Player.js");
 
@@ -87,6 +96,7 @@ ItemList.scrollTo = function($item)
 // Hide items not matching the query
 ItemList.setFilter = function(query)
 {
+	var length = query.length;
 	var count = 0;
 
 	$(".item").each(function()
@@ -96,10 +106,18 @@ ItemList.setFilter = function(query)
 
 		var hidden = true;
 
-		$(this).children().slice(0, 2).each(function()
-		{
-			if($(this).text().toLowerCase().indexOf(query) != -1) hidden = false;
-		});
+		$(this)
+			.children()
+			.slice(0, 2)
+			.each(function()
+			{
+				var field = $(this)
+					.text()
+					.toLowerCase();
+
+				if(field.indexOf(query) != -1)
+					hidden = false;
+			});
 
 		$(this)
 			.toggleClass("hidden", hidden)

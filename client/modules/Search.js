@@ -1,22 +1,13 @@
 var Enum = require("./Enum.js");
 var ItemList = require("./ItemList.js");
 
-var Search = {};
-
-// Request tracks matching the query and fill item list with the results
-Search.getItems = function(query)
+var Search =
 {
-	$.ajax
-	({
-		url: "/search/" + query + "/",
-		type: "GET",
-		success: function(response)
-		{
-			if(response.error) return;
-			var items = response;
-			ItemList.setItems(items, true);
-		}
-	});
+	Regex:
+	{
+		YouTube: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
+		SoundCloud: /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/,
+	},
 }
 
 // Clear search input
@@ -26,56 +17,111 @@ Search.clear = function()
 	$("#search-clear").hide();
 }
 
+// Search item list for the query
+Search.locally = function(query)
+{
+	// Adding a content by URL, update and bail
+	if(query.indexOf("http") == 0)
+	{
+		$("#search-clear").is(":visible")
+			? ItemList.clearFilter()
+			: $("#search-clear").fadeIn(200);
+
+		return;
+	}
+
+	// Empty query, clear filter and bail
+	if(!query.length)
+	{
+		Search.clear();
+		ItemList.clearFilter();
+
+		return;
+	}
+
+	$("#search-clear").fadeIn(200);
+
+	var storage = $("#items").data("storage");
+
+	// Searching entire database, bail out
+	if(storage && storage.length)
+		return;
+
+	ItemList.setFilter(query);
+}
+
+// Search database for the query
+Search.globally = function(query)
+{
+	query = encodeURIComponent(query)
+		.replace(/%20/g, "+");
+
+	$.ajax
+	({
+		url: "/search/" + query + "/",
+		type: "GET",
+		success: function(response)
+		{
+			if(response.error)
+				return;
+
+			var items = response;
+			ItemList.setItems(items, ItemList.UseStorage);
+		}
+	});
+}
+
+// Create content if the query is a content URL
+// Returns true if the query looks like a content URL
+Search.createContent = function(query)
+{
+	var Content = require("./Content.js");
+
+	// Find and create YouTube content
+	var match = Search.Regex.YouTube.exec(query);
+	if(match && match[5])
+	{
+		Content.create(Enum.Source.YouTube, match[5]);
+		return true;
+	}
+
+	// Find and create SoundCloud content
+	match = Search.Regex.SoundCloud.exec(query);
+	if(match && match[2])
+	{
+		SC
+			.resolve(query)
+			.then(function onSoundCloudResolve(response)
+			{
+				Content.create(Enum.Source.SoundCloud, response.id);
+			});
+
+		return true;
+	}
+
+	return false;
+}
+
 // Called upon releasing a key in the search field
 Search.onKeyUp = function(event)
 {
 	var query = $(this).val();
-	var length = query.length;
 
-	if(event.keyCode != 13 || length < 3)
+	// Not an Enter key, or the query is below 3 symbols
+	var isLocalSearch = ( event.keyCode != 13 || query.length < 3 );
+
+	if(isLocalSearch)
 	{
-		if(query.indexOf("http") == 0)
-		{
-			$("#search-clear").is(":visible")
-				? ItemList.clearFilter()
-				: $("#search-clear").fadeIn(200);
-			return;
-		}
-
-		if(!length)
-		{
-			Search.clear();
-			ItemList.clearFilter();
-			return;
-		}
-
-		$("#search-clear").fadeIn(200);
-		var storage = $("#items").data("storage");
-
-		if(storage && storage.length)
-			return;
-
-		ItemList.setFilter(query);
+		Search.locally(query);
 		return;
 	}
-	var Content = require("./Content.js");
-	var match = /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/.exec(query);
-	if(match && match[5])
-	{
-		Content.create(Enum.Source.YouTube, match[5]);
+
+	var isContentUrl = Search.createContent(query);
+
+	if(isContentUrl)
 		return;
-	}
-	match = /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/.exec(query);
-	if(match && match[2])
-	{
-		SC.resolve(query).then(function(response)
-		{
-			Content.create(Enum.Source.SoundCloud, response.id);
-		});
-		return;
-	}
-	query = encodeURIComponent(query).replace(/%20/g, "+");
-	Search.getItems(query);
+
+	Search.globally(query);
 }
 
 // Called upon clicking the search clear button

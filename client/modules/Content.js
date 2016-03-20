@@ -23,7 +23,19 @@ Content.create = function(sourceId, externalId)
 
 			var ItemList = require("./ItemList.js");
 			ItemList.clearFilter();
-			ItemList.addItem(0, [trackId, artist, title, itemId, sourceId, externalId], true);
+
+			ItemList.addItem
+			(
+				[
+					trackId,
+					artist,
+					title,
+					itemId,
+					sourceId,
+					externalId
+				],
+				ItemList.Prepend
+			);
 
 			$("#items").scrollTop(0);
 			Playlists.setTrackCounter($(".item").length);

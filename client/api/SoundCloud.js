@@ -2,14 +2,6 @@ var Enum = require("../modules/Enum.js");
 
 var SoundCloud = {};
 
-SoundCloud.init = function()
-{
-	SC.initialize
-	({
-		client_id: "2f8f0d3feaba4ed1c596902b225aad55"
-	});
-}
-
 // Called upon a player state change
 SoundCloud.onPlayerStateChange = function(state)
 {
@@ -43,6 +35,14 @@ SoundCloud.onCoverHoverIn = function()
 SoundCloud.onCoverHoverOut = function()
 {
 	$("#creator").stop(true).delay(5000).fadeOut(2000);
+}
+
+SoundCloud.init = function()
+{
+	SC.initialize
+	({
+		client_id: "2f8f0d3feaba4ed1c596902b225aad55"
+	});
 }
 
 module.exports = SoundCloud;
