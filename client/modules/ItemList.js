@@ -57,27 +57,53 @@ ItemList.addItem = function(item, prepend)
 
 	if(item[3])
 	{
-		$item.data
-		({
-			"itemId": item[3],
-			"sourceId": item[4],
-			"externalId": item[5]
-		})
-		.append(
-			$("<div>")
-				.addClass("icon edit fa fa-pencil")
-				.click(Item.edit)
-		);
+		$item
+			.data
+			({
+				"itemId": item[3],
+				"sourceId": item[4],
+				"externalId": item[5]
+			})
+			.append(
+				$("<div>")
+					.addClass("icon edit fa fa-pencil")
+					.click(Item.edit)
+			);
 	}
 
 	$item
 		.children()
 		.slice(0, 2)
-		.click(Player.setItem);
+		.click(Item.onClick);
 
 	prepend
 		? $("#items").prepend($item)
 		: $("#items").append($item);
+}
+
+// Return next/previous item
+ItemList.getSwitchItem = function(forward, manual)
+{
+	var $item = $(".item.active").closest(".item");
+
+	$item = forward
+		? $item.next()
+		: $item.prev();
+
+	var itemMissing = ($item.length < 1);
+
+	if(itemMissing)
+	{
+		// Do not cycle item list unless the switch is manual
+		if(!manual)
+			return false;
+
+		$item = forward
+			? $(".item:first")
+			: $(".item:last");
+	}
+
+	return $item;
 }
 
 // Scroll to the specified item
@@ -139,13 +165,19 @@ ItemList.setFilter = function(query)
 // Clear item filtering and restore previous items
 ItemList.clearFilter = function()
 {
+	var hiddenCount = $(".item.hidden").length;
 	$(".item").removeClass("hidden odd even");
+
 	var storage = $("#items").data("storage");
+	var storageInUse = (storage && storage.length);
 
-	ItemList.scrollTo( $(".item.active") );
+	if(!storageInUse)
+	{
+		if(hiddenCount > 0)
+			ItemList.scrollTo( $(".item.active") );
 
-	if(!storage || !storage.length)
 		return;
+	}
 
 	$("#items").empty();
 
@@ -157,6 +189,8 @@ ItemList.clearFilter = function()
 	});
 
 	$("#items").data( "storage", [] );
+
+	ItemList.scrollTo( $(".item.active") );
 }
 
 module.exports = ItemList;

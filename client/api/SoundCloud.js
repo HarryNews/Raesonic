@@ -25,6 +25,13 @@ SoundCloud.onPlayerStateChange = function(state)
 	Player.switchItem(Enum.Direction.Next);
 }
 
+// Called upon audio load error
+SoundCloud.onPlayerError = function()
+{
+	var ContentTab = require("../tabs/ContentTab.js");
+	ContentTab.switchContent(Enum.Direction.Next, true);
+}
+
 // Called when the cursor entered the cover image area
 SoundCloud.onCoverHoverIn = function()
 {

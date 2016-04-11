@@ -1,9 +1,19 @@
+var Enum = require("./Enum.js");
+
 var Item = {};
+
+// Play the specified item
+Item.play = function($item)
+{
+	var Player = require("./Player.js");
+	Player.setItem($item);
+}
 
 // Start editing the item
 Item.edit = function()
 {
 	$item = $(this).parent();
+
 	var trackId = $item.data("trackId");
 	var itemId = $item.data("itemId");
 
@@ -12,31 +22,52 @@ Item.edit = function()
 
 	function updateWindowButton()
 	{
-		var artistChanged = ($("#edit-artist").val() != artist);
-		var titleChanged = ($("#edit-title").val() != title);
-
-		if((trackId != -1) ? (artistChanged || titleChanged) : (artistChanged && titleChanged))
-		{
-			$("#window-button").text("SAVE").unbind().click(function()
-			{
-				Item.rename(itemId, trackId, $("#edit-artist").val(), $("#edit-title").val(), artistChanged, titleChanged);
-			});
-			return;
-		}
-
+		// Without itemId no changes are possible
 		if(!itemId)
 			return $("#window-button").text("");
 
-		$("#window-button").text("REMOVE").unbind().click(function()
+		var artistChanged = ($("#edit-artist").val() != artist);
+		var titleChanged = ($("#edit-title").val() != title);
+
+		// At least one field needs to be different to confirm changes
+		// If there is no track assigned, both fields are required
+		var saveAllowed = (trackId != -1)
+			? (artistChanged || titleChanged)
+			: (artistChanged && titleChanged)
+
+		if(saveAllowed)
 		{
-			Item.remove(itemId);
-		});
+			$("#window-button")
+				.text("SAVE")
+				.unbind()
+				.click(function()
+				{
+					Item.rename(itemId, trackId, $("#edit-artist").val(), $("#edit-title").val(), artistChanged, titleChanged);
+				});
+
+			return;
+		}
+
+		$("#window-button")
+			.text("REMOVE")
+			.unbind()
+			.click(function()
+			{
+				Item.remove(itemId);
+			});
 	}
+	
 	if(trackId != -1)
 	{
-		artist = $(":nth-child(1)", $item).html().replace(/<span>&amp;<\/span>/g, "&+");
-		title = $(":nth-child(2)", $item).html().replace(/<span>(.+)<\/span>/g, "($1)");
+		artist = $(":nth-child(1)", $item)
+			.html()
+			.replace(/<span>&amp;<\/span>/g, "&+");
+
+		title = $(":nth-child(2)", $item)
+			.html()
+			.replace(/<span>(.+)<\/span>/g, "($1)");
 	}
+
 	$("#window")
 		.empty()
 		.append(
@@ -47,7 +78,8 @@ Item.edit = function()
 		.append(
 			$("<input>")
 				.attr({ "id": "edit-artist", "type": "text", "maxlength": 50, "placeholder": "Artist" })
-				.val(artist).keyup(updateWindowButton)
+				.val(artist)
+				.keyup(updateWindowButton)
 		)
 		.append(
 			$("<input>")
@@ -57,15 +89,24 @@ Item.edit = function()
 		)
 		.prepend($("<button>").attr("id", "window-button")
 	);
+
 	updateWindowButton();
-	$("#overlay").hide().removeClass("hidden").fadeIn(200).unbind().click(function(e)
-	{
-		if(e.target != this) return;
-		$(this).fadeOut(200, function()
+
+	$("#overlay")
+		.hide()
+		.removeClass("hidden")
+		.fadeIn(200)
+		.unbind()
+		.click(function(e)
 		{
-			$(this).addClass("hidden");
+			if(e.target != this)
+				return;
+
+			$(this).fadeOut(200, function()
+			{
+				$(this).addClass("hidden");
+			});
 		});
-	});
 }
 
 // Remove specified item from the playlist
@@ -83,7 +124,10 @@ Item.remove = function(itemId)
 			var $item = $(".item").filterByData("itemId", itemId);
 
 			if($item.is(".active"))
-				Player.switchItem(Direction.Next);
+			{
+				var Player = require("./Player.js");
+				Player.switchItem(Enum.Direction.Next);
+			}
 
 			$item.remove();
 			Playlists.setTrackCounter($(".item").length);
@@ -91,6 +135,8 @@ Item.remove = function(itemId)
 		}
 	});
 }
+
+// Change item's artist and/or title information
 Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChanged)
 {
 	var tracksUrl = "/tracks/";
@@ -135,6 +181,13 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			$("#overlay").click();
 		}
 	});
+}
+
+// Called upon clicking the item's artist or title element
+Item.onClick = function()
+{
+	var $item = $(this).parent();
+	Item.play($item);
 }
 
 $.fn.filterByData = function(key, value)

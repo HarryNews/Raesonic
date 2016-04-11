@@ -16,18 +16,24 @@ ContentTab.switchContent = function(forward, skipTrack)
 {
 	var $item = $(".item.active");
 
+	// No active item, disable content switch
 	if(!$item.length)
-		returnContentTab.setSwitchEnabled(false);
+		return ContentTab.setSwitchEnabled(false);
 
 	var content = $("#tab-content").data("content");
 
+	// No content data, request and retry
 	if(!content || !content.length)
 		return Content.request($item.data("trackId"), false, forward, skipTrack);
 
+	// No alternative content has been found
 	if(content.length < 2)
 	{
 		if(skipTrack)
+		{
+			var Player = require("../modules/Player.js");
 			Player.switchItem(Enum.Direction.Next);
+		}
 
 		return ContentTab.setSwitchEnabled(false);
 	}
@@ -35,17 +41,24 @@ ContentTab.switchContent = function(forward, skipTrack)
 	ContentTab.setSwitchEnabled(true);
 	var newContent;
 
+	// Look for content before/after the active one
 	for(var index = 0; index < content.length; index++)
 	{
 		if($item.data("sourceId") == content[index][0] && $item.data("externalId") == content[index][1])
 		{
-			newContent = forward ? content[++index] : content[--index];
+			newContent = forward
+				? content[++index]
+				: content[--index];
+
 			break;
 		}
 	}
 
+	// Cycle to the first/last content
 	if(!newContent)
-		newContent = forward ? content[0] : content[content.length - 1];
+		newContent = forward
+			? content[0]
+			: content[content.length - 1];
 
 	$item
 		.data
@@ -56,7 +69,8 @@ ContentTab.switchContent = function(forward, skipTrack)
 		})
 		.removeClass("active");
 
-	$(":first-child", $item).click();
+	var Item = require("../modules/Item.js");
+	Item.play($item);
 }
 
 // Called upon clicking the previous content button

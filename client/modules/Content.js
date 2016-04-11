@@ -66,6 +66,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack)
 				return $("#tab-content").data( "content", [] );
 
 			$("#tab-content").data("content", response);
+			
 			var Tabs = require("./Tabs.js");
 			Tabs.setActive("content");
 
@@ -88,7 +89,8 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack)
 				})
 				.removeClass("active");
 
-			$(":first-child", $item).click();
+			var Item = require("./Item.js");
+			Item.play($item);
 		}
 	});
 }

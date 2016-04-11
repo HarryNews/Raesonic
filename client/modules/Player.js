@@ -19,11 +19,9 @@ var Player =
 // Start track playback
 Player.play = function()
 {
+	// Play the first item if none are active
 	if(!$(".item.active").length)
-	{
-		$(".item:first .artist").click();
-		return;
-	}
+		return Player.setItem($(".item:first"));
 
 	if(SoundCloud.player)
 	{
@@ -69,21 +67,27 @@ Player.pause = function()
 // Toggle playback state
 Player.toggle = function()
 {
-	Player.playing ? Player.pause() : Player.play();
+	Player.playing
+		? Player.pause()
+		: Player.play();
 }
 
 // Play specified item
-Player.setItem = function()
+Player.setItem = function($item)
 {
-	$item = $(this).parent();
+	// Item doesn't exist, bail out
+	if(!$item.length)
+		return;
 
+	// Item is already active, bail out
 	if($item.is(".active"))
 		return;
 
-	$("#meta-artist").html($item.find(".artist").html());
-	$("#meta-title").html($item.find(".title").html());
+	$("#meta-artist").html( $(":nth-child(1)", $item).html() );
+	$("#meta-title").html( $(":nth-child(2)", $item).html() );
 
 	$("#items .item").removeClass("active");
+	$("#content-image").attr("src", "");
 
 	var ItemList = require("./ItemList.js");
 	ItemList.scrollTo($item);
@@ -95,7 +99,10 @@ Player.setItem = function()
 		SoundCloud.player = null;
 	}
 
-	$("#seekbar-fill").stop(true, true).width(0);
+	$("#seekbar-fill")
+		.stop(true, true)
+		.width(0);
+
 	$("#current-time, #total-time").text("00:00");
 
 	$("#tab-content").data( "content", [] );
@@ -141,59 +148,61 @@ Player.setItem = function()
 
 		var trackString = "/tracks/" + $item.data("externalId");
 
-		SC.get(trackString).then(function(response)
-		{
-			var imageUrl = response.artwork_url || response.user.avatar_url;
-
-			if(imageUrl)
+		SC
+			.get(trackString)
+			.then(function onSoundCloudResponse(response, error)
 			{
-				$("#cover")
-					.append(
-						$("<img>")
-							.attr("src", imageUrl.replace("large", "t500x500"))
-							.addClass("back")
-							.click(Player.toggle)
-					);
+				var imageUrl = response.artwork_url || response.user.avatar_url;
 
-				$("#cover")
-					.append(
-						$("<img>")
-							.attr("src", imageUrl.replace("large", "t300x300"))
-							.addClass("front")
-							.click(Player.toggle)
-					);
-
-				$("#content-image").attr("src", imageUrl.replace("large", "t300x300"));
-			}
-			else
-			{
-				$("#content-image").attr("src", "");
-			}
-
-			$("#cover")
-				.append(
-					$("<a>")
-						.attr({ "href": response.permalink_url, "target": "_blank" })
-						.click(Player.pause)
+				if(imageUrl)
+				{
+					$("#cover")
 						.append(
-							$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
+							$("<img>")
+								.attr("src", imageUrl.replace("large", "t500x500"))
+								.addClass("back")
+								.click(Player.toggle)
+						);
+
+					$("#cover")
+						.append(
+							$("<img>")
+								.attr("src", imageUrl.replace("large", "t300x300"))
+								.addClass("front")
+								.click(Player.toggle)
+						);
+
+					$("#content-image").attr("src", imageUrl.replace("large", "t300x300"));
+				}
+
+				$("#cover")
+					.append(
+						$("<a>")
+							.attr({ "href": response.permalink_url, "target": "_blank" })
+							.click(Player.pause)
+							.append(
+								$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
+							)
+					);
+
+				$("#cover")
+					.append(
+						$("<a>")
+							.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
+							.text(response.user.username)
+							.delay(5000)
+							.fadeOut(2000)
 						)
-				);
+					.show();
 
-			$("#cover")
-				.append(
-					$("<a>")
-						.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
-						.text(response.user.username)
-						.delay(5000)
-						.fadeOut(2000)
-					)
-				.show();
-
-			$("#cover")
-				.unbind()
-				.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
-		});
+				$("#cover")
+					.unbind()
+					.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
+			})
+			.catch(function(error)
+			{
+				SoundCloud.onPlayerError(error);
+			});
 
 		SC.stream(trackString).then(function(trackPlayer)
 		{
@@ -210,18 +219,15 @@ Player.setItem = function()
 // Play next/previous item
 Player.switchItem = function(forward, manual)
 {
-	var $item = $(".item.active").closest(".item");
-	$item = forward ? $item.next() : $item.prev();
+	var ItemList = require("./ItemList.js");
+	var $item = ItemList.getSwitchItem(forward, manual);
 
-	if($item.length < 1)
-	{
-		if(!manual)
-			return;
+	// No switch possible or required
+	if(!$item)
+		return;
 
-		$item = forward ? $(".item:first") : $(".item:last");
-	}
-
-	$(":first-child", $item).click();
+	var Item = require("./Item.js");
+	Item.play($item);
 }
 
 // Enable seekbar animation
