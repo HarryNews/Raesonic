@@ -5,7 +5,7 @@ var config = require("./config.js");
 var server;
 var controllers = {};
 
-// Create sequelize controller
+// Create database controller
 controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
 var sequelize = controllers.Sequelize;
 
@@ -18,6 +18,7 @@ controllers.Track = require("./server/controllers/TrackController.js")(app, sequ
 controllers.Content = require("./server/controllers/ContentController.js")(app, sequelize);
 controllers.Playlist = require("./server/controllers/PlaylistController.js")(app, sequelize);
 controllers.Item = require("./server/controllers/ItemController.js")(app, sequelize);
+controllers.Relation = require("./server/controllers/RelationController.js")(app, sequelize);
 controllers.Search = require("./server/controllers/SearchController.js")(app, sequelize);
 
 // Allow access to the public files
@@ -28,7 +29,9 @@ app.use(function(req, res)
 });
 
 // Create required database tables
-sequelize.sync().then(onSequelizeSync);
+sequelize
+	.sync()
+	.then(onSequelizeSync);
 
 // Sequelize ready for use
 function onSequelizeSync()
@@ -49,7 +52,7 @@ function onSequelizeSync()
 	.then(function()
 	{
 		// Playlist should be created along with the user account
-		// Let's make one for testing purposes for now
+		// Let's make one for testing purposes until auth is done
 		Playlist.findOrCreate
 		({
 			where:

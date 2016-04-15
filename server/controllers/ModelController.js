@@ -8,7 +8,8 @@ module.exports = function(sequelize)
 		Item: require("../models/ItemModel.js")(sequelize),
 		Relation: require("../models/RelationModel.js")(sequelize),
 		TrackEdit: require("../models/TrackEditModel.js")(sequelize),
-		ContentLink: require("../models/ContentLinkModel.js")(sequelize)
+		ContentLink: require("../models/ContentLinkModel.js")(sequelize),
+		RelationVote: require("../models/RelationVoteModel.js")(sequelize),
 	};
 
 	return models;

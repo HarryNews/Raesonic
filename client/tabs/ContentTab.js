@@ -24,7 +24,16 @@ ContentTab.switchContent = function(forward, skipTrack)
 
 	// No content data, request and retry
 	if(!content || !content.length)
-		return Content.request($item.data("trackId"), false, forward, skipTrack);
+	{
+		var current =
+		[
+			$item.data("sourceId"),
+			$item.data("externalId")
+		];
+
+		Content.request($item.data("trackId"), false, forward, skipTrack, current);
+		return ContentTab.setSwitchEnabled(false);
+	}
 
 	// No alternative content has been found
 	if(content.length < 2)
@@ -44,7 +53,8 @@ ContentTab.switchContent = function(forward, skipTrack)
 	// Look for content before/after the active one
 	for(var index = 0; index < content.length; index++)
 	{
-		if($item.data("sourceId") == content[index][0] && $item.data("externalId") == content[index][1])
+		if($item.data("sourceId") == content[index][0] &&
+			$item.data("externalId") == content[index][1])
 		{
 			newContent = forward
 				? content[++index]

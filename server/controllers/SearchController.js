@@ -18,7 +18,7 @@ module.exports = function(app, sequelize)
 			limit: 100,
 			where:
 			{
-				trackId: { $gt: 0 },
+				trackId: { $ne: -1 },
 				$or:
 				[
 					// todo: add combined search

@@ -6,17 +6,17 @@ module.exports = function(sequelize)
 	var Relation = sequelize.define("Relation",
 	{
 		relationId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		trust: Sequelize.INTEGER,
-		doubt: Sequelize.INTEGER
+		trust: { type: Sequelize.INTEGER, defaultValue: 1 },
+		doubt: { type: Sequelize.INTEGER, defaultValue: 0 }
 	});
 
 	var Track = sequelize.models.Track;
 
 	Track.hasMany(Relation, { foreignKey: "trackId" });
-	Relation.belongsTo(Track, { foreignKey: "trackId" });
+	Relation.belongsTo(Track, { foreignKey: "trackId", as: "Track" });
 
-	Track.hasMany(Relation, { foreignKey: "linkedId" });
-	Relation.belongsTo(Track, { foreignKey: "linkedId" });
+	Track.hasMany(Relation, { foreignKey: "linkedId"});
+	Relation.belongsTo(Track, { foreignKey: "linkedId", as: "Linked" });
 	
 	return Relation;
 }

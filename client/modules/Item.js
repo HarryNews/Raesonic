@@ -190,9 +190,4 @@ Item.onClick = function()
 	Item.play($item);
 }
 
-$.fn.filterByData = function(key, value)
-{
-	return $(this).filter(function() { return $(this).data(key) && $(this).data(key) == value; });
-};
-
 module.exports = Item;

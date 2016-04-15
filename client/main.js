@@ -7,7 +7,7 @@ $(document).ready(function()
 	var Playlists = require("./modules/Playlists.js");
 	var Search = require("./modules/Search.js");
 	var Tabs = require("./modules/Tabs.js");
-	var Loading = require("./modules/Loading.js");
+	var Preloader = require("./modules/Preloader.js");
 
 	Player.init();
 
@@ -19,5 +19,10 @@ $(document).ready(function()
 
 	Playlists.load(Playlists.activeId);
 
-	setTimeout(Loading.complete, 2000);
+	setTimeout(Preloader.onLoad, 2000);
 });
+
+$.fn.filterByData = function(key, value)
+{
+	return $(this).filter(function() { return $(this).data(key) && $(this).data(key) == value; });
+};

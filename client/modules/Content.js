@@ -49,27 +49,61 @@ Content.create = function(sourceId, externalId)
 // Request content of the specified track
 // If the assignToItem boolean is true, the content data is saved in the item list
 // If the skipTrack boolean is true, the track is skipped when there's no other content
-Content.request = function(trackId, assignToItem, switchDirection, skipTrack)
+// If no content is available, current content will be placed as the only array element
+Content.request = function(trackId, assignToItem, switchDirection, skipTrack, current)
 {
+	// Unknown track, skip item, clear storage and bail out
+	if(trackId == -1)
+	{
+		$("#tab-content").data( "content", [current] );
+
+		// Skip track if automatic content switch failed
+		if(!assignToItem && skipTrack)
+		{
+			var ContentTab = require("../tabs/ContentTab.js");
+			ContentTab.switchContent(switchDirection, skipTrack);
+		}
+
+		return;
+	}
+
 	$.ajax
 	({
 		url: "/tracks/" + trackId + "/content/",
 		type: "GET",
 		success: function(response)
 		{
-			var $item = $(".item.active");
+			var $item = $(".item").filterByData("trackId", trackId);
 
+			// Couldn't find the item, bail out
 			if(!$item.length)
 				return;
 
+			// Item is no longer active, bail out
+			if(!$item.is(".active"))
+				return;
+
+			// Upon error skip item, clear storage and bail out
 			if(response.error)
-				return $("#tab-content").data( "content", [] );
+			{
+				$("#tab-content").data( "content", [current] );
+
+				// Skip track if automatic content switch failed
+				if(!assignToItem && skipTrack)
+				{
+					var ContentTab = require("../tabs/ContentTab.js");
+					ContentTab.switchContent(switchDirection, skipTrack);
+				}
+
+				return;
+			}
 
 			$("#tab-content").data("content", response);
 			
 			var Tabs = require("./Tabs.js");
 			Tabs.setActive("content");
 
+			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
 			{
 				var ContentTab = require("../tabs/ContentTab.js");
@@ -78,6 +112,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack)
 
 			var nearest = response[0];
 
+			// No content available for this item, bail out
 			if(!nearest)
 				return;
 
