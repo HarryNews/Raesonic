@@ -34,13 +34,17 @@ module.exports = function(app, sequelize)
 				return res.status(500).json({ error: true });
 		});
 
+		// todo: obtain from user's trust
+		var voteValue = 1;
+
 		Relation.findOrCreate
 		({
 			where:
 			{
 				trackId: req.body.trackId,
 				linkedId: req.body.linkedId
-			}
+			},
+			defaults: { trust: voteValue }
 		})
 		.spread(function(relation, created)
 		{
@@ -55,7 +59,7 @@ module.exports = function(app, sequelize)
 			({
 				relationId: relation.relationId,
 				userId: 1,
-				value: 1
+				value: voteValue
 			});
 		});
 	}
@@ -124,6 +128,104 @@ module.exports = function(app, sequelize)
 		});
 	}
 
+	// Update user's vote on a relation
+	RelationController.updateRelationVote = function(req, res)
+	{
+		if(!req.body || !req.body.trackId || !req.body.linkedId || !req.body.vote ||
+			req.body.trackId == req.body.linkedId ||
+			req.body.trackId < 1 || req.body.linkedId < 1 ||
+			(req.body.vote != -1 && req.body.vote != 1))
+			return res.status(500).json({ error: true });
+
+		// todo: return error if not logged in
+
+		Relation.findOne
+		({
+			attributes: ["relationId", "trust", "doubt"],
+			where:
+			{
+				$or:
+				[
+					{
+						trackId: req.body.trackId,
+						linkedId: req.body.linkedId
+					},
+					{
+						trackId: req.body.linkedId,
+						linkedId: req.body.trackId
+					}
+				]
+			}
+		})
+		.then(function(relation)
+		{
+			// Relation doesn't exist, nothing to vote on
+			if(!relation)
+				return res.status(500).json({ error: true });
+
+			// todo: obtain multiplier from user's trust
+			var voteValue = 1 * req.body.vote;
+
+			// todo: use actual user id
+			RelationVote.findOrCreate
+			({
+				attributes: ["value"],
+				where:
+				{
+					relationId: relation.relationId,
+					userId: 1
+				},
+				defaults: { value: voteValue }
+			})
+			.spread(function(vote, created)
+			{
+				// New vote created, update relation and bail out
+				if(created)
+					return RelationController.updateRelationTrust(relation, voteValue, res);
+
+				// Revert trust changes from the previous vote
+				(vote.value > 0)
+					? relation.trust = relation.trust - vote.value
+					: relation.doubt = relation.doubt + vote.value;
+
+				// Add current vote and apply trust changes
+				RelationController.updateRelationTrust(relation, voteValue, res);
+
+				// todo: use actual user id
+				RelationVote.update
+				({
+					value: voteValue
+				},
+				{
+					where:
+					{
+						relationId: relation.relationId,
+						userId: 1
+					}
+				});
+			});
+		});
+	}
+
+	// Apply vote changes to a relation
+	RelationController.updateRelationTrust = function(relation, voteValue, res)
+	{
+		(voteValue > 0)
+			? relation.trust = relation.trust + voteValue
+			: relation.doubt = relation.doubt - voteValue;
+
+		Relation.update
+		({
+			trust: relation.trust,
+			doubt: relation.doubt
+		},
+		{
+			where: { relationId: relation.relationId }
+		});
+
+		res.json(relation.trust - relation.doubt);
+	}
+
 	app
 		.route("/relations")
 			.post(RelationController.createRelation);
@@ -131,6 +233,10 @@ module.exports = function(app, sequelize)
 	app
 		.route("/tracks/:trackId(\\d+)/relations")
 			.get(RelationController.getTrackRelations);
+
+	app
+		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)")
+			.put(RelationController.updateRelationVote);
 
 	return RelationController;
 }

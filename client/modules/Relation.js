@@ -13,6 +13,9 @@ Relation.create = function(trackId, linkedId)
 			if(response.error)
 				return;
 
+			var relationId = response;
+
+			// todo: save relationId in a storage
 			// todo: show message about successful creation
 		}
 	});
@@ -30,8 +33,30 @@ Relation.request = function(trackId)
 			if(response.error)
 				return;
 
-			// todo: save response in a storage
+			var relations = response;
+
+			// todo: save relations in a storage
 			// todo: switch to the list view of track relations
+		}
+	});
+}
+
+// Update vote on a relation between two tracks
+Relation.vote = function(trackId, linkedId, vote)
+{
+	$.ajax
+	({
+		url: "/tracks/" + trackId + "/relations/" + linkedId,
+		type: "PUT",
+		data: { trackId: trackId, linkedId: linkedId, vote: vote },
+		success: function(response)
+		{
+			if(response.error)
+				return;
+
+			var trust = response;
+			
+			// todo: update relation's trust display
 		}
 	});
 }
