@@ -10,6 +10,7 @@ module.exports = function(sequelize)
 		TrackEdit: require("../models/TrackEditModel.js")(sequelize),
 		ContentLink: require("../models/ContentLinkModel.js")(sequelize),
 		RelationVote: require("../models/RelationVoteModel.js")(sequelize),
+		RelationFlag: require("../models/RelationFlagModel.js")(sequelize),
 	};
 
 	return models;

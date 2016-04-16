@@ -5,6 +5,7 @@ module.exports = function(app, sequelize)
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
 	var RelationVote = sequelize.models.RelationVote;
+	var RelationFlag = sequelize.models.RelationFlag;
 
 	// Create a relation between two tracks
 	RelationController.createRelation = function(req, res)
@@ -71,6 +72,7 @@ module.exports = function(app, sequelize)
 
 		Relation.all
 		({
+			attributes: ["trust", "doubt"],
 			where:
 			{
 				$or:
@@ -109,7 +111,8 @@ module.exports = function(app, sequelize)
 					([
 						relations[index].Linked.trackId,
 						relations[index].Linked.artist,
-						relations[index].Linked.title
+						relations[index].Linked.title,
+						(relations[index].trust - relations[index].doubt)
 					]);
 
 					continue;
@@ -120,7 +123,8 @@ module.exports = function(app, sequelize)
 				([
 					relations[index].Track.trackId,
 					relations[index].Track.artist,
-					relations[index].Track.title
+					relations[index].Track.title,
+					(relations[index].trust - relations[index].doubt)
 				]);
 			}
 			
@@ -131,9 +135,9 @@ module.exports = function(app, sequelize)
 	// Update user's vote on a relation
 	RelationController.updateRelationVote = function(req, res)
 	{
-		if(!req.body || !req.body.trackId || !req.body.linkedId || !req.body.vote ||
-			req.body.trackId == req.body.linkedId ||
-			req.body.trackId < 1 || req.body.linkedId < 1 ||
+		if(!req.body || !req.body.vote ||
+			req.params.trackId == req.params.linkedId ||
+			req.params.trackId < 1 || req.params.linkedId < 1 ||
 			(req.body.vote != -1 && req.body.vote != 1))
 			return res.status(500).json({ error: true });
 
@@ -147,12 +151,12 @@ module.exports = function(app, sequelize)
 				$or:
 				[
 					{
-						trackId: req.body.trackId,
-						linkedId: req.body.linkedId
+						trackId: req.params.trackId,
+						linkedId: req.params.linkedId
 					},
 					{
-						trackId: req.body.linkedId,
-						linkedId: req.body.trackId
+						trackId: req.params.linkedId,
+						linkedId: req.params.trackId
 					}
 				]
 			}
@@ -207,6 +211,49 @@ module.exports = function(app, sequelize)
 		});
 	}
 
+	// Create a flag marking relation as inappropriate
+	RelationController.createRelationFlag = function(req, res)
+	{
+		// todo: return error if not logged in
+
+		Relation.findOne
+		({
+			attributes: ["relationId"],
+			where:
+			{
+				$or:
+				[
+					{
+						trackId: req.params.trackId,
+						linkedId: req.params.linkedId
+					},
+					{
+						trackId: req.params.linkedId,
+						linkedId: req.params.trackId
+					}
+				]
+			}
+		})
+		.then(function(relation)
+		{
+			// Relation doesn't exist, nothing to flag
+			if(!relation)
+				return res.status(500).json({ error: true });
+
+			// todo: use actual user id
+			RelationFlag.findOrCreate
+			({
+				where:
+				{
+					relationId: relation.relationId,
+					userId: 1
+				}
+			});
+			
+			res.json( [] );
+		});
+	}
+
 	// Apply vote changes to a relation
 	RelationController.updateRelationTrust = function(relation, voteValue, res)
 	{
@@ -235,8 +282,12 @@ module.exports = function(app, sequelize)
 			.get(RelationController.getTrackRelations);
 
 	app
-		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)")
+		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/votes")
 			.put(RelationController.updateRelationVote);
+
+	app
+		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags")
+			.post(RelationController.createRelationFlag);
 
 	return RelationController;
 }

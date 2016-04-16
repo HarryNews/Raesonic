@@ -46,9 +46,9 @@ Relation.vote = function(trackId, linkedId, vote)
 {
 	$.ajax
 	({
-		url: "/tracks/" + trackId + "/relations/" + linkedId,
+		url: "/tracks/" + trackId + "/relations/" + linkedId + "/votes/",
 		type: "PUT",
-		data: { trackId: trackId, linkedId: linkedId, vote: vote },
+		data: { vote: vote },
 		success: function(response)
 		{
 			if(response.error)
@@ -57,6 +57,23 @@ Relation.vote = function(trackId, linkedId, vote)
 			var trust = response;
 			
 			// todo: update relation's trust display
+		}
+	});
+}
+
+// Flag a relation between two tracks as inappropriate
+Relation.flag = function(trackId, linkedId, vote)
+{
+	$.ajax
+	({
+		url: "/tracks/" + trackId + "/relations/" + linkedId + "/flags/",
+		type: "POST",
+		success: function(response)
+		{
+			if(response.error)
+				return;
+			
+			// todo: update flag icon state to active
 		}
 	});
 }

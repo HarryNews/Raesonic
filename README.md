@@ -24,5 +24,8 @@ Now it should be possible to run the server
 	
 The application should now be accessible at [localhost:3000](http://localhost:3000).
 
+# Contributions
+Join us on [Discord](http://discord.me/Raesonic), if you have any questions, suggestions or feedback.
+
 # License
 [Mozilla Public License 2.0](http://opensource.org/licenses/MPL-2.0)
