@@ -4,7 +4,9 @@ module.exports = function(app, sequelize)
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
+	var Item = sequelize.models.Item;
 	var Relation = sequelize.models.Relation;
+	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
 
 	// Retrieve content linked with a track
@@ -93,8 +95,11 @@ module.exports = function(app, sequelize)
 						if(contentCount > 0)
 							return;
 
-						TrackEdit.destroy({ where: { trackId: previousTrackId } });
-						Track.destroy({ where: { trackId: previousTrackId } });
+						var params = { where: { trackId: previousTrackId } };
+
+						TrackEdit.destroy(params);
+						ContentLink.destroy(params);
+						Track.destroy(params);
 					});
 				});
 

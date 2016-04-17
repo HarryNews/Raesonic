@@ -1,6 +1,6 @@
 module.exports = function(app, sequelize)
 {
-	var ContentController = require("./ContentController.js");
+	var ContentController = require("./ContentController.js")(app, sequelize);
 
 	var TrackController = {};
 
