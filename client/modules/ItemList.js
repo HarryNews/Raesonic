@@ -122,6 +122,8 @@ ItemList.scrollTo = function($item)
 // Hide items not matching the query
 ItemList.setFilter = function(query)
 {
+	query = query.toLowerCase();
+
 	var length = query.length;
 	var count = 0;
 
