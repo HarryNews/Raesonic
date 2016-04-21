@@ -278,6 +278,7 @@ Player.onTick = function()
 		date.setMilliseconds(SoundCloud.player.options.duration);
 		$("#total-time").text( date.toISOString().substr(14, 5) );
 
+		// Audio is not playing, bail out
 		if(!SoundCloud.player.isPlaying())
 			return;
 
@@ -299,14 +300,18 @@ Player.onTick = function()
 	if(!YouTube.loaded)
 		return;
 
-	if(YouTube.player.getPlayerState() == -1)
+	var youtubeState = YouTube.player.getPlayerState();
+
+	// Playback hasn't started or is cued, don't update total time
+	if(youtubeState == -1 || youtubeState == YT.PlayerState.CUED)
 		return;
 
-	var duration = YouTube.player.getDuration() || 60;
+	var duration = YouTube.player.getDuration() || 0;
 	date.setSeconds(duration);
 	$("#total-time").text( date.toISOString().substr(14, 5) );
 
-	if(YouTube.player.getPlayerState() != YT.PlayerState.PLAYING)
+	// Video is not playing, bail out
+	if(youtubeState != YT.PlayerState.PLAYING)
 		return;
 
 	$("#seekbar-fill")
