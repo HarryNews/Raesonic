@@ -99,7 +99,7 @@ Player.setItem = function($item)
 		SoundCloud.player = null;
 	}
 
-	$("#seekbar-fill")
+	$("#seekbar-buffer, #seekbar-fill")
 		.stop(true, true)
 		.width(0);
 
@@ -236,7 +236,7 @@ Player.unfreezeSeekbar = function()
 	Player.freezeSeekbar = false;
 }
 
-// Update volume of external players and the volume bar elements
+// Update volume of the external players and the volume bar elements
 Player.updateVolume = function()
 {
 	if(SoundCloud.player)
@@ -248,8 +248,6 @@ Player.updateVolume = function()
 		YouTube.player.setVolume(Player.volume);
 	}
 
-	$("#volume-fill").width(Player.volume + "%");
-
 	var state = "up";
 
 	if(Player.volume == 0)
@@ -258,11 +256,10 @@ Player.updateVolume = function()
 		state = "down";
 
 	$("#speaker").attr("class", "icon " + state + " fa fa-volume-" + state);
+	$("#muted").toggle(Player.muted);
 
-	if(Player.muted)
-		return $("#muted").show();
-
-	$("#muted").hide();
+	$("#volume-on").toggle(!Player.muted && Player.volume > 0);
+	$("#volume-fill").width(Player.volume + "%");
 }
 
 // Called every 500ms
@@ -275,6 +272,24 @@ Player.onTick = function()
 
 	if(SoundCloud.player)
 	{
+		// If there is a more convenient way to get loaded fraction, please let me know
+		if(SoundCloud.player.controller)
+		{
+			var html5Audio = SoundCloud.player.controller._html5Audio;
+
+			if(typeof html5Audio != "undefined" && html5Audio.buffered.length)
+			{
+				var buffered = html5Audio.buffered.end(0) * 1000;
+
+				$("#seekbar-buffer")
+					.stop(true, true)
+					.animate(
+						{"width": (buffered / SoundCloud.player.options.duration * 100) + "%"},
+						500, "linear"
+					);
+			}
+		}
+
 		date.setMilliseconds(SoundCloud.player.options.duration);
 		$("#total-time").text( date.toISOString().substr(14, 5) );
 
@@ -305,6 +320,13 @@ Player.onTick = function()
 	// Playback hasn't started or is cued, don't update total time
 	if(youtubeState == -1 || youtubeState == YT.PlayerState.CUED)
 		return;
+
+	$("#seekbar-buffer")
+		.stop(true, true)
+		.animate(
+			{"width": (YouTube.player.getVideoLoadedFraction() * 100) + "%"},
+			500, "linear"
+		);
 
 	var duration = YouTube.player.getDuration() || 0;
 	date.setSeconds(duration);

@@ -657,7 +657,7 @@ body
 
 .bar
 {
-	background-color: #575269;
+	background-color: #433E54;
 	width: 100%;
 	height: 5px;
 	display: inline-block;
@@ -665,6 +665,14 @@ body
 	cursor: pointer;
 	border-radius: 2px;
 	margin: 0 3px;
+	position: relative;
+}
+.bar .buffer
+{
+	background-color: #575269;
+	width: 0%;
+	height: 5px;
+	border-radius: 2px;
 }
 .bar .fill
 {
@@ -672,7 +680,8 @@ body
 	width: 0%;
 	height: 5px;
 	border-radius: 2px;
-	position: relative;
+	position: absolute;
+	top: 0;
 	overflow: visible !important;
 }
 .bar .fill::after
@@ -691,6 +700,10 @@ body
 {
 	width: 15%;
 	margin: 0;
+}
+#volume-on
+{
+	width: 100%;
 }
 
 #speaker
