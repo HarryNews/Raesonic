@@ -70,12 +70,18 @@ ContentTab.switchContent = function(forward, skipTrack)
 			? content[0]
 			: content[content.length - 1];
 
+	var initialContent = $item.data("initial");
+	var isInitialContent = (newContent[0] == initialContent[0] &&
+		newContent[1] == initialContent[1]);
+
+	$("#content-replace").toggleClass("active", !isInitialContent)
+
 	$item
 		.data
 		({
 			sourceId: newContent[0],
 			externalId: newContent[1],
-			unsaved: true
+			unsaved: !isInitialContent
 		})
 		.removeClass("active");
 
@@ -95,10 +101,77 @@ ContentTab.onNextClick = function()
 	ContentTab.switchContent(Enum.Direction.Next);
 }
 
+// Called upon clicking the replace content button
+ContentTab.onReplaceClick = function()
+{
+	var $button = $(this);
+
+	// Inactive button, bail out
+	if(!$button.is(".active"))
+		return;
+
+	var $item = $(".item.active");
+
+	// No active item, remove active class and bail out
+	if(!$item.length)
+		return $button.removeClass("active");
+
+	$.ajax
+	({
+		url: "/items/" + $item.data("itemId") + "/content/",
+		type: "PUT",
+		data:
+		{
+			sourceId: $item.data("sourceId"),
+			externalId: $item.data("externalId")
+		},
+		success: function(response)
+		{
+			if(response.error)
+				return;
+
+			var content = $("#tab-content").data("content") || [];
+
+			// Look for index of the newly selected content
+			for(var index = 0; index < content.length; index++)
+			{
+				if($item.data("sourceId") == content[index][0] &&
+					$item.data("externalId") == content[index][1])
+				{
+					// Look for index of the initial content
+					var initialContent = $item.data("initial");
+					for(var secondIndex = 0; secondIndex < content.length; secondIndex++)
+					{
+						if(initialContent[0] == content[secondIndex][0] &&
+							initialContent[1] == content[secondIndex][1])
+						{
+							// Update initial content values
+							$item.data("initial", content[index]);
+
+							// Swap the initial and the newly selected content
+							content[secondIndex] = content[index];
+							content[index] = initialContent;
+
+							$("#tab-content").data("content", content);
+
+							break;
+						}
+					}
+
+					break;
+				}
+			}
+
+			$button.removeClass("active");
+		}
+	});
+}
+
 ContentTab.init = function()
 {
 	$("#content-previous").click(ContentTab.onPreviousClick);
 	$("#content-next").click(ContentTab.onNextClick);
+	$("#content-replace").click(ContentTab.onReplaceClick);
 }
 
 module.exports = ContentTab;

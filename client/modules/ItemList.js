@@ -62,7 +62,12 @@ ItemList.addItem = function(item, prepend)
 			({
 				"itemId": item[3],
 				"sourceId": item[4],
-				"externalId": item[5]
+				"externalId": item[5],
+				"initial":
+				[
+					item[4],
+					item[5]
+				]
 			})
 			.append(
 				$("<div>")

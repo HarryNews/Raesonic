@@ -104,10 +104,18 @@ Player.setItem = function($item)
 		.width(0);
 
 	$("#current-time, #total-time").text("00:00");
+	
+	if($item.data("itemId") != $("#tab-content").data("itemId"))
+	{
+		$("#tab-content").data
+		({
+			"itemId": $item.data("itemId"),
+			"content": []
+		});
 
-	$("#tab-content").data( "content", [] );
-	var ContentTab = require("../tabs/ContentTab.js");
-	ContentTab.setSwitchEnabled(true);
+		var ContentTab = require("../tabs/ContentTab.js");
+		ContentTab.setSwitchEnabled(true);
+	}
 
 	if(!$item.data("sourceId"))
 	{

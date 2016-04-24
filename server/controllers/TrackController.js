@@ -42,7 +42,7 @@ module.exports = function(app, sequelize)
 			})
 			.then(function(content)
 			{
-				// Link content with the track we found/created
+				// Link content with the track we've found/created
 				Content.update
 				({
 					trackId: track.trackId

@@ -574,12 +574,37 @@ body
 	justify-content: center;
 	flex-flow: wrap;
 	flex-wrap: wrap;
+	position: relative;
 }
 #tabs .column-item div
 {
 	width: 100%;
 	display: flex;
 	justify-content: center;
+}
+#tabs .column-item .overlay-icon
+{
+	position: absolute;
+	top: calc(50% - 25px);
+	left: 0;
+	color: #FFF;
+	font-size: 50px;
+	text-shadow: rgba(0, 0, 0, 1) 0 0 4px;
+	opacity: 0;
+	cursor: default;
+	-webkit-transition: all ease-out 200ms;
+	-moz-transition: all ease-out 200ms;
+	-o-transition: all ease-out 200ms;
+	transition: all ease-out 200ms;
+}
+#tabs .column-item .overlay-icon:hover
+{
+	opacity: 0.6;
+}
+#tabs .column-item .overlay-icon.active
+{
+	opacity: 1;
+	cursor: pointer;
 }
 #tabs .column img
 {

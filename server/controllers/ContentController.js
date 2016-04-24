@@ -39,6 +39,42 @@ module.exports = function(app, sequelize)
 		});
 	}
 
+	// Change content of the playlist item
+	ContentController.setItemContent = function(req, res)
+	{
+		if(!req.body || !req.body.sourceId || !req.body.externalId)
+			return res.status(500).json({ error: true });
+		
+		// todo: return error if not logged in
+		// todo: include playlist and check user for ownership
+
+		Content.findOne
+		({
+			attributes: ["contentId"],
+			where:
+			{
+				sourceId: req.body.sourceId,
+				externalId: req.body.externalId
+			}
+		})
+		.then(function(content)
+		{
+			// Content doesn't exist, nothing to link item with
+			if(!content)
+				return res.status(500).json({ error: true });
+
+			Item.update
+			({
+				contentId: content.contentId
+			},
+			{
+				where: { itemId: req.params.itemId }
+			})
+			
+			res.json( [] );
+		});
+	}
+
 	// Find content by the itemId, and link it to the track with specified trackId
 	ContentController.linkContent = function(itemId, trackId, res)
 	{
@@ -119,6 +155,10 @@ module.exports = function(app, sequelize)
 	app
 		.route("/tracks/:trackId(\\d+)/content")
 			.get(ContentController.getTrackContent);
+
+	app
+		.route("/items/:itemId(\\d+)/content")
+			.put(ContentController.setItemContent);
 
 	return ContentController;
 }
