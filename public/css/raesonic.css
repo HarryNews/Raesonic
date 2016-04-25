@@ -584,8 +584,10 @@ body
 }
 #tabs .column-item .overlay-icon
 {
+	height: 85px;
+	padding-top: calc(50% - 25px);
 	position: absolute;
-	top: calc(50% - 25px);
+	top: calc(50% - 60px);
 	left: 0;
 	color: #FFF;
 	font-size: 50px;
@@ -606,10 +608,25 @@ body
 	opacity: 1;
 	cursor: pointer;
 }
-#tabs .column img
+#tabs .column .image-wrapper
 {
-	max-width: 125px;
-	max-height: 125px;
+	width: 120px !important;
+	height: 120px;
+	background: #000;
+	position: relative;
+	overflow: hidden;
+	-webkit-filter: brightness(0.4);
+}
+#tabs .column .image-wrapper img
+{
+	width: 120px;
+}
+#tabs .column .image-wrapper img.wide
+{
+	position: absolute;
+	left: 0;
+	top: 12%;
+	object-fit: contain;
 }
 #tabs .column .meta
 {

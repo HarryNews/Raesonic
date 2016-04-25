@@ -87,7 +87,7 @@ Player.setItem = function($item)
 	$("#meta-title").html( $(":nth-child(2)", $item).html() );
 
 	$("#items .item").removeClass("active");
-	$("#content-image").attr("src", "");
+	$("#content-image").empty();
 
 	var ItemList = require("./ItemList.js");
 	ItemList.scrollTo($item);
@@ -136,7 +136,13 @@ Player.setItem = function($item)
 
 		var externalId = $item.data("externalId");
 		YouTube.player.loadVideoById(externalId);
-		$("#content-image").attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg");
+
+		$("#content-image")
+			.append(
+				$("<img>")
+					.attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg")
+					.addClass("wide")
+			);
 
 		return;
 	}
@@ -180,7 +186,10 @@ Player.setItem = function($item)
 								.click(Player.toggle)
 						);
 
-					$("#content-image").attr("src", imageUrl.replace("large", "t300x300"));
+					$("#content-image")
+						.append(
+							$("<img>").attr("src", imageUrl.replace("large", "t300x300"))
+						);
 				}
 
 				$("#cover")
