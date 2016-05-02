@@ -84,20 +84,25 @@ YouTube.togglePlaybackQuality = function()
 // Update playback quality of the player
 YouTube.updatePlaybackQuality = function()
 {
-	YouTube.player.setPlaybackQuality(hd ? "hd720" : "large");
+	YouTube.player.setPlaybackQuality(YouTube.hd ? "hd720" : "large");
 	$("#hd").toggleClass("disabled", !YouTube.hd);
 }
 
-// Called when the cursor entered the video area
+// Called when the cursor has entered the video area
 YouTube.onVideoHoverIn = function()
 {
-	$("#hd").stop(true).fadeIn(200);
+	$("#hd")
+		.stop(true)
+		.fadeIn(200);
 }
 
-// Called when the cursor left the video area
+// Called when the cursor has left the video area
 YouTube.onVideoHoverOut = function()
 {
-	$("#hd").stop(true).delay(5000).fadeOut(2000);
+	$("#hd")
+		.stop(true)
+		.delay(5000)
+		.fadeOut(2000);
 }
 
 YouTube.init = function()
