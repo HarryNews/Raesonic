@@ -118,7 +118,7 @@ Item.remove = function(itemId)
 		type: "DELETE",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var $item = $(".item").filterByData("itemId", itemId);
@@ -139,30 +139,43 @@ Item.remove = function(itemId)
 // Change item's artist and/or title information
 Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChanged)
 {
-	var tracksUrl = "/tracks/";
-
-	if(trackId != -1)
-		tracksUrl = tracksUrl + trackId + "/";
-
 	var trackExists = (trackId != -1);
+
+	var tracksUrl = trackExists
+		? "/tracks/" + trackId + "/"
+		: "/tracks/";
+
+	var data = trackExists
+		?
+		{
+			itemId: itemId,
+			artist: { name: artist, changed: artistChanged},
+			title: { name: title, changed: titleChanged },
+		}
+		:
+		{
+			itemId: itemId,
+			artist: artist,
+			title: title,
+		};
 
 	$.ajax
 	({
 		url: tracksUrl,
 		type: trackExists ? "PUT" : "POST",
-		data:
-		{
-			itemId: itemId,
-			artist: trackExists ? [artist, artistChanged] : artist,
-			title: trackExists ? [title, titleChanged] : title
-		},
+		data: JSON.stringify(data),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var trackId = response;
-			var externalId = $(".item").filterByData("itemId", itemId).data("externalId");
+
+			var externalId = $(".item")
+				.filterByData("itemId", itemId)
+				.data("externalId");
+
 			var $items = $(".item").filterByData("externalId", externalId)
 
 			artist = artist.replace(/&\+/g, "<span>&</span>");

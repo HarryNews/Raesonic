@@ -120,14 +120,15 @@ ContentTab.onReplaceClick = function()
 	({
 		url: "/items/" + $item.data("itemId") + "/content/",
 		type: "PUT",
-		data:
-		{
+		data: JSON.stringify
+		({
 			sourceId: $item.data("sourceId"),
 			externalId: $item.data("externalId")
-		},
+		}),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var content = $("#tab-content").data("content") || [];

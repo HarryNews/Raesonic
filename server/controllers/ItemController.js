@@ -1,6 +1,10 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
 	var ItemController = {};
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Item = sequelize.models.Item;
 
@@ -18,15 +22,14 @@ module.exports = function(app, sequelize)
 		{
 			// Haven't deleted any rows
 			if(amount < 1)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 
 			res.json( [] );
 		});
 	}
 
-	app
-		.route("/items/:itemId(\\d+)")
-			.delete(ItemController.removeItem);
+	app.route("/items/:itemId(\\d+)",
+		ItemController.removeItem);
 
 	return ItemController;
 }

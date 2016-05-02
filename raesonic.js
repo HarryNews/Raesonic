@@ -1,7 +1,10 @@
 var express = require("express");
 var app = express();
+
 var bodyParser = require("body-parser");
+var paperwork = require("paperwork");
 var config = require("./config.js");
+
 var server;
 var controllers = {};
 
@@ -9,17 +12,24 @@ var controllers = {};
 controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
 var sequelize = controllers.Sequelize;
 
-// Parse application/x-www-form-urlencoded and application/json
-app.use(bodyParser.urlencoded({ extended: false }));
+// Parse body of json requests
 app.use(bodyParser.json());
 
-// Create remaining controllers
-controllers.Track = require("./server/controllers/TrackController.js")(app, sequelize);
-controllers.Content = require("./server/controllers/ContentController.js")(app, sequelize);
-controllers.Playlist = require("./server/controllers/PlaylistController.js")(app, sequelize);
-controllers.Item = require("./server/controllers/ItemController.js")(app, sequelize);
-controllers.Relation = require("./server/controllers/RelationController.js")(app, sequelize);
-controllers.Search = require("./server/controllers/SearchController.js")(app, sequelize);
+// Bundle the core components
+var core =
+{
+	app: app,
+	sequelize: sequelize,
+	paperwork: paperwork,
+};
+
+// Create workspace controllers
+controllers.Track = require("./server/controllers/TrackController.js")(core);
+controllers.Content = require("./server/controllers/ContentController.js")(core);
+controllers.Playlist = require("./server/controllers/PlaylistController.js")(core);
+controllers.Item = require("./server/controllers/ItemController.js")(core);
+controllers.Relation = require("./server/controllers/RelationController.js")(core);
+controllers.Search = require("./server/controllers/SearchController.js")(core);
 
 // Allow access to the public files
 app.use(express.static(__dirname + "/public"));

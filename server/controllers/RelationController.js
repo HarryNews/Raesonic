@@ -1,6 +1,10 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
 	var RelationController = {};
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
@@ -10,10 +14,8 @@ module.exports = function(app, sequelize)
 	// Create a relation between two tracks
 	RelationController.createRelation = function(req, res)
 	{
-		if(!req.body || !req.body.trackId || !req.body.linkedId ||
-			req.body.trackId == req.body.linkedId ||
-			req.body.trackId < 1 || req.body.linkedId < 1)
-			return res.status(500).json({ error: true });
+		if(req.body.trackId == req.body.linkedId)
+			return res.status(400).json({ errors: ["self-link not allowed"] });
 
 		// todo: return error if not logged in
 
@@ -32,7 +34,7 @@ module.exports = function(app, sequelize)
 		{
 			// At least one of the tracks is missing to create a relation
 			if(amount != 2)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 		});
 
 		// todo: obtain from user's trust
@@ -135,12 +137,6 @@ module.exports = function(app, sequelize)
 	// Update user's vote on a relation
 	RelationController.updateRelationVote = function(req, res)
 	{
-		if(!req.body || !req.body.vote ||
-			req.params.trackId == req.params.linkedId ||
-			req.params.trackId < 1 || req.params.linkedId < 1 ||
-			(req.body.vote != -1 && req.body.vote != 1))
-			return res.status(500).json({ error: true });
-
 		// todo: return error if not logged in
 
 		Relation.findOne
@@ -165,7 +161,7 @@ module.exports = function(app, sequelize)
 		{
 			// Relation doesn't exist, nothing to vote on
 			if(!relation)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 
 			// todo: obtain multiplier from user's trust
 			var voteValue = 1 * req.body.vote;
@@ -238,7 +234,7 @@ module.exports = function(app, sequelize)
 		{
 			// Relation doesn't exist, nothing to flag
 			if(!relation)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 
 			// todo: use actual user id
 			RelationFlag.findOrCreate
@@ -273,21 +269,38 @@ module.exports = function(app, sequelize)
 		res.json(relation.trust - relation.doubt);
 	}
 
-	app
-		.route("/relations")
-			.post(RelationController.createRelation);
+	// Returns true if an id is in valid range
+	RelationController.validateId = function(id)
+	{
+		return (id > 0);
+	}
 
-	app
-		.route("/tracks/:trackId(\\d+)/relations")
-			.get(RelationController.getTrackRelations);
+	// Returns true if the vote is valid
+	RelationController.validateVote = function(vote)
+	{
+		return (vote == -1 || vote == 1);
+	}
 
-	app
-		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/votes")
-			.put(RelationController.updateRelationVote);
+	app.post("/relations",
+		paperwork.accept
+		({
+			trackId: paperwork.all(Number, RelationController.validateId),
+			linkedId: paperwork.all(Number, RelationController.validateId),
+		}),
+		RelationController.createRelation);
 
-	app
-		.route("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags")
-			.post(RelationController.createRelationFlag);
+	app.get("/tracks/:trackId(\\d+)/relations",
+		RelationController.getTrackRelations);
+
+	app.put("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/votes",
+		paperwork.accept
+		({
+			vote: paperwork.all(Number, RelationController.validateVote),
+		}),
+		RelationController.updateRelationVote);
+
+	app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
+		RelationController.createRelationFlag);
 
 	return RelationController;
 }

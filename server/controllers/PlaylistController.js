@@ -1,6 +1,12 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
 	var PlaylistController = {};
+
+	var ContentController = require("./ContentController.js")(core);
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -10,23 +16,26 @@ module.exports = function(app, sequelize)
 	// Create a new playlist with specified name
 	PlaylistController.createPlaylist = function(req, res)
 	{
-		if(!req.body || !req.body.name || req.body.name.length > 50)
-			return res.status(500).json({ error: true });
-
 		// todo: return error if not logged in
-		// todo: return error if playlist name contains restricted characters
-		// todo: use actual user id
 
+		// todo: use actual user id
 		Playlist.create
 		({
 			name: req.body.name,
 			userId: 1
+		})
+		.then(function(playlist)
+		{
+			res.json(playlist.playlistId);
 		});
 	}
 
 	// Retrieve playlist info and items
 	PlaylistController.getPlaylist = function(req, res)
 	{
+		// todo: return error if not logged in
+		// todo: return error if user has no access to playlist
+
 		Playlist.findOne
 		({
 			attributes: ["name", "access"],
@@ -53,8 +62,6 @@ module.exports = function(app, sequelize)
 			if(!playlist)
 				return res.json( [] );
 
-			// todo: return error if user has no access to playlist
-
 			var response = [ [playlist.name, playlist.access], [] ];
 
 			var items = playlist.Items;
@@ -79,10 +86,6 @@ module.exports = function(app, sequelize)
 	// Add content as a new playlist item
 	PlaylistController.addItem = function(req, res)
 	{
-		if(!req.body || !req.body.sourceId || !req.body.externalId)
-			return res.status(500).json({ error: true });
-
-		// todo: check sourceId to be 1/2, make sure externalId is a string/int in valid range
 		// todo: return error if not logged in
 		// todo: return error if playlist does not belong to that user
 
@@ -138,14 +141,34 @@ module.exports = function(app, sequelize)
 		});
 	}
 
-	app
-		.route("/playlists")
-			.post(PlaylistController.createPlaylist);
+	// Returns true if playlist name is valid
+	PlaylistController.validateName = function(name)
+	{
+		if(name.length < 3 || name.length > 50)
+			return false;
 
-	app
-		.route("/playlists/:playlistId(\\d+)")
-			.get(PlaylistController.getPlaylist)
-			.post(PlaylistController.addItem);
+		// todo: restrict to a-zA-Z0-9!@#$%^&*();:_-= (estimate)
+
+		return true;
+	}
+	
+	app.post("/playlists",
+		paperwork.accept
+		({
+			name: paperwork.all(String, PlaylistController.validateName),
+		}),
+		PlaylistController.createPlaylist);
+
+	app.get("/playlists/:playlistId(\\d+)",
+		PlaylistController.getPlaylist);
+	
+	app.post("/playlists/:playlistId(\\d+)",
+		paperwork.accept
+		({
+			sourceId: paperwork.all(Number, ContentController.validateSourceId),
+			externalId: paperwork.all(String, ContentController.validateExternalId),
+		}),
+		PlaylistController.addItem);
 
 	return PlaylistController;
 }

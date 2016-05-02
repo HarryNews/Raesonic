@@ -1,8 +1,12 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
-	var ContentController = require("./ContentController.js")(app, sequelize);
-
 	var TrackController = {};
+
+	var ContentController = require("./ContentController.js")(core);
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -13,10 +17,6 @@ module.exports = function(app, sequelize)
 	// Assign an existing track with specified name to the item's content, or create a new one
 	TrackController.createTrack = function(req, res)
 	{
-		if(!req.body || !req.body.itemId || !req.body.artist || !req.body.title ||
-			req.body.artist.length > 50 || req.body.title.length > 50)
-			return res.status(500).json({ error: true });
-
 		// todo: return error if not logged in
 		// todo: return error if artist/title contain restricted characters
 
@@ -80,25 +80,14 @@ module.exports = function(app, sequelize)
 	// Attempt to edit track information of the item's content without ruining anything
 	TrackController.editTrack = function(req, res)
 	{
-		if(!req.body)
-			return res.status(500).json({ error: true });
+		var artist = req.body.artist;
+		var title = req.body.title;
 
-		var artist = req.body["artist[]"];
-		var title = req.body["title[]"];
-
-		if(!req.body.itemId || ((!artist || artist.length != 2) &&
-			(!title || title.length != 2)) || artist[0].length > 50 || title[0].length > 50)
-			return res.status(500).json({ error: true });
-
-		artist = { text: artist[0], changed: artist[1] == "true" }
-		title = { text: title[0], changed: title[1] == "true" }
-
-		// No trust for the client-side huh
+		// Nothing to change, bail out
 		if(!artist.changed && !title.changed)
-			return;
+			return res.status(400).json({ errors: ["no changes"] });
 
 		// todo: return error if not logged in
-		// todo: return error if artist/title contain restricted characters
 		// todo: return error if not enough trust to submit edits
 
 		// Count amount of content the track is linked with
@@ -110,7 +99,7 @@ module.exports = function(app, sequelize)
 		{
 			// Track isn't linked with anything, editing it shouldn't be possible at all
 			if(!amount)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 
 			var changes = {};
 
@@ -120,18 +109,18 @@ module.exports = function(app, sequelize)
 			if(amount == 1)
 			{
 				if(artist.changed)
-					changes.artist = artist.text;
+					changes.artist = artist.name;
 
 				if(title.changed)
-					changes.title = title.text;
+					changes.title = title.name;
 
 				// Check if a track with that name already exists
 				Track.findOne
 				({
 					where:
 					{
-						artist: artist.text,
-						title: title.text
+						artist: artist.name,
+						title: title.name
 					}
 				})
 				.then(function(track)
@@ -164,8 +153,8 @@ module.exports = function(app, sequelize)
 			// There are more than one content linked to this track, so we link the
 			// existing track with that name, or create a new one if it doesn't exist
 
-			changes.artist = artist.text;
-			changes.title = title.text;
+			changes.artist = artist.name;
+			changes.title = title.name;
 
 			Track.findOrCreate
 			({
@@ -187,13 +176,88 @@ module.exports = function(app, sequelize)
 		});
 	}
 
-	app
-		.route("/tracks/")
-			.post(TrackController.createTrack);
+	// Delete a track if it has no references
+	TrackController.removeUnusedTrack = function(trackId)
+	{
+		Relation.count
+		({
+			where:
+			{
+				$or:
+				[
+					{ trackId: trackId },
+					{ linkedId: trackId }
+				]
+			}
+		})
+		.then(function(relationCount)
+		{
+			// Track has relations, keep it
+			if(relationCount > 0)
+				return;
 
-	app
-		.route("/tracks/:trackId(\\d+)")
-			.put(TrackController.editTrack);
+			// Count content linked with the track
+			Content.count
+			({
+				where: { trackId: trackId }
+			})
+			.then(function(contentCount)
+			{
+				// Track is linked to a content, keep it
+				if(contentCount > 0)
+					return;
+
+				var params = { where: { trackId: trackId } };
+
+				TrackEdit.destroy(params);
+				ContentLink.destroy(params);
+				Track.destroy(params);
+			});
+		});
+	}
+
+	// Returns true if an id is in valid range
+	TrackController.validateId = function(id)
+	{
+		return (id > 0);
+	}
+
+	// Returns true if track artist/title is valid
+	TrackController.validateName = function(name)
+	{
+		if(name.length < 3 || name.length > 50)
+			return false;
+
+		// todo: restrict to a-zA-Z0-9!&()_+- (estimate)
+
+		return true;
+	}
+
+	app.post("/tracks",
+		paperwork.accept
+		({
+			itemId: paperwork.all(Number, TrackController.validateId),
+			artist: paperwork.all(String, TrackController.validateName),
+			title: paperwork.all(String, TrackController.validateName),
+		}),
+		TrackController.createTrack);
+
+	app.put("/tracks/:trackId(\\d+)",
+		paperwork.accept
+		({
+			itemId: paperwork.all(Number, TrackController.validateId),
+			artist:
+			{
+				name: paperwork.all(String, TrackController.validateName),
+				changed: Boolean,
+			},
+			title:
+			{
+				name: paperwork.all(String, TrackController.validateName),
+				changed: Boolean,
+			},
+		}),
+		TrackController.editTrack);
 
 	return TrackController;
 }

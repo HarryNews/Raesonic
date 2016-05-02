@@ -7,10 +7,11 @@ Relation.create = function(trackId, linkedId)
 	({
 		url: "/relations/",
 		type: "POST",
-		data: { trackId: trackId, linkedId: linkedId },
+		data: JSON.stringify({ trackId: trackId, linkedId: linkedId }),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var relationId = response;
@@ -30,7 +31,7 @@ Relation.request = function(trackId)
 		type: "GET",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var relations = response;
@@ -48,10 +49,11 @@ Relation.vote = function(trackId, linkedId, vote)
 	({
 		url: "/tracks/" + trackId + "/relations/" + linkedId + "/votes/",
 		type: "PUT",
-		data: { vote: vote },
+		data: JSON.stringify({ vote: vote }),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var trust = response;
@@ -62,7 +64,7 @@ Relation.vote = function(trackId, linkedId, vote)
 }
 
 // Flag a relation between two tracks as inappropriate
-Relation.flag = function(trackId, linkedId, vote)
+Relation.flag = function(trackId, linkedId)
 {
 	$.ajax
 	({
@@ -70,7 +72,7 @@ Relation.flag = function(trackId, linkedId, vote)
 		type: "POST",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 			
 			// todo: update flag icon state to active

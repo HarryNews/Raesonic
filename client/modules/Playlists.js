@@ -3,10 +3,30 @@ Playlists =
 	activeId: 1 // todo: use playlistId from current URL or user playlists
 }
 
-// Set track counter to specified value
-Playlists.setTrackCounter = function(count)
+// Create a new playlist with the name provided
+Playlists.create = function(name)
 {
-	$("#playlist-details").text(count + " tracks");
+	var ItemList = require("./ItemList.js");
+	
+	$.ajax
+	({
+		url: "/playlists/",
+		type: "POST",
+		data: JSON.stringify({ name: name }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var playlistId = response;
+
+			Playlists.activeId = playlistId;
+			$("#playlist-name").text(name);
+			ItemList.setItems( [] );
+			Playlists.setTrackCounter(0);
+		}
+	});
 }
 
 // Retrieve playlist tracks and metadata
@@ -20,7 +40,7 @@ Playlists.load = function(playlistId)
 		type: "GET",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var playlist = response[0];
@@ -31,6 +51,12 @@ Playlists.load = function(playlistId)
 			Playlists.setTrackCounter(items.length);
 		}
 	});
+}
+
+// Set track counter to specified value
+Playlists.setTrackCounter = function(count)
+{
+	$("#playlist-details").text(count + " tracks");
 }
 
 module.exports = Playlists;

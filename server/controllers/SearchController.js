@@ -1,16 +1,17 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
 	var SearchController = {};
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Track = sequelize.models.Track;
 
 	// Search for tracks matching the query
 	SearchController.getResults = function(req, res)
 	{
-		if(req.params.query.length > 150)
-			return res.status(500).json({ error: true });
-
-		var query = "%" + decodeURIComponent( req.params.query.replace(/\+/g, "%20") ) + "%";
+		var query = "%" + req.body.query.replace(/%/g, "/%") + "%";
 
 		Track.all
 		({
@@ -49,9 +50,21 @@ module.exports = function(app, sequelize)
 		});
 	}
 
-	app
-		.route("/search/:query")
-			.get(SearchController.getResults);
+	// Returns true if the search query is valid
+	SearchController.validateQuery = function(query)
+	{
+		if(query.length < 3 || query.length > 150)
+			return false;
+
+		return true;
+	}
+
+	app.post("/search",
+		paperwork.accept
+		({
+			query: paperwork.all(String, SearchController.validateQuery)
+		}),
+		SearchController.getResults);
 
 	return SearchController;
 }

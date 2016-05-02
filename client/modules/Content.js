@@ -10,10 +10,11 @@ Content.create = function(sourceId, externalId)
 	({
 		url: "/playlists/" + Playlists.activeId + "/",
 		type: "POST",
-		data: { sourceId: sourceId, externalId: externalId },
+		data: JSON.stringify({ sourceId: sourceId, externalId: externalId }),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var trackId = response[0];
@@ -84,7 +85,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 				return;
 
 			// Upon error skip item, clear storage and bail out
-			if(response.error)
+			if(response.errors)
 			{
 				$("#tab-content").data( "content", [current] );
 

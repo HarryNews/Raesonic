@@ -1,6 +1,17 @@
-module.exports = function(app, sequelize)
+module.exports = function(core)
 {
-	var ContentController = {};
+	var ContentController =
+	{
+		Regex:
+		{
+			YouTube: /^[A-Za-z0-9_-]{11}$/,
+			SoundCloud: /^\d+$/,
+		}
+	};
+
+	var app = core.app;
+	var sequelize = core.sequelize;
+	var paperwork = core.paperwork;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -42,9 +53,6 @@ module.exports = function(app, sequelize)
 	// Change content of the playlist item
 	ContentController.setItemContent = function(req, res)
 	{
-		if(!req.body || !req.body.sourceId || !req.body.externalId)
-			return res.status(500).json({ error: true });
-		
 		// todo: return error if not logged in
 		// todo: include playlist and check user for ownership
 
@@ -61,7 +69,7 @@ module.exports = function(app, sequelize)
 		{
 			// Content doesn't exist, nothing to link item with
 			if(!content)
-				return res.status(500).json({ error: true });
+				return res.status(500).json({ errors: ["internal error"] });
 
 			Item.update
 			({
@@ -103,41 +111,8 @@ module.exports = function(app, sequelize)
 			.then(function()
 			{
 				// Remove the previously linked track if it has no references
-				Relation.count
-				({
-					where:
-					{
-						$or:
-						[
-							{ trackId: previousTrackId },
-							{ linkedId: previousTrackId }
-						]
-					}
-				})
-				.then(function(relationCount)
-				{
-					// Track has relations, keep it
-					if(relationCount > 0)
-						return;
-
-					// Count content linked with the track
-					Content.count
-					({
-						where: { trackId: previousTrackId }
-					})
-					.then(function(contentCount)
-					{
-						// Track is linked to a content, keep it
-						if(contentCount > 0)
-							return;
-
-						var params = { where: { trackId: previousTrackId } };
-
-						TrackEdit.destroy(params);
-						ContentLink.destroy(params);
-						Track.destroy(params);
-					});
-				});
+				var TrackController = require("./TrackController.js")(core);
+				TrackController.removeUnusedTrack(previousTrackId);
 
 				res.json(trackId);
 
@@ -152,13 +127,32 @@ module.exports = function(app, sequelize)
 		});
 	}
 
-	app
-		.route("/tracks/:trackId(\\d+)/content")
-			.get(ContentController.getTrackContent);
+	// Returns true if sourceId is valid
+	ContentController.validateSourceId = function(sourceId)
+	{
+		return (sourceId == 1 || sourceId == 2);
+	};
 
-	app
-		.route("/items/:itemId(\\d+)/content")
-			.put(ContentController.setItemContent);
+	// Returns true if externalId is in valid range
+	ContentController.validateExternalId = function(externalId)
+	{
+		if(!ContentController.Regex.YouTube.test(externalId) &&
+			!ContentController.Regex.SoundCloud.test(externalId))
+			return false;
+
+		return true;
+	}
+
+	app.get("/tracks/:trackId(\\d+)/content",
+		ContentController.getTrackContent);
+
+	app.put("/items/:itemId(\\d+)/content",
+		paperwork.accept
+		({
+			sourceId: paperwork.all(Number, ContentController.validateSourceId),
+			externalId: paperwork.all(String, ContentController.validateExternalId),
+		}),
+		ContentController.setItemContent);
 
 	return ContentController;
 }

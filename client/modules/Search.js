@@ -53,16 +53,15 @@ Search.locally = function(query)
 // Search database for the query
 Search.globally = function(query)
 {
-	query = encodeURIComponent(query)
-		.replace(/%20/g, "+");
-
 	$.ajax
 	({
-		url: "/search/" + query + "/",
-		type: "GET",
+		url: "/search/",
+		type: "POST",
+		data: JSON.stringify({ query: query }),
+		contentType: "application/json",
 		success: function(response)
 		{
-			if(response.error)
+			if(response.errors)
 				return;
 
 			var items = response;
@@ -81,7 +80,8 @@ Search.createContent = function(query)
 	var match = Search.Regex.YouTube.exec(query);
 	if(match && match[5])
 	{
-		Content.create(Enum.Source.YouTube, match[5]);
+		var externalId = match[5];
+		Content.create(Enum.Source.YouTube, externalId);
 		return true;
 	}
 
@@ -93,7 +93,8 @@ Search.createContent = function(query)
 			.resolve(query)
 			.then(function onSoundCloudResolve(response)
 			{
-				Content.create(Enum.Source.SoundCloud, response.id);
+				var externalId = response.id.toString();
+				Content.create(Enum.Source.SoundCloud, externalId);
 			});
 
 		return true;
