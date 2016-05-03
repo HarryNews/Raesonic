@@ -6,8 +6,7 @@ module.exports = function(sequelize)
 	var ContentLink = sequelize.define("ContentLink",
 	{
 		linkId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		userId: Sequelize.INTEGER,
-		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
 	});
 
 	var Track = sequelize.models.Track;
@@ -17,6 +16,10 @@ module.exports = function(sequelize)
 	var Content = sequelize.models.Content;
 	Content.hasMany(ContentLink, { foreignKey: "contentId" });
 	ContentLink.belongsTo(Content, { foreignKey: "contentId" });
+	
+	var User = sequelize.models.User;
+	User.hasMany(ContentLink, { foreignKey: "userId" });
+	ContentLink.belongsTo(User, { foreignKey: "userId" });
 	
 	return ContentLink;
 }

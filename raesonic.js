@@ -1,8 +1,11 @@
 var express = require("express");
 var app = express();
 
-var bodyParser = require("body-parser");
 var paperwork = require("paperwork");
+var passport = require("passport");
+var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
+var session = require("express-session")
 var config = require("./config.js");
 
 var server;
@@ -12,8 +15,19 @@ var controllers = {};
 controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
 var sequelize = controllers.Sequelize;
 
-// Parse body of json requests
+// Use middleware for requests, cookies, sessions etc.
 app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(session
+({
+	secret: config.server.secret,
+	resave: false,
+	saveUninitialized: true
+}))
+
+// Initialize passport and restore session if available
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Bundle the core components
 var core =
@@ -21,9 +35,12 @@ var core =
 	app: app,
 	sequelize: sequelize,
 	paperwork: paperwork,
+	passport: passport,
+	config: config,
 };
 
 // Create workspace controllers
+controllers.User = require("./server/controllers/UserController.js")(core);
 controllers.Track = require("./server/controllers/TrackController.js")(core);
 controllers.Content = require("./server/controllers/ContentController.js")(core);
 controllers.Playlist = require("./server/controllers/PlaylistController.js")(core);
@@ -31,7 +48,7 @@ controllers.Item = require("./server/controllers/ItemController.js")(core);
 controllers.Relation = require("./server/controllers/RelationController.js")(core);
 controllers.Search = require("./server/controllers/SearchController.js")(core);
 
-// Allow access to the public files
+// Use public folder as the public application root
 app.use(express.static(__dirname + "/public"));
 app.use(function(req, res)
 {

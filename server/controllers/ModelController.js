@@ -2,6 +2,7 @@ module.exports = function(sequelize)
 {
 	var models =
 	{
+		User: require("../models/UserModel.js")(sequelize),
 		Track: require("../models/TrackModel.js")(sequelize),
 		Content: require("../models/ContentModel.js")(sequelize),
 		Playlist: require("../models/PlaylistModel.js")(sequelize),

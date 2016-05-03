@@ -3,6 +3,7 @@ var SoundCloud = require("./api/SoundCloud.js");
 
 $(document).ready(function()
 {
+	var Account = require("./modules/Account.js");
 	var Player = require("./modules/Player.js");
 	var Playlists = require("./modules/Playlists.js");
 	var Search = require("./modules/Search.js");
@@ -16,6 +17,8 @@ $(document).ready(function()
 
 	Search.init();
 	Tabs.init();
+
+	// Account.create("Nickname", "Password")
 
 	Playlists.load(Playlists.activeId);
 

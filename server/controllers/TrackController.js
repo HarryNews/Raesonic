@@ -7,6 +7,7 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -88,7 +89,7 @@ module.exports = function(core)
 			return res.status(400).json({ errors: ["no changes"] });
 
 		// todo: return error if not logged in
-		// todo: return error if not enough trust to submit edits
+		// todo: return error if not enough reputation to submit edits
 
 		// Count amount of content the track is linked with
 		Content.count
@@ -222,7 +223,7 @@ module.exports = function(core)
 		return (id > 0);
 	}
 
-	// Returns true if track artist/title is valid
+	// Returns true if the track artist or title is valid
 	TrackController.validateName = function(name)
 	{
 		if(name.length < 3 || name.length > 50)

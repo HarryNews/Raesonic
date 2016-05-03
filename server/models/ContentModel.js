@@ -7,7 +7,7 @@ module.exports = function(sequelize)
 	{
 		contentId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		sourceId: Sequelize.INTEGER(1),
-		externalId: Sequelize.STRING(20)
+		externalId: Sequelize.STRING(20),
 	});
 	
 	var Track = sequelize.models.Track;

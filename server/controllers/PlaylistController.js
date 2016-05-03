@@ -7,6 +7,7 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -33,7 +34,6 @@ module.exports = function(core)
 	// Retrieve playlist info and items
 	PlaylistController.getPlaylist = function(req, res)
 	{
-		// todo: return error if not logged in
 		// todo: return error if user has no access to playlist
 
 		Playlist.findOne
@@ -86,7 +86,9 @@ module.exports = function(core)
 	// Add content as a new playlist item
 	PlaylistController.addItem = function(req, res)
 	{
-		// todo: return error if not logged in
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
 		// todo: return error if playlist does not belong to that user
 
 		// First we need to find the content or create one if it doesn't exist

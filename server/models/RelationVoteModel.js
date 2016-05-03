@@ -6,14 +6,17 @@ module.exports = function(sequelize)
 	var RelationVote = sequelize.define("RelationVote",
 	{
 		voteId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		userId: Sequelize.INTEGER,
 		value: Sequelize.INTEGER(1),
-		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
 	});
 
 	var Relation = sequelize.models.Relation;
 	Relation.hasMany(RelationVote, { foreignKey: "relationId" });
 	RelationVote.belongsTo(Relation, { foreignKey: "relationId" });
+	
+	var User = sequelize.models.User;
+	User.hasMany(RelationVote, { foreignKey: "userId" });
+	RelationVote.belongsTo(User, { foreignKey: "userId" });
 	
 	return RelationVote;
 }

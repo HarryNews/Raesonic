@@ -8,13 +8,16 @@ module.exports = function(sequelize)
 		editId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		artist: Sequelize.STRING(50),
 		title: Sequelize.STRING(50),
-		userId: Sequelize.INTEGER,
-		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
 	});
 	
 	var Track = sequelize.models.Track;
 	Track.hasMany(TrackEdit, { foreignKey: "trackId" });
 	TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
+	
+	var User = sequelize.models.User;
+	User.hasMany(TrackEdit, { foreignKey: "userId" });
+	TrackEdit.belongsTo(User, { foreignKey: "userId" });
 	
 	return TrackEdit;
 }

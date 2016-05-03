@@ -6,13 +6,16 @@ module.exports = function(sequelize)
 	var RelationFlag = sequelize.define("RelationFlag",
 	{
 		flagId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		userId: Sequelize.INTEGER,
-		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+		date: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
 	});
 
 	var Relation = sequelize.models.Relation;
 	Relation.hasMany(RelationFlag, { foreignKey: "relationId" });
 	RelationFlag.belongsTo(Relation, { foreignKey: "relationId" });
+	
+	var User = sequelize.models.User;
+	User.hasMany(RelationFlag, { foreignKey: "userId" });
+	RelationFlag.belongsTo(User, { foreignKey: "userId" });
 	
 	return RelationFlag;
 }
