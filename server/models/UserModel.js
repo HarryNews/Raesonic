@@ -7,9 +7,9 @@ module.exports = function(sequelize)
 	{
 		userId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		nickname: Sequelize.STRING(30),
-		password: Sequelize.STRING,
+		password: Sequelize.STRING(50),
 		email: Sequelize.STRING,
-		reputation: Sequelize.INTEGER,
+		reputation: { type: Sequelize.INTEGER, defaultValue: 0 },
 	});
 	
 	return User;

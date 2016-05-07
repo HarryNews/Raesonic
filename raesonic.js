@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session
 ({
-	secret: config.server.secret,
+	secret: config.session.secret,
 	resave: false,
 	saveUninitialized: true
 }))
@@ -75,20 +75,6 @@ function onSequelizeSync()
 			artist: "Unknown Artist",
 			title: "Unknown Track"
 		}
-	})
-	.then(function()
-	{
-		// Playlist should be created along with the user account
-		// Let's make one for testing purposes until auth is done
-		Playlist.findOrCreate
-		({
-			where:
-			{
-				playlistId: 1,
-				userId: 1,
-				name: "Main"
-			}
-		});
 	});
 
 	server = app.listen(config.server.port, onRaesonicInit);

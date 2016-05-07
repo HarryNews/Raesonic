@@ -18,7 +18,7 @@ $(document).ready(function()
 	Search.init();
 	Tabs.init();
 
-	// Account.create("Nickname", "Password")
+	// Account.create("Nickname", "Password");
 
 	Playlists.load(Playlists.activeId);
 

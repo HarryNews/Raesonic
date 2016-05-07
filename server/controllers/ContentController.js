@@ -78,7 +78,7 @@ module.exports = function(core)
 			},
 			{
 				where: { itemId: req.params.itemId }
-			})
+			});
 			
 			res.json( [] );
 		});

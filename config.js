@@ -2,8 +2,14 @@ module.exports =
 {
 	server:
 	{
-		port: 3000,
-		secret: "secret",
+		port: 3000
+	},
+	session:
+	{
+		secret: "secret"
+	},
+	crypto:
+	{
 		salt: "salt"
 	},
 	database:

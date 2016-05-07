@@ -10,54 +10,67 @@ module.exports = function(core)
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
 	var passport = core.passport;
+	var config = core.config;
 
 	var User = sequelize.models.User;
+	var Playlist = sequelize.models.Playlist;
 
 	// Handles the account creation requests
-	passport.use("signup", new PassportStrategy(
-		function(nickname, password, next)
+	passport.use("signup", new PassportStrategy
+	({
+		usernameField: "nickname",
+	},
+	function(nickname, password, next)
+	{
+		password = UserController.encyptPassword(password);
+
+		User.findOrCreate
+		({
+			where: { nickname: nickname },
+			defaults: { password: password },
+		})
+		.spread(function(user, created)
 		{
-			password = UserController.encyptPassword(password);
+			if(!created)
+				return next( new Error("Nickname is not available.") );
 
-			User.findOrCreate
+			Playlist.create
 			({
-				where: { nickname: nickname },
-				defaults: { password: password },
+				name: "Main",
+				userId: user.userId,
 			})
-			.spread(function(user, created)
+			.then(function(playlist)
 			{
-				if(!created)
-					next( new Error("Nickname is not available.") );
-
-				// todo: call this after the main playlist has been created
 				next(null, user);
 			});
-		}
-	));
+		});
+	}));
 
 	// Handles the authentication requests
-	passport.use("login", new PassportStrategy(
-		function(nickname, password, next)
+	passport.use("login", new PassportStrategy
+	({
+		usernameField: "nickname", 
+	},
+	function(nickname, password, next)
+	{
+		User.findOne
+		({
+			where: { nickname: nickname },
+		})
+		.then(function(user)
 		{
-			User.findByNickname(nickname, function(err, user)
-			{
-				// Error has occurred
-				if(err)
-					return next(err);
+			// Invalid nickname
+			if(!user)
+				return next(null, false);
 
-				// Invalid nickname
-				if(!user)
-					return next(null, false);
+			// Invalid password
+			if(!UserController.equalPasswords(password, user.password))
+				return next(null, false);
 
-				// Invalid password
-				if(!UserController.equalPasswords(password, user.password))
-					return next(null, false);
-
-				// Authentication successful
-				return next(null, user);
-			});
-		}
-	));
+			// Authentication successful
+			return next(null, user);
+		});
+	}));
 
 	// Configure storing session
 	passport.serializeUser(function(user, next)
@@ -68,9 +81,13 @@ module.exports = function(core)
 	// Configure retrieving session
 	passport.deserializeUser(function(userId, next)
 	{
-		User.findByUserId(userId, function(err, user)
+		User.findOne
+		({
+			where: { userId: userId },
+		})
+		.then(function(user)
 		{
-			next(err, user);
+			next(null, user);
 		});
 	});
 
@@ -83,7 +100,7 @@ module.exports = function(core)
 	// Returns an encrypted password
 	UserController.encyptPassword = function(password)
 	{
-		return Crypto.PBKDF2(password, config.salt, { iterations: 1000 }).toString();
+		return Crypto.PBKDF2(password, config.crypto.salt, { iterations: 1000 }).toString();
 	}
 
 	// Returns true if the passwords match
