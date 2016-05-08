@@ -10,6 +10,7 @@ $(document).ready(function()
 	var Tab = require("./modules/Tab.js");
 	var Preloader = require("./modules/Preloader.js");
 
+	Account.init();
 	Player.init();
 
 	YouTube.init();
@@ -17,8 +18,6 @@ $(document).ready(function()
 
 	Search.init();
 	Tab.init();
-
-	// Account.create("Nickname", "Password");
 
 	setTimeout(Preloader.onLoad, 2000);
 });

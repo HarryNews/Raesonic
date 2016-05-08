@@ -4,6 +4,7 @@ module.exports = function(core)
 
 	var PassportStrategy = require("passport-local").Strategy;
 	var Crypto = require("crypto-js");
+	var Gravatar = require("gravatar");
 	var PlaylistController = require("./PlaylistController.js")(core);
 
 	var app = core.app;
@@ -94,7 +95,27 @@ module.exports = function(core)
 	// Called upon logout request
 	UserController.onLogout = function(req, res)
 	{
-		req.logout();
+		req.session.destroy();
+	}
+
+	UserController.getAccount = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		var user = req.user;
+		var response =
+		[
+			user.userId,
+			user.nickname,
+			Gravatar.url(
+				user.email || user.nickname,
+				{ s: "43", r: "pg", d: "retro" }
+			),
+			user.reputation
+		];
+
+		res.json(response);
 	}
 
 	// Returns an encrypted password
@@ -151,8 +172,11 @@ module.exports = function(core)
 			successRedirect: "/",
 		}));
 
-	app.get("/logout",
+	app.post("/logout",
 		UserController.onLogout);
+
+	app.get("/own/account",
+		UserController.getAccount);
 
 	return UserController;
 }
