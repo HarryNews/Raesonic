@@ -1,14 +1,18 @@
 var Content = {};
 
-// Add specified content to current playlist
+// Add specified content to the active playlist
 // If the content does not exist, it will be created
 Content.create = function(sourceId, externalId)
 {
-	var Playlists = require("./Playlists.js");
+	var Playlist = require("./Playlist.js");
+
+	// No active playlist, bail out
+	if(!Playlist.active)
+		return;
 
 	$.ajax
 	({
-		url: "/playlists/" + Playlists.activeId + "/",
+		url: "/playlists/" + Playlist.active.playlistId + "/",
 		type: "POST",
 		data: JSON.stringify({ sourceId: sourceId, externalId: externalId }),
 		contentType: "application/json",
@@ -39,7 +43,7 @@ Content.create = function(sourceId, externalId)
 			);
 
 			$("#items").scrollTop(0);
-			Playlists.setTrackCounter($(".item").length);
+			Playlist.setTrackCounter($(".item").length);
 
 			var Search = require("./Search.js");
 			Search.clear();
@@ -101,8 +105,8 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 			$("#tab-content").data("content", response);
 			
-			var Tabs = require("./Tabs.js");
-			Tabs.setActive("content");
+			var Tab = require("./Tab.js");
+			Tab.setActive("content");
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)

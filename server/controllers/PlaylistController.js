@@ -38,7 +38,7 @@ module.exports = function(core)
 
 		Playlist.findOne
 		({
-			attributes: ["name", "access"],
+			attributes: ["playlistId", "name", "access"],
 			where: { playlistId: req.params.playlistId },
 			order: "itemId DESC",
 			include:
@@ -62,13 +62,12 @@ module.exports = function(core)
 			if(!playlist)
 				return res.json( [] );
 
-			var response = [ [playlist.name, playlist.access], [] ];
-
 			var items = playlist.Items;
+			var responseItems = [];
 
 			for(var index in items)
 			{
-				response[1].push
+				responseItems.push
 				([
 					items[index].Content.Track.trackId,
 					items[index].Content.Track.artist,
@@ -79,7 +78,35 @@ module.exports = function(core)
 				]);
 			}
 
+			var response =
+			[
+				[
+					playlist.playlistId,
+					playlist.name,
+					playlist.access
+				],
+				responseItems
+			];
+
 			res.json(response);
+		});
+	}
+
+	// Retrieve main playlist of the user
+	PlaylistController.getMainPlaylist = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		Playlist.findOne
+		({
+			where: { userId: req.user.userId },
+			order: "playlistId DESC"
+		})
+		.then(function(playlist)
+		{
+			req.params.playlistId = playlist.playlistId;
+			PlaylistController.getPlaylist(req, res);
 		});
 	}
 
@@ -118,8 +145,8 @@ module.exports = function(core)
 			{
 				if(created)
 				{
-					// Content has been created just now, it is not linked to any track so we pass default values
-					var data =
+					// Content is not yet linked to a track, pass default values
+					var response =
 					[
 						-1,
 						"Unknown Artist",
@@ -127,10 +154,10 @@ module.exports = function(core)
 						item.itemId
 					];
 
-					return res.json(data);
+					return res.json(response);
 				}
 
-				var data =
+				var response =
 				[
 					content.Track.trackId,
 					content.Track.artist,
@@ -138,7 +165,7 @@ module.exports = function(core)
 					item.itemId
 				];
 
-				res.json(data);
+				res.json(response);
 			});
 		});
 	}
@@ -163,6 +190,9 @@ module.exports = function(core)
 
 	app.get("/playlists/:playlistId(\\d+)",
 		PlaylistController.getPlaylist);
+
+	app.get("/own/playlists/main",
+		PlaylistController.getMainPlaylist);
 	
 	app.post("/playlists/:playlistId(\\d+)",
 		paperwork.accept

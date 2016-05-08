@@ -32,7 +32,7 @@ module.exports = function(core)
 		.spread(function(user, created)
 		{
 			if(!created)
-				return next( new Error("Nickname is not available.") );
+				return next(null, false);
 
 			Playlist.create
 			({

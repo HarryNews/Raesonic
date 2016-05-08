@@ -130,7 +130,7 @@ Item.remove = function(itemId)
 			}
 
 			$item.remove();
-			Playlists.setTrackCounter($(".item").length);
+			Playlist.setTrackCounter($(".item").length);
 			$("#overlay").click();
 		}
 	});

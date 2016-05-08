@@ -15,6 +15,9 @@ var controllers = {};
 controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
 var sequelize = controllers.Sequelize;
 
+// Use public folder as the public application root
+app.use(express.static(__dirname + "/public"));
+
 // Use middleware for requests, cookies, sessions etc.
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -48,8 +51,7 @@ controllers.Item = require("./server/controllers/ItemController.js")(core);
 controllers.Relation = require("./server/controllers/RelationController.js")(core);
 controllers.Search = require("./server/controllers/SearchController.js")(core);
 
-// Use public folder as the public application root
-app.use(express.static(__dirname + "/public"));
+// Send the index page
 app.use(function(req, res)
 {
 	res.sendFile("index.html", { root: __dirname + "/public" });
