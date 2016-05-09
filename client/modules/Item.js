@@ -9,106 +9,6 @@ Item.play = function($item)
 	Player.setItem($item);
 }
 
-// Start editing the item
-Item.edit = function()
-{
-	$item = $(this).parent();
-
-	var trackId = $item.data("trackId");
-	var itemId = $item.data("itemId");
-
-	var artist = "";
-	var title = "";
-
-	function updateWindowButton()
-	{
-		// Without itemId no changes are possible
-		if(!itemId)
-			return $("#window-button").text("");
-
-		var artistChanged = ($("#edit-artist").val() != artist);
-		var titleChanged = ($("#edit-title").val() != title);
-
-		// At least one field needs to be different to confirm changes
-		// If there is no track assigned, both fields are required
-		var saveAllowed = (trackId != -1)
-			? (artistChanged || titleChanged)
-			: (artistChanged && titleChanged)
-
-		if(saveAllowed)
-		{
-			$("#window-button")
-				.text("SAVE")
-				.unbind()
-				.click(function()
-				{
-					Item.rename(itemId, trackId, $("#edit-artist").val(), $("#edit-title").val(), artistChanged, titleChanged);
-				});
-
-			return;
-		}
-
-		$("#window-button")
-			.text("REMOVE")
-			.unbind()
-			.click(function()
-			{
-				Item.remove(itemId);
-			});
-	}
-	
-	if(trackId != -1)
-	{
-		artist = $(":nth-child(1)", $item)
-			.html()
-			.replace(/<span>&amp;<\/span>/g, "&+");
-
-		title = $(":nth-child(2)", $item)
-			.html()
-			.replace(/<span>(.+)<\/span>/g, "($1)");
-	}
-
-	$("#window")
-		.empty()
-		.append(
-			$("<div>")
-				.attr("id", "window-header")
-				.text("Edit track")
-		)
-		.append(
-			$("<input>")
-				.attr({ "id": "edit-artist", "type": "text", "maxlength": 50, "placeholder": "Artist" })
-				.val(artist)
-				.keyup(updateWindowButton)
-		)
-		.append(
-			$("<input>")
-				.attr({ "id": "edit-title", "type": "text", "maxlength": 50, "placeholder": "Title" })
-				.val(title)
-				.keyup(updateWindowButton)
-		)
-		.prepend($("<button>").attr("id", "window-button")
-	);
-
-	updateWindowButton();
-
-	$("#overlay")
-		.hide()
-		.removeClass("hidden")
-		.fadeIn(200)
-		.unbind()
-		.click(function(e)
-		{
-			if(e.target != this)
-				return;
-
-			$(this).fadeOut(200, function()
-			{
-				$(this).addClass("hidden");
-			});
-		});
-}
-
 // Remove specified item from the playlist
 Item.remove = function(itemId)
 {
@@ -131,7 +31,9 @@ Item.remove = function(itemId)
 
 			$item.remove();
 			Playlist.setTrackCounter($(".item").length);
-			$("#overlay").click();
+
+			var Overlay = require("./Overlay.js");
+			Overlay.destroy();
 		}
 	});
 }
@@ -178,12 +80,13 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 
 			var $items = $(".item").filterByData("externalId", externalId)
 
-			artist = artist.replace(/&\+/g, "<span>&</span>");
-			title = title.replace(/\((.+)\)/g, "<span>$1</span>");
+			artist = Item.formatArtist(artist);
+			title = Item.formatTitle(title);
 
 			$(":nth-child(1)", $items).html(artist);
 			$(":nth-child(2)", $items).html(title);
 
+			// Update meta if the item is active
 			if($items.is(".active"))
 			{
 				$("#meta-artist").html(artist);
@@ -191,9 +94,107 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			}
 
 			$items.data("trackId", trackId);
-			$("#overlay").click();
+			
+			var Overlay = require("./Overlay.js");
+			Overlay.destroy();
 		}
 	});
+}
+
+// Start editing the item
+Item.onEditIconClick = function()
+{
+	$item = $(this).parent();
+
+	Item.editing = 
+	{
+		itemId: $item.data("itemId"),
+		trackId: $item.data("trackId"),
+		artist: "",
+		title: "",
+	};
+	
+	var trackExists = (Item.editing.trackId != -1);
+
+	if(trackExists)
+	{
+		Item.editing.artist = Item.formatArtist( $(":nth-child(1)", $item).html() );
+		Item.editing.title = Item.formatTitle( $(":nth-child(2)", $item).html() );
+	}
+
+	var Overlay = require("./Overlay.js");
+	Overlay.create("Edit track",
+	[{
+		tag: "<input>",
+		id: "edit-artist",
+		type: "text",
+		maxlength: 50,
+		placeholder: "Artist",
+		value: Item.editing.artist,
+		keyup: Item.updateEditOverlay,
+	},
+	{
+		tag: "<input>",
+		id: "edit-title",
+		type: "text",
+		maxlength: 50,
+		placeholder: "Title",
+		value: Item.editing.title,
+		keyup: Item.updateEditOverlay,
+	}],
+	function onOverlayCreate()
+	{
+		Item.updateEditOverlay();
+	});
+}
+
+// Updates the item editing overlay
+Item.updateEditOverlay = function()
+{
+	// Without itemId no changes are possible
+	if(!Item.editing.itemId)
+		return Overlay.setAction(null);
+
+	var artistChanged = ( $("#edit-artist").val() != Item.editing.artist );
+	var titleChanged = ( $("#edit-title").val() != Item.editing.title );
+
+	var trackExists = (Item.editing.trackId != -1);
+
+	// At least one field needs to be different to confirm changes
+	// If there is no track assigned, both fields are required
+	var saveAllowed = trackExists
+		? (artistChanged || titleChanged)
+		: (artistChanged && titleChanged)
+	
+	var Overlay = require("./Overlay.js");
+
+	saveAllowed
+		? Overlay.setAction("Save", Item.onItemSaveClick)
+		: Overlay.setAction("Remove", Item.onItemRemoveClick);
+}
+
+// Replaces &+ with <span>&</span>
+Item.formatArtist = function(artist)
+{
+	return artist.replace(/&\+/g, "<span>&</span>")
+}
+
+// Replaces  (...) with <span>(...)</span>
+Item.formatTitle = function(title)
+{
+	return title.replace(/\((.+)\)/g, "<span>$1</span>");
+}
+
+// Replaces <span>&</span> with &+
+Item.restoreArtist = function(artist)
+{
+	return artist.replace(/<span>&amp;<\/span>/g, "&+");
+}
+
+// Replaces <span>(...)</span> with (...)
+Item.restoreTitle = function(title)
+{
+	return title.replace(/<span>(.+)<\/span>/g, "($1)");
 }
 
 // Called upon clicking the item's artist or title element
@@ -201,6 +202,29 @@ Item.onClick = function()
 {
 	var $item = $(this).parent();
 	Item.play($item);
+}
+
+// Called upon clicking the save button in the overlay
+Item.onItemSaveClick = function()
+{
+	var artistChanged = ( $("#edit-artist").val() != Item.editing.artist );
+	var titleChanged = ( $("#edit-title").val() != Item.editing.title );
+
+	Item.rename
+	(
+		Item.editing.itemId,
+		Item.editing.trackId,
+		$("#edit-artist").val(),
+		$("#edit-title").val(),
+		artistChanged,
+		titleChanged
+	);
+}
+
+// Called upon clicking the remove button in the overlay
+Item.onItemRemoveClick = function()
+{
+	Item.remove(Item.editing.itemId);
 }
 
 module.exports = Item;

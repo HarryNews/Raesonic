@@ -8,6 +8,7 @@ $(document).ready(function()
 	var Playlist = require("./modules/Playlist.js");
 	var Search = require("./modules/Search.js");
 	var Tab = require("./modules/Tab.js");
+	var Overlay = require("./modules/Overlay.js");
 	var Preloader = require("./modules/Preloader.js");
 
 	Account.init();
@@ -17,6 +18,7 @@ $(document).ready(function()
 	SoundCloud.init();
 
 	Search.init();
+	Overlay.init();
 	Tab.init();
 
 	setTimeout(Preloader.onLoad, 2000);

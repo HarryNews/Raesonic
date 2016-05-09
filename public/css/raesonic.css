@@ -369,6 +369,7 @@ body
 	padding: 7px;
 	font-size: 10px;
 	cursor: pointer;
+	text-transform: uppercase;
 	-webkit-transition: color ease-out 200ms;
 	-moz-transition: color ease-out 200ms;
 	-o-transition: color ease-out 200ms;

@@ -29,7 +29,7 @@ module.exports = function(core)
 		});
 	}
 
-	app.route("/items/:itemId(\\d+)",
+	app.delete("/items/:itemId(\\d+)",
 		ItemController.removeItem);
 
 	return ItemController;
