@@ -18,60 +18,58 @@ module.exports = function(core)
 
 	// Handles the account creation requests
 	passport.use("signup", new PassportStrategy
-	({
-		usernameField: "nickname",
-	},
-	function(nickname, password, next)
-	{
-		password = UserController.encyptPassword(password);
-
-		User.findOrCreate
-		({
-			where: { nickname: nickname },
-			defaults: { password: password },
-		})
-		.spread(function(user, created)
+	(
+		function(username, password, next)
 		{
-			if(!created)
-				return next(null, false);
+			password = UserController.encyptPassword(password);
 
-			Playlist.create
+			User.findOrCreate
 			({
-				name: "Main",
-				userId: user.userId,
+				where: { username: username },
+				defaults: { password: password },
 			})
-			.then(function(playlist)
+			.spread(function(user, created)
 			{
-				next(null, user);
+				if(!created)
+					return next(null, false);
+
+				Playlist.create
+				({
+					name: "Main",
+					userId: user.userId,
+				})
+				.then(function(playlist)
+				{
+					next(null, user);
+				});
 			});
-		});
-	}));
+		})
+	);
 
 	// Handles the authentication requests
 	passport.use("login", new PassportStrategy
-	({
-		usernameField: "nickname", 
-	},
-	function(nickname, password, next)
-	{
-		User.findOne
-		({
-			where: { nickname: nickname },
-		})
-		.then(function(user)
+	(
+		function(username, password, next)
 		{
-			// Invalid nickname
-			if(!user)
-				return next(null, false);
+			User.findOne
+			({
+				where: { username: username },
+			})
+			.then(function(user)
+			{
+				// Invalid username
+				if(!user)
+					return next(null, false);
 
-			// Invalid password
-			if(!UserController.equalPasswords(password, user.password))
-				return next(null, false);
+				// Invalid password
+				if(!UserController.equalPasswords(password, user.password))
+					return next(null, false);
 
-			// Authentication successful
-			return next(null, user);
-		});
-	}));
+				// Authentication successful
+				return next(null, user);
+			});
+		})
+	);
 
 	// Configure storing session
 	passport.serializeUser(function(user, next)
@@ -96,6 +94,7 @@ module.exports = function(core)
 	UserController.onLogout = function(req, res)
 	{
 		req.session.destroy();
+		res.json( [] );
 	}
 
 	UserController.getAccount = function(req, res)
@@ -107,9 +106,9 @@ module.exports = function(core)
 		var response =
 		[
 			user.userId,
-			user.nickname,
+			user.username,
 			Gravatar.url(
-				user.email || user.nickname,
+				user.email || user.username,
 				{ s: "43", r: "pg", d: "retro" }
 			),
 			user.reputation
@@ -130,10 +129,10 @@ module.exports = function(core)
 		return (UserController.encyptPassword(input) == password);
 	}
 
-	// Returns true if the nickname is valid
-	UserController.validateNickname = function(name)
+	// Returns true if the username is valid
+	UserController.validateUsername = function(username)
 	{
-		if(name.length < 3 || name.length > 30)
+		if(username.length < 3 || username.length > 30)
 			return false;
 
 		// todo: restrict to a-zA-Z0-9 (estimate)
@@ -153,24 +152,20 @@ module.exports = function(core)
 	app.post("/signup",
 		paperwork.accept
 		({
-			nickname: paperwork.all(String, UserController.validateNickname),
+			username: paperwork.all(String, UserController.validateUsername),
 			password: paperwork.all(String, UserController.validatePassword),
 		}),
-		passport.authenticate("signup",
-		{
-			successRedirect: "/",
-		}));
+		passport.authenticate("signup")
+	);
 
 	app.post("/login",
 		paperwork.accept
 		({
-			nickname: paperwork.all(String, UserController.validateNickname),
+			username: paperwork.all(String, UserController.validateUsername),
 			password: paperwork.all(String, UserController.validatePassword),
 		}),
-		passport.authenticate("login",
-		{
-			successRedirect: "/",
-		}));
+		passport.authenticate("login")
+	);
 
 	app.post("/logout",
 		UserController.onLogout);

@@ -11,17 +11,19 @@ $(document).ready(function()
 	var Overlay = require("./modules/Overlay.js");
 	var Preloader = require("./modules/Preloader.js");
 
-	Account.init();
-	Player.init();
+	Account.init(function onAccountSync()
+	{
+		setTimeout(Preloader.onLoad, 2000);
+	});
 
+	Player.init();
+	
 	YouTube.init();
 	SoundCloud.init();
 
 	Search.init();
 	Overlay.init();
 	Tab.init();
-
-	setTimeout(Preloader.onLoad, 2000);
 });
 
 $.fn.filterByData = function(key, value)

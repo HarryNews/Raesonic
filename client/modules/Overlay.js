@@ -58,6 +58,12 @@ Overlay.setAction = function(name, onClick)
 	Overlay.action = onClick;
 }
 
+// Returns true if the overlay is in use
+Overlay.isActive = function()
+{
+	return !$("#overlay").is(".hidden");
+}
+
 // Hides the overlay and clears the window
 Overlay.destroy = function()
 {

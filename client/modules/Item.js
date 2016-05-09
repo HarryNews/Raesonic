@@ -123,6 +123,7 @@ Item.onEditIconClick = function()
 	}
 
 	var Overlay = require("./Overlay.js");
+	
 	Overlay.create("Edit track",
 	[{
 		tag: "<input>",
