@@ -1,3 +1,5 @@
+var Overlay = require("./Overlay.js");
+
 var Account =
 {
 	authenticated: false,
@@ -37,6 +39,25 @@ Account.login = function(username, password)
 				return;
 
 			Account.sync();
+		}
+	});
+}
+
+// Send email with a link to reset password
+Account.restore = function(username)
+{
+	$.ajax
+	({
+		url: "/restore/",
+		type: "POST",
+		data: JSON.stringify({ username: username }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			Overlay.onActionComplete("Email sent");
 		}
 	});
 }
@@ -110,7 +131,6 @@ Account.setAuthenticated = function(isAuthenticated, done)
 
 	Account.authenticated = isAuthenticated;
 
-	var Overlay = require("./Overlay.js");
 	Overlay.destroy();
 
 	if(typeof done == "function")
@@ -120,27 +140,51 @@ Account.setAuthenticated = function(isAuthenticated, done)
 // Creates and shows an overlay for authentication
 Account.showLoginOverlay = function()
 {
-	var Overlay = require("./Overlay.js");
-
 	if(Overlay.isActive())
 		return;
 
 	Overlay.create("Log in",
 	[{
 		tag: "<input>",
-		id: "login-username",
-		type: "text",
-		maxlength: 30,
-		placeholder: "Username",
+		attributes:
+		{
+			id: "login-username",
+			type: "text",
+			maxlength: 30,
+			placeholder: "Username",
+		},
 		keyup: Account.updateLoginOverlay,
 	},
 	{
 		tag: "<input>",
-		id: "login-password",
-		type: "password",
-		maxlength: 200,
-		placeholder: "Password",
+		attributes:
+		{
+			id: "login-password",
+			type: "password",
+			maxlength: 200,
+			placeholder: "Password",
+		},
 		keyup: Account.updateLoginOverlay,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "login-confirm",
+			class: "inner disabled window-link",
+		},
+		text: "Log In",
+		click: Account.onLoginConfirmClick,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "login-create",
+			class: "window-link",
+		},
+		text: "Sign Up",
+		click: Account.onSignUpStartClick,
 	}],
 	function onOverlayCreate()
 	{
@@ -151,8 +195,6 @@ Account.showLoginOverlay = function()
 // Creates and shows an overlay for account actions
 Account.showAccountOverlay = function()
 {
-	var Overlay = require("./Overlay.js");
-
 	if(Overlay.isActive())
 		return;
 
@@ -172,19 +214,32 @@ Account.updateLoginOverlay = function()
 {
 	var loginAllowed =
 		( $("#login-username").val().length > 2 &&
-			$("#login-password").val().length > 7 )
-	
-	var Overlay = require("./Overlay.js");
+			$("#login-password").val().length > 7 );
 
-	loginAllowed
-		? Overlay.setAction("Log in", Account.onLogInClick)
+	$("#login-confirm").toggleClass("disabled", !loginAllowed);
+
+	var restoreAllowed =
+		( $("#login-username").val().length > 2 );
+	
+	restoreAllowed
+		? Overlay.setAction("Forgot password", Account.onRestoreClick)
 		: Overlay.setAction(null);
+}
+
+// Updates the sign up overlay
+Account.updateSignUpOverlay = function()
+{
+	var signupAllowed =
+		( $("#signup-username").val().length > 2 &&
+			$("#signup-password").val().length > 7 &&
+			$("#signup-password").val() == $("#signup-repeat").val() );
+
+	$("#signup-confirm").toggleClass("disabled", !signupAllowed);
 }
 
 // Updates the account overlay
 Account.updateAccountOverlay = function()
 {
-	var Overlay = require("./Overlay.js");
 	Overlay.setAction("Logout", Account.onLogoutClick)
 }
 
@@ -196,14 +251,143 @@ Account.onHeaderClick = function()
 		: Account.showLoginOverlay();
 }
 
-// Called upon clicking the log in button
-Account.onLogInClick = function()
+// Called upon clicking the login button on the login screen
+Account.onLoginConfirmClick = function()
 {
+	if($(this).is(".disabled"))
+		return;
+
 	Account.login
 	(
 		$("#login-username").val(),
 		$("#login-password").val()
 	);
+}
+
+// Called upon clicking the sign up button on the sign up screen
+Account.onSignUpConfirmClick = function()
+{
+	if($(this).is(".disabled"))
+		return;
+
+	Account.create
+	(
+		$("#signup-username").val(),
+		$("#signup-password").val()
+	);
+}
+
+// Called upon clicking the sign up button on the login screen
+// Transforms login window into a sign up window
+Account.onSignUpStartClick = function()
+{
+	$("#window-header").text("Sign up");
+
+	$("#login-username").attr("id", "signup-username");
+	$("#login-password").attr("id", "signup-password");
+
+	$("#signup-username, #signup-password")
+		.unbind()
+		.keyup(Account.updateSignUpOverlay);
+
+	var $repeat = Overlay.createElement
+	({
+		tag: "<input>",
+		attributes:
+		{
+			id: "signup-repeat",
+			type: "password",
+			maxlength: 200,
+			placeholder: "Repeat Password",
+		},
+		keyup: Account.updateSignUpOverlay,
+	});
+
+	$("#signup-password").after($repeat.hide());
+	$("#signup-repeat").slideDown(200);
+
+	$("#login-confirm").slideUp(200, function()
+	{
+		$(this).remove();
+	});
+
+	var $existing = Overlay.createElement
+	({
+		tag: "<div>",
+		attributes:
+		{
+			id: "signup-existing",
+			class: "window-link",
+		},
+		text: "Log In",
+		click: Account.onLoginStartClick,
+	});
+
+	$("#login-create")
+		.attr("id", "signup-confirm")
+		.addClass("inner disabled")
+		.unbind()
+		.click(Account.onSignUpConfirmClick)
+		.after($existing);
+
+	$("#signup-existing")
+		.hide()
+		.delay(50)
+		.slideDown(200);
+
+	Overlay.setAction(null);
+	Account.updateSignUpOverlay();
+}
+
+// Called upon clicking the login button on the sign up screen
+// Transforms sign up window into a login window
+Account.onLoginStartClick = function()
+{
+	$("#window-header").text("Log in");
+
+	$("#signup-username").attr("id", "login-username");
+	$("#signup-password").attr("id", "login-password");
+	
+	$("#login-username, #login-password")
+		.unbind()
+		.keyup(Account.updateLoginOverlay);
+
+	$("#signup-repeat, #signup-confirm").slideUp(200, function()
+	{
+		$(this).remove();
+	});
+
+	var $create = Overlay.createElement
+	({
+		tag: "<div>",
+		attributes:
+		{
+			id: "login-create",
+			class: "window-link",
+		},
+		text: "Sign Up",
+		click: Account.onSignUpStartClick,
+	});
+
+	$("#signup-existing")
+		.attr("id", "login-confirm")
+		.addClass("inner disabled")
+		.unbind()
+		.click(Account.onLoginConfirmClick)
+		.after($create);
+
+	$("#login-create")
+		.hide()
+		.delay(50)
+		.slideDown(200);
+
+	Account.updateLoginOverlay();
+}
+
+// Called upon clicking the forgot password button
+Account.onRestoreClick = function()
+{
+	Account.restore( $("#login-username").val() );
 }
 
 // Called upon clicking the log out button

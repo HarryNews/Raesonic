@@ -16,23 +16,7 @@ Overlay.create = function(name, elements, done)
 	for(var index in elements)
 	{
 		var data = elements[index];
-
-		var $element = $(data.tag);
-
-		$element.attr
-		({
-			id: data.id,
-			type: data.type,
-			maxlength: data.maxlength,
-			placeholder: data.placeholder,
-		});
-
-		if(typeof data.value != "undefined")
-			$element.val(data.value);
-
-		if(typeof data.keyup == "function")
-			$element.keyup(data.keyup);
-
+		var $element = Overlay.createElement(data);
 		$elements.push($element);
 	}
 
@@ -40,6 +24,11 @@ Overlay.create = function(name, elements, done)
 	$("#window")
 		.empty()
 		.append($elements);
+
+	// Add spacer element
+	$("#window input:last-of-type").after(
+		$("<div>").attr("id", "window-separator")
+	);
 
 	// Call the callback function
 	done();
@@ -51,10 +40,26 @@ Overlay.create = function(name, elements, done)
 		.fadeIn(200);
 }
 
+Overlay.createElement = function(data)
+{
+	var $element = $(data.tag).attr(data.attributes);
+
+	delete data.tag;
+	delete data.attributes;
+
+	for(var method in data)
+		$element[method]( data[method] );
+
+	return $element;
+}
+
 // Changes the button text and configures the click action
 Overlay.setAction = function(name, onClick)
 {
-	$("#window-button").text(name || "");
+	$("#window-button")
+		.text(name || "")
+		.toggleClass("disabled", typeof onClick != "function");
+
 	Overlay.action = onClick;
 }
 
@@ -82,6 +87,12 @@ Overlay.onActionClick = function()
 
 	Overlay.action();
 };
+
+// Called when the one-use action has been completed
+Overlay.onActionComplete = function(message, onClick)
+{
+	Overlay.setAction(message, onClick);
+}
 
 // Called upon clicking the overlay
 Overlay.onClick = function(event)

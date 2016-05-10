@@ -1,4 +1,5 @@
 var Enum = require("./Enum.js");
+var Overlay = require("./Overlay.js");
 
 var Item = {};
 
@@ -32,7 +33,6 @@ Item.remove = function(itemId)
 			$item.remove();
 			Playlist.setTrackCounter($(".item").length);
 
-			var Overlay = require("./Overlay.js");
 			Overlay.destroy();
 		}
 	});
@@ -94,8 +94,6 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			}
 
 			$items.data("trackId", trackId);
-			
-			var Overlay = require("./Overlay.js");
 			Overlay.destroy();
 		}
 	});
@@ -121,26 +119,30 @@ Item.onEditIconClick = function()
 		Item.editing.artist = Item.formatArtist( $(":nth-child(1)", $item).html() );
 		Item.editing.title = Item.formatTitle( $(":nth-child(2)", $item).html() );
 	}
-
-	var Overlay = require("./Overlay.js");
 	
 	Overlay.create("Edit track",
 	[{
 		tag: "<input>",
-		id: "edit-artist",
-		type: "text",
-		maxlength: 50,
-		placeholder: "Artist",
-		value: Item.editing.artist,
+		attributes:
+		{
+			id: "edit-artist",
+			type: "text",
+			maxlength: 50,
+			placeholder: "Artist",
+		},
+		val: Item.editing.artist,
 		keyup: Item.updateEditOverlay,
 	},
 	{
 		tag: "<input>",
-		id: "edit-title",
-		type: "text",
-		maxlength: 50,
-		placeholder: "Title",
-		value: Item.editing.title,
+		attributes:
+		{
+			id: "edit-title",
+			type: "text",
+			maxlength: 50,
+			placeholder: "Title",
+		},
+		val: Item.editing.title,
 		keyup: Item.updateEditOverlay,
 	}],
 	function onOverlayCreate()
@@ -166,8 +168,6 @@ Item.updateEditOverlay = function()
 	var saveAllowed = trackExists
 		? (artistChanged || titleChanged)
 		: (artistChanged && titleChanged)
-	
-	var Overlay = require("./Overlay.js");
 
 	saveAllowed
 		? Overlay.setAction("Save", Item.onItemSaveClick)
