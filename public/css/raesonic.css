@@ -327,6 +327,7 @@ body
 {
 	background-color: #E7E7E8;
 	width: 350px;
+	position: relative;
 }
 #window-header
 {
@@ -356,6 +357,21 @@ body
 {
 	border-bottom: 1px solid #71688E;
 	box-shadow: 0px -1px 0 0 #71688E inset;
+}
+#window input.error
+{
+	border-bottom: 1px solid #C10000;
+	box-shadow: 0px -1px 0 0 #C10000 inset;
+}
+#window .input-error
+{
+	width: calc(100% - 40px);
+	padding: 0px;
+	font-size: 13px;
+	text-align: right;
+	color: #A10000;
+	position: absolute;
+	margin: 0 20px 0 20px;
 }
 #window button
 {

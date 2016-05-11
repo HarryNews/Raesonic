@@ -20,6 +20,18 @@ Account.create = function(username, password)
 				return;
 
 			Account.sync();
+		},
+		error: function(response)
+		{
+			var json = response.responseJSON;
+
+			if(!json || !json.errors)
+				return;
+
+			var error = json.errors[0];
+
+			if(error == "username not available")
+				return Overlay.setError("#signup-username", "not available");
 		}
 	});
 }
@@ -39,6 +51,21 @@ Account.login = function(username, password)
 				return;
 
 			Account.sync();
+		},
+		error: function(response)
+		{
+			var json = response.responseJSON;
+
+			if(!json || !json.errors)
+				return;
+
+			var error = json.errors[0];
+
+			if(error == "username incorrect")
+				return Overlay.setError("#login-username", "incorrect");
+
+			if(error == "password incorrect")
+				return Overlay.setError("#login-password", "incorrect");
 		}
 	});
 }
@@ -171,7 +198,7 @@ Account.showLoginOverlay = function()
 		attributes:
 		{
 			id: "login-confirm",
-			class: "inner disabled window-link",
+			class: "inner window-link",
 		},
 		text: "Log In",
 		click: Account.onLoginConfirmClick,
@@ -212,29 +239,24 @@ Account.showAccountOverlay = function()
 // Updates the login overlay
 Account.updateLoginOverlay = function()
 {
-	var loginAllowed =
-		( $("#login-username").val().length > 2 &&
-			$("#login-password").val().length > 7 );
-
-	$("#login-confirm").toggleClass("disabled", !loginAllowed);
-
 	var restoreAllowed =
 		( $("#login-username").val().length > 2 );
 	
 	restoreAllowed
 		? Overlay.setAction("Forgot password", Account.onRestoreClick)
 		: Overlay.setAction(null);
+
+	Overlay.clearErrors();
 }
 
 // Updates the sign up overlay
 Account.updateSignUpOverlay = function()
 {
-	var signupAllowed =
-		( $("#signup-username").val().length > 2 &&
-			$("#signup-password").val().length > 7 &&
-			$("#signup-password").val() == $("#signup-repeat").val() );
+	Overlay.clearErrors();
 
-	$("#signup-confirm").toggleClass("disabled", !signupAllowed);
+	if($("#signup-username").val().length > 0 &&
+		!/^[a-z0-9]+$/i.test( $("#signup-username").val() ))
+		Overlay.setError("#signup-username", "contains prohibited characters");
 }
 
 // Updates the account overlay
@@ -254,7 +276,13 @@ Account.onHeaderClick = function()
 // Called upon clicking the login button on the login screen
 Account.onLoginConfirmClick = function()
 {
-	if($(this).is(".disabled"))
+	if( $("#login-username").val().length < 3 )
+		Overlay.setError("#login-username", "incorrect");
+
+	if( $("#login-password").val().length < 8 )
+		Overlay.setError("#login-password", "incorrect");
+
+	if( Overlay.hasErrors() )
 		return;
 
 	Account.login
@@ -267,7 +295,20 @@ Account.onLoginConfirmClick = function()
 // Called upon clicking the sign up button on the sign up screen
 Account.onSignUpConfirmClick = function()
 {
-	if($(this).is(".disabled"))
+	if( $("#signup-username").val().length < 3 )
+		Overlay.setError("#signup-username", "min. 3 characters");
+
+	if($("#signup-username").val().length > 0 &&
+		!/^[a-z0-9]+$/i.test( $("#signup-username").val() ))
+		Overlay.setError("#signup-username", "contains prohibited characters");
+
+	if( $("#signup-password").val().length < 8 )
+		Overlay.setError("#signup-password", "min. 8 characters");
+
+	if( $("#signup-repeat").val() != $("#signup-password").val() )
+		Overlay.setError("#signup-repeat", "does not match");
+
+	if( Overlay.hasErrors() )
 		return;
 
 	Account.create
@@ -325,7 +366,7 @@ Account.onSignUpStartClick = function()
 
 	$("#login-create")
 		.attr("id", "signup-confirm")
-		.addClass("inner disabled")
+		.addClass("inner")
 		.unbind()
 		.click(Account.onSignUpConfirmClick)
 		.after($existing);
@@ -371,7 +412,7 @@ Account.onLoginStartClick = function()
 
 	$("#signup-existing")
 		.attr("id", "login-confirm")
-		.addClass("inner disabled")
+		.addClass("inner")
 		.unbind()
 		.click(Account.onLoginConfirmClick)
 		.after($create);

@@ -69,6 +69,35 @@ Overlay.isActive = function()
 	return !$("#overlay").is(".hidden");
 }
 
+// Flags an input field with an error message
+Overlay.setError = function(elementId, message)
+{
+	// Remove previous error element if it exists
+	$(elementId + " + .input-error").remove();
+
+	// Add a new error element with provided message
+	$(elementId)
+		.addClass("error")
+		.after(
+			$("<div>")
+				.addClass("input-error")
+				.text(message)
+		);
+}
+
+// Returns true if there is at least one error
+Overlay.hasErrors = function()
+{
+	return ( $("#window .input-error").length > 0 );
+}
+
+// Removes all errors
+Overlay.clearErrors = function()
+{
+	$("#window input").removeClass("error");
+	$("#window .input-error").remove();
+}
+
 // Hides the overlay and clears the window
 Overlay.destroy = function()
 {

@@ -31,7 +31,7 @@ module.exports = function(core)
 			.spread(function(user, created)
 			{
 				if(!created)
-					return next(null, false);
+					return next(null, false, "username not available");
 
 				Playlist.create
 				({
@@ -59,11 +59,11 @@ module.exports = function(core)
 			{
 				// Invalid username
 				if(!user)
-					return next(null, false);
+					return next(null, false, "username incorrect");
 
 				// Invalid password
 				if(!UserController.equalPasswords(password, user.password))
-					return next(null, false);
+					return next(null, false, "password incorrect");
 
 				// Authentication successful
 				return next(null, user);
@@ -89,6 +89,42 @@ module.exports = function(core)
 			next(null, user);
 		});
 	});
+
+	// Called upon receiving a result of sign up request
+	UserController.onSignUpResult = function(err, user, message, res, req)
+	{
+		if(err)
+			return res.status(401).json({ errors: ["internal error"] });
+
+		if(!user)
+			return res.status(401).json({ errors: [message] });
+
+		req.logIn(user, function(logInErr)
+		{
+			if(logInErr)
+				return next(err);
+
+			res.json( [] );
+		});
+	}
+
+	// Called upon receiving a result of login request
+	UserController.onLoginResult = function(err, user, message, res, req)
+	{
+		if(err)
+			return res.status(401).json({ errors: ["internal error"] });
+
+		if(!user)
+			return res.status(401).json({ errors: [message] });
+
+		req.logIn(user, function(logInErr)
+		{
+			if(logInErr)
+				return next(err);
+
+			res.json( [] );
+		});
+	}
 
 	// Called upon logout request
 	UserController.onLogout = function(req, res)
@@ -135,7 +171,8 @@ module.exports = function(core)
 		if(username.length < 3 || username.length > 30)
 			return false;
 
-		// todo: restrict to a-zA-Z0-9 (estimate)
+		if(!/^[a-z0-9]+$/i.test(username))
+			return false;
 
 		return true;
 	}
@@ -155,7 +192,13 @@ module.exports = function(core)
 			username: paperwork.all(String, UserController.validateUsername),
 			password: paperwork.all(String, UserController.validatePassword),
 		}),
-		passport.authenticate("signup")
+		function(req, res, next)
+		{
+			passport.authenticate("signup", function(err, user, info)
+			{
+				UserController.onSignUpResult(err, user, info, res, req);
+			})(req, res, next);
+		}
 	);
 
 	app.post("/login",
@@ -164,7 +207,13 @@ module.exports = function(core)
 			username: paperwork.all(String, UserController.validateUsername),
 			password: paperwork.all(String, UserController.validatePassword),
 		}),
-		passport.authenticate("login")
+		function(req, res, next)
+		{
+			passport.authenticate("login", function(err, user, info)
+			{
+				UserController.onLoginResult(err, user, info, res, req);
+			})(req, res, next);
+		}
 	);
 
 	app.post("/logout",
