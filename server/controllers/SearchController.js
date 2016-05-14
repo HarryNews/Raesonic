@@ -5,6 +5,7 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 
@@ -59,12 +60,15 @@ module.exports = function(core)
 		return true;
 	}
 
-	app.post("/search",
-		paperwork.accept
-		({
-			query: paperwork.all(String, SearchController.validateQuery)
-		}),
-		SearchController.getResults);
+	SearchController.init = function()
+	{
+		app.post("/search",
+			paperwork.accept
+			({
+				query: paperwork.all(String, SearchController.validateQuery)
+			}),
+			SearchController.getResults);
+	}
 
 	return SearchController;
 }

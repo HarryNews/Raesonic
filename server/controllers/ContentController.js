@@ -12,6 +12,7 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -53,33 +54,40 @@ module.exports = function(core)
 	// Change content of the playlist item
 	ContentController.setItemContent = function(req, res)
 	{
-		// todo: return error if not logged in
-		// todo: include playlist and check user for ownership
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
 
-		Content.findOne
-		({
-			attributes: ["contentId"],
-			where:
-			{
-				sourceId: req.body.sourceId,
-				externalId: req.body.externalId
-			}
-		})
-		.then(function(content)
+		var PlaylistController = core.controllers.Playlist;
+		
+		PlaylistController.verifyOwnership(req.user, PlaylistController.BY_ITEMID, req.params.itemId, res,
+		function onConfirm()
 		{
-			// Content doesn't exist, nothing to link item with
-			if(!content)
-				return res.status(500).json({ errors: ["internal error"] });
-
-			Item.update
+			// User is the playlist owner, change the item's content
+			Content.findOne
 			({
-				contentId: content.contentId
-			},
-			{
-				where: { itemId: req.params.itemId }
+				attributes: ["contentId"],
+				where:
+				{
+					sourceId: req.body.sourceId,
+					externalId: req.body.externalId
+				}
 			})
-			
-			res.json( [] );
+			.then(function(content)
+			{
+				// Content doesn't exist, nothing to link item with
+				if(!content)
+					return res.status(404).json({ errors: ["content not found"] });
+
+				Item.update
+				({
+					contentId: content.contentId
+				},
+				{
+					where: { itemId: req.params.itemId }
+				});
+				
+				res.json( [] );
+			});
 		});
 	}
 
@@ -116,11 +124,10 @@ module.exports = function(core)
 
 				res.json(trackId);
 
-				// todo: use actual user id
 				ContentLink.create
 				({
 					trackId: trackId,
-					userId: 1,
+					userId: req.user.userId,
 					contentId: content.contentId
 				});
 			});
@@ -143,16 +150,19 @@ module.exports = function(core)
 		return true;
 	}
 
-	app.get("/tracks/:trackId(\\d+)/content",
-		ContentController.getTrackContent);
+	ContentController.init = function()
+	{
+		app.get("/tracks/:trackId(\\d+)/content",
+			ContentController.getTrackContent);
 
-	app.put("/items/:itemId(\\d+)/content",
-		paperwork.accept
-		({
-			sourceId: paperwork.all(Number, ContentController.validateSourceId),
-			externalId: paperwork.all(String, ContentController.validateExternalId),
-		}),
-		ContentController.setItemContent);
+		app.put("/items/:itemId(\\d+)/content",
+			paperwork.accept
+			({
+				sourceId: paperwork.all(Number, ContentController.validateSourceId),
+				externalId: paperwork.all(String, ContentController.validateExternalId),
+			}),
+			ContentController.setItemContent);
+	}
 
 	return ContentController;
 }

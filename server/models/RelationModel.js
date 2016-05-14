@@ -7,7 +7,7 @@ module.exports = function(sequelize)
 	{
 		relationId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		trust: { type: Sequelize.INTEGER, defaultValue: 1 },
-		doubt: { type: Sequelize.INTEGER, defaultValue: 0 }
+		doubt: { type: Sequelize.INTEGER, defaultValue: 0 },
 	});
 
 	var Track = sequelize.models.Track;

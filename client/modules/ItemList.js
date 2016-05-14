@@ -43,15 +43,12 @@ ItemList.addItem = function(item, prepend)
 			.append(
 				$("<div>")
 					.addClass("artist")
-					.html( item[1].replace( /&\+/g, "<span>&</span>" ) )
-			)
-			.append(
+					.html( Item.formatArtist(item[1]) ),
 				$("<div>")
 					.addClass("title")
-					.html( item[2].replace( /\((.+)\)/g, "<span>$1</span>" ) )
-			)
-			.append(
-				$("<div>").addClass("icon add fa fa-plus")
+					.html( Item.formatTitle(item[2]) ),
+				$("<div>")
+					.addClass("icon add fa fa-plus")
 			)
 			.data("trackId", item[0]);
 
@@ -72,7 +69,7 @@ ItemList.addItem = function(item, prepend)
 			.append(
 				$("<div>")
 					.addClass("icon edit fa fa-pencil")
-					.click(Item.edit)
+					.click(Item.onEditIconClick)
 			);
 	}
 

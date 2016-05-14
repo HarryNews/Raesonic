@@ -1,7 +1,7 @@
-var Sequelize = require("sequelize");
-
 module.exports = function(config)
 {
+	var Sequelize = require("sequelize");
+
 	var db = config.database;
 
 	var sequelize = new Sequelize(db.name, db.user, db.password,

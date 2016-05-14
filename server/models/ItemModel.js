@@ -5,7 +5,7 @@ module.exports = function(sequelize)
 	// Item is a reference to Content
 	var Item = sequelize.define("Item",
 	{
-		itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true }
+		itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 	});
 	
 	var Content = sequelize.models.Content;

@@ -127,6 +127,7 @@ body
 {
 	width: 43px;
 	height: 43px;
+	background-color: #EEE;
 	margin: 3px 0 3px 9px;
 	border-radius: 1px;
 	box-shadow: 0 1px 0 0 #222;
@@ -326,7 +327,7 @@ body
 {
 	background-color: #E7E7E8;
 	width: 350px;
-	padding-bottom: 25px;
+	position: relative;
 }
 #window-header
 {
@@ -357,6 +358,21 @@ body
 	border-bottom: 1px solid #71688E;
 	box-shadow: 0px -1px 0 0 #71688E inset;
 }
+#window input.error
+{
+	border-bottom: 1px solid #C10000;
+	box-shadow: 0px -1px 0 0 #C10000 inset;
+}
+#window .input-error
+{
+	width: calc(100% - 40px);
+	padding: 0px;
+	font-size: 13px;
+	text-align: right;
+	color: #A10000;
+	position: absolute;
+	margin: 0 20px 0 20px;
+}
 #window button
 {
 	background: none;
@@ -368,14 +384,56 @@ body
 	padding: 7px;
 	font-size: 10px;
 	cursor: pointer;
+	text-transform: uppercase;
 	-webkit-transition: color ease-out 200ms;
 	-moz-transition: color ease-out 200ms;
 	-o-transition: color ease-out 200ms;
 	transition: color ease-out 200ms;
 }
-#window button:hover
+#window button:hover:not(.disabled)
 {
 	color: #EEE;
+}
+#window button.disabled
+{
+	color: #AAA;
+	cursor: default;
+}
+#window-separator
+{
+	height: 25px;
+}
+.window-link
+{
+	background-color: #1D1D1D;
+	color: #808080;
+	padding: 12px 20px;
+	cursor: pointer;
+	-webkit-transition: background-color ease-out 200ms, color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms, color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms, color ease-out 200ms;
+	transition: background-color ease-out 200ms, color ease-out 200ms;
+}
+.window-link:hover
+{
+	background-color: #222;
+}
+.window-link.inner
+{
+	background-color: #4E4861;
+	color: #EBEBEB;
+}
+.window-link.inner:hover
+{
+	background-color: #5E5871;
+}
+.window-link.inner:nth-child(2n)
+{
+	background-color: #464158;
+}
+.window-link.inner:nth-child(2n):hover
+{
+	background-color: #565168;
 }
 
 #content-right

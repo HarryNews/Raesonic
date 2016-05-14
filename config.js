@@ -4,6 +4,14 @@ module.exports =
 	{
 		port: 3000
 	},
+	session:
+	{
+		secret: "secret"
+	},
+	crypto:
+	{
+		salt: "salt"
+	},
 	database:
 	{
 		// "sqlite" for light development, otherwise use "mysql"

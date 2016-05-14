@@ -7,7 +7,7 @@ module.exports = function(sequelize)
 	{
 		trackId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		artist: Sequelize.STRING(50),
-		title: Sequelize.STRING(50)
+		title: Sequelize.STRING(50),
 	});
 	
 	return Track;

@@ -5,6 +5,7 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
@@ -14,10 +15,11 @@ module.exports = function(core)
 	// Create a relation between two tracks
 	RelationController.createRelation = function(req, res)
 	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
 		if(req.body.trackId == req.body.linkedId)
 			return res.status(400).json({ errors: ["self-link not allowed"] });
-
-		// todo: return error if not logged in
 
 		Track.count
 		({
@@ -37,7 +39,7 @@ module.exports = function(core)
 				return res.status(500).json({ errors: ["internal error"] });
 		});
 
-		// todo: obtain from user's trust
+		// todo: use ReputationController.getVoteValue(req.user)
 		var voteValue = 1;
 
 		Relation.findOrCreate
@@ -57,11 +59,10 @@ module.exports = function(core)
 			if(!created)
 				return;
 
-			// todo: use actual user id
 			RelationVote.create
 			({
 				relationId: relation.relationId,
-				userId: 1,
+				userId: req.user.userId,
 				value: voteValue
 			});
 		});
@@ -137,7 +138,8 @@ module.exports = function(core)
 	// Update user's vote on a relation
 	RelationController.updateRelationVote = function(req, res)
 	{
-		// todo: return error if not logged in
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
 
 		Relation.findOne
 		({
@@ -163,17 +165,16 @@ module.exports = function(core)
 			if(!relation)
 				return res.status(500).json({ errors: ["internal error"] });
 
-			// todo: obtain multiplier from user's trust
+			// todo: use ReputationController.getVoteValue(req.user) * req.body.vote;
 			var voteValue = 1 * req.body.vote;
 
-			// todo: use actual user id
 			RelationVote.findOrCreate
 			({
 				attributes: ["value"],
 				where:
 				{
 					relationId: relation.relationId,
-					userId: 1
+					userId: req.user.userId,
 				},
 				defaults: { value: voteValue }
 			})
@@ -210,7 +211,8 @@ module.exports = function(core)
 	// Create a flag marking relation as inappropriate
 	RelationController.createRelationFlag = function(req, res)
 	{
-		// todo: return error if not logged in
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
 
 		Relation.findOne
 		({
@@ -236,13 +238,12 @@ module.exports = function(core)
 			if(!relation)
 				return res.status(500).json({ errors: ["internal error"] });
 
-			// todo: use actual user id
 			RelationFlag.findOrCreate
 			({
 				where:
 				{
 					relationId: relation.relationId,
-					userId: 1
+					userId: req.user.userId,
 				}
 			});
 			
@@ -281,26 +282,29 @@ module.exports = function(core)
 		return (vote == -1 || vote == 1);
 	}
 
-	app.post("/relations",
-		paperwork.accept
-		({
-			trackId: paperwork.all(Number, RelationController.validateId),
-			linkedId: paperwork.all(Number, RelationController.validateId),
-		}),
-		RelationController.createRelation);
+	RelationController.init = function()
+	{
+		app.post("/relations",
+			paperwork.accept
+			({
+				trackId: paperwork.all(Number, RelationController.validateId),
+				linkedId: paperwork.all(Number, RelationController.validateId),
+			}),
+			RelationController.createRelation);
 
-	app.get("/tracks/:trackId(\\d+)/relations",
-		RelationController.getTrackRelations);
+		app.get("/tracks/:trackId(\\d+)/relations",
+			RelationController.getTrackRelations);
 
-	app.put("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/votes",
-		paperwork.accept
-		({
-			vote: paperwork.all(Number, RelationController.validateVote),
-		}),
-		RelationController.updateRelationVote);
+		app.put("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/votes",
+			paperwork.accept
+			({
+				vote: paperwork.all(Number, RelationController.validateVote),
+			}),
+			RelationController.updateRelationVote);
 
-	app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
-		RelationController.createRelationFlag);
+		app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
+			RelationController.createRelationFlag);
+	}
 
 	return RelationController;
 }
