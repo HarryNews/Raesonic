@@ -2,8 +2,6 @@ module.exports = function(core)
 {
 	var TrackController = {};
 
-	var ContentController = require("./ContentController.js")(core);
-
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
@@ -12,14 +10,15 @@ module.exports = function(core)
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
 	var Item = sequelize.models.Item;
+	var Relation = sequelize.models.Relation;
 	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
 
 	// Assign an existing track with specified name to the item's content, or create a new one
 	TrackController.createTrack = function(req, res)
 	{
-		// todo: return error if not logged in
-		// todo: return error if artist/title contain restricted characters
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
 
 		Track.findOrCreate
 		({
@@ -54,11 +53,10 @@ module.exports = function(core)
 
 				res.json(track.trackId);
 
-				// todo: use actual user id
 				ContentLink.create
 				({
 					trackId: track.trackId,
-					userId: 1,
+					userId: req.user.userId,
 					contentId: content.contentId
 				});
 			});
@@ -67,12 +65,11 @@ module.exports = function(core)
 			if(!created)
 				return;
 
-			// todo: use actual user id
 			TrackEdit.create
 			({
 				artist: req.body.artist,
 				title: req.body.title,
-				userId: 1,
+				userId: req.user.userId,
 				trackId: track.trackId
 			})
 		});
@@ -81,6 +78,9 @@ module.exports = function(core)
 	// Attempt to edit track information of the item's content without ruining anything
 	TrackController.editTrack = function(req, res)
 	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
 		var artist = req.body.artist;
 		var title = req.body.title;
 
@@ -88,8 +88,9 @@ module.exports = function(core)
 		if(!artist.changed && !title.changed)
 			return res.status(400).json({ errors: ["no changes"] });
 
-		// todo: return error if not logged in
-		// todo: return error if not enough reputation to submit edits
+		// todo: implement code below
+		// if(!ReputationController.hasPermission(req.user, ReputationController.EDIT_TRACK))
+		// 	return res.status(403).json({ errors: ["not enough reputation"] });
 
 		// Count amount of content the track is linked with
 		Content.count
@@ -128,7 +129,10 @@ module.exports = function(core)
 				{
 					// Track already exists, link content with it
 					if(track)
+					{
+						var ContentController = core.controllers.Content;
 						return ContentController.linkContent(req.body.itemId, track.trackId, res);
+					}
 
 					// Found no track with that name, we can take it now
 					Track.update(changes,
@@ -140,8 +144,7 @@ module.exports = function(core)
 						res.json(req.params.trackId);
 					});
 
-					// todo: use actual user id
-					changes.userId = 1;
+					changes.userId = req.user.userId;
 					changes.trackId = req.params.trackId;
 					TrackEdit.create(changes);
 
@@ -163,14 +166,14 @@ module.exports = function(core)
 			})
 			.spread(function(track, created)
 			{
+				var ContentController = core.controllers.Content;
 				ContentController.linkContent(req.body.itemId, track.trackId, res);
 
 				// Add no track edits if no tracks were created
 				if(!created)
 					return;
 
-				// todo: use actual user id
-				changes.userId = 1;
+				changes.userId = req.user.userId;
 				changes.trackId = track.trackId;
 				TrackEdit.create(changes);
 			});
@@ -234,31 +237,34 @@ module.exports = function(core)
 		return true;
 	}
 
-	app.post("/tracks",
-		paperwork.accept
-		({
-			itemId: paperwork.all(Number, TrackController.validateId),
-			artist: paperwork.all(String, TrackController.validateName),
-			title: paperwork.all(String, TrackController.validateName),
-		}),
-		TrackController.createTrack);
+	TrackController.init = function()
+	{
+		app.post("/tracks",
+			paperwork.accept
+			({
+				itemId: paperwork.all(Number, TrackController.validateId),
+				artist: paperwork.all(String, TrackController.validateName),
+				title: paperwork.all(String, TrackController.validateName),
+			}),
+			TrackController.createTrack);
 
-	app.put("/tracks/:trackId(\\d+)",
-		paperwork.accept
-		({
-			itemId: paperwork.all(Number, TrackController.validateId),
-			artist:
-			{
-				name: paperwork.all(String, TrackController.validateName),
-				changed: Boolean,
-			},
-			title:
-			{
-				name: paperwork.all(String, TrackController.validateName),
-				changed: Boolean,
-			},
-		}),
-		TrackController.editTrack);
+		app.put("/tracks/:trackId(\\d+)",
+			paperwork.accept
+			({
+				itemId: paperwork.all(Number, TrackController.validateId),
+				artist:
+				{
+					name: paperwork.all(String, TrackController.validateName),
+					changed: Boolean,
+				},
+				title:
+				{
+					name: paperwork.all(String, TrackController.validateName),
+					changed: Boolean,
+				},
+			}),
+			TrackController.editTrack);
+	}
 
 	return TrackController;
 }

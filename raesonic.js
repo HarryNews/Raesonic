@@ -1,5 +1,6 @@
 var express = require("express");
 var app = express();
+var server;
 
 var paperwork = require("paperwork");
 var passport = require("passport");
@@ -8,12 +9,8 @@ var cookieParser = require("cookie-parser");
 var session = require("express-session")
 var config = require("./config.js");
 
-var server;
-var controllers = {};
-
 // Create database controller
-controllers.Sequelize = require("./server/controllers/SequelizeController.js")(config);
-var sequelize = controllers.Sequelize;
+var sequelize = require("./server/controllers/SequelizeController.js")(config);
 
 // Use public folder as the public application root
 app.use(express.static(__dirname + "/public"));
@@ -43,6 +40,7 @@ var core =
 };
 
 // Create workspace controllers
+var controllers = {};
 controllers.User = require("./server/controllers/UserController.js")(core);
 controllers.Track = require("./server/controllers/TrackController.js")(core);
 controllers.Content = require("./server/controllers/ContentController.js")(core);
@@ -50,6 +48,11 @@ controllers.Playlist = require("./server/controllers/PlaylistController.js")(cor
 controllers.Item = require("./server/controllers/ItemController.js")(core);
 controllers.Relation = require("./server/controllers/RelationController.js")(core);
 controllers.Search = require("./server/controllers/SearchController.js")(core);
+
+// Pass references and initialize API
+core.controllers = controllers;
+for(controllerId in controllers)
+	controllers[controllerId].init();
 
 // Send the index page
 app.use(function(req, res)

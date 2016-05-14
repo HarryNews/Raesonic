@@ -1,11 +1,10 @@
 module.exports = function(core)
 {
-	var UserController = {};
-
 	var PassportStrategy = require("passport-local").Strategy;
 	var Crypto = require("crypto-js");
 	var Gravatar = require("gravatar");
-	var PlaylistController = require("./PlaylistController.js")(core);
+	
+	var UserController = {};
 
 	var app = core.app;
 	var sequelize = core.sequelize;
@@ -33,12 +32,10 @@ module.exports = function(core)
 				if(!created)
 					return next(null, false, "username not available");
 
-				Playlist.create
-				({
-					name: "Main",
-					userId: user.userId,
-				})
-				.then(function(playlist)
+				PlaylistController = core.controllers.Playlist;
+
+				PlaylistController.createMainPlaylist(user.userId,
+				function onCreate()
 				{
 					next(null, user);
 				});
@@ -186,41 +183,44 @@ module.exports = function(core)
 		return true;
 	}
 
-	app.post("/signup",
-		paperwork.accept
-		({
-			username: paperwork.all(String, UserController.validateUsername),
-			password: paperwork.all(String, UserController.validatePassword),
-		}),
-		function(req, res, next)
-		{
-			passport.authenticate("signup", function(err, user, info)
+	UserController.init = function()
+	{
+		app.post("/signup",
+			paperwork.accept
+			({
+				username: paperwork.all(String, UserController.validateUsername),
+				password: paperwork.all(String, UserController.validatePassword),
+			}),
+			function(req, res, next)
 			{
-				UserController.onSignUpResult(err, user, info, res, req);
-			})(req, res, next);
-		}
-	);
+				passport.authenticate("signup", function(err, user, info)
+				{
+					UserController.onSignUpResult(err, user, info, res, req);
+				})(req, res, next);
+			}
+		);
 
-	app.post("/login",
-		paperwork.accept
-		({
-			username: paperwork.all(String, UserController.validateUsername),
-			password: paperwork.all(String, UserController.validatePassword),
-		}),
-		function(req, res, next)
-		{
-			passport.authenticate("login", function(err, user, info)
+		app.post("/login",
+			paperwork.accept
+			({
+				username: paperwork.all(String, UserController.validateUsername),
+				password: paperwork.all(String, UserController.validatePassword),
+			}),
+			function(req, res, next)
 			{
-				UserController.onLoginResult(err, user, info, res, req);
-			})(req, res, next);
-		}
-	);
+				passport.authenticate("login", function(err, user, info)
+				{
+					UserController.onLoginResult(err, user, info, res, req);
+				})(req, res, next);
+			}
+		);
 
-	app.post("/logout",
-		UserController.onLogout);
+		app.post("/logout",
+			UserController.onLogout);
 
-	app.get("/own/account",
-		UserController.getAccount);
+		app.get("/own/account",
+			UserController.getAccount);
+	}
 
 	return UserController;
 }

@@ -8,6 +8,7 @@ module.exports = function(sequelize)
 		playlistId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		name: Sequelize.STRING(50),
 		access: { type: Sequelize.INTEGER(1), defaultValue: 1 },
+		alias: Sequelize.STRING(50),
 	});
 	
 	var User = sequelize.models.User;

@@ -12,25 +12,35 @@ module.exports = function(core)
 	// Remove item from the playlist
 	ItemController.removeItem = function(req, res)
 	{
-		// todo: return error if not logged in
-		// todo: include playlist and check user for ownership
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+		
+		var PlaylistController = core.controllers.Playlist;
 
-		Item.destroy
-		({
-			where: { itemId: req.params.itemId }
-		})
-		.then(function(amount)
+		PlaylistController.verifyOwnership(req.user, PlaylistController.BY_ITEMID, req.params.itemId, res,
+		function onConfirm()
 		{
-			// Haven't deleted any rows
-			if(amount < 1)
-				return res.status(500).json({ errors: ["internal error"] });
+			// User is the playlist owner, delete the item
+			Item.destroy
+			({
+				where: { itemId: req.params.itemId }
+			})
+			.then(function(amount)
+			{
+				// Haven't deleted any rows
+				if(amount < 1)
+					return res.status(500).json({ errors: ["internal error"] });
 
-			res.json( [] );
+				res.json( [] );
+			});
 		});
 	}
 
-	app.delete("/items/:itemId(\\d+)",
-		ItemController.removeItem);
+	ItemController.init = function()
+	{
+		app.delete("/items/:itemId(\\d+)",
+			ItemController.removeItem);
+	}
 
 	return ItemController;
 }
