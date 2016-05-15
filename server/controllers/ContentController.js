@@ -92,7 +92,7 @@ module.exports = function(core)
 	}
 
 	// Find content by the itemId, and link it to the track with specified trackId
-	ContentController.linkContent = function(itemId, trackId, res)
+	ContentController.linkContent = function(itemId, trackId, req, res)
 	{
 		Content.findOne
 		({

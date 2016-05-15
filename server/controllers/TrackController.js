@@ -131,7 +131,7 @@ module.exports = function(core)
 					if(track)
 					{
 						var ContentController = core.controllers.Content;
-						return ContentController.linkContent(req.body.itemId, track.trackId, res);
+						return ContentController.linkContent(req.body.itemId, track.trackId, req, res);
 					}
 
 					// Found no track with that name, we can take it now
@@ -167,7 +167,7 @@ module.exports = function(core)
 			.spread(function(track, created)
 			{
 				var ContentController = core.controllers.Content;
-				ContentController.linkContent(req.body.itemId, track.trackId, res);
+				ContentController.linkContent(req.body.itemId, track.trackId, req, res);
 
 				// Add no track edits if no tracks were created
 				if(!created)
