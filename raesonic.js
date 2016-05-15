@@ -47,6 +47,7 @@ controllers.Content = require("./server/controllers/ContentController.js")(core)
 controllers.Playlist = require("./server/controllers/PlaylistController.js")(core);
 controllers.Item = require("./server/controllers/ItemController.js")(core);
 controllers.Relation = require("./server/controllers/RelationController.js")(core);
+controllers.History = require("./server/controllers/HistoryController.js")(core);
 controllers.Search = require("./server/controllers/SearchController.js")(core);
 
 // Pass references and initialize API
