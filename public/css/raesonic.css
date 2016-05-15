@@ -532,7 +532,7 @@ body
 
 .meta
 {
-	background-color: #3B374A;
+	background-color: #383544;
 	padding-left: 8px;
 	color: #FFF;
 }
@@ -568,7 +568,7 @@ body
 
 #tabs-menu
 {
-	background-color: #4D4B5D;
+	background-color: #4A4656;
 	display: flex;
 	align-items: center;
 }
@@ -584,11 +584,11 @@ body
 }
 #tabs-menu div:hover
 {
-	background-color: #434153;
+	background-color: #4F4B5A;
 }
 #tabs-menu div.active, #tabs-menu div.active:hover
 {
-	background-color: #3F3D4D;
+	background-color: #3D3B4A;
 	cursor: default;
 }
 
