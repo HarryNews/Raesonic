@@ -1,4 +1,3 @@
-var Enum = require("./Enum.js");
 var Overlay = require("./Overlay.js");
 
 var Item = {};
@@ -27,7 +26,8 @@ Item.remove = function(itemId)
 			if($item.is(".active"))
 			{
 				var Player = require("./Player.js");
-				Player.switchItem(Enum.Direction.Next);
+				var ItemList = require("./ItemList.js");
+				Player.switchItem(ItemList.NEXT_ITEM);
 			}
 
 			$item.remove();

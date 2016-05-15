@@ -1,12 +1,11 @@
-var Enum = require("./Enum.js");
 var ItemList = require("./ItemList.js");
 
 var Search =
 {
-	Regex:
+	REGEX:
 	{
-		YouTube: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
-		SoundCloud: /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/,
+		YOUTUBE: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
+		SOUNDCLOUD: /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/,
 	},
 }
 
@@ -65,7 +64,7 @@ Search.globally = function(query)
 				return;
 
 			var items = response;
-			ItemList.setItems(items, ItemList.UseStorage);
+			ItemList.setItems(items, ItemList.USE_STORAGE);
 		}
 	});
 }
@@ -77,16 +76,16 @@ Search.createContent = function(query)
 	var Content = require("./Content.js");
 
 	// Find and create YouTube content
-	var match = Search.Regex.YouTube.exec(query);
+	var match = Search.REGEX.YOUTUBE.exec(query);
 	if(match && match[5])
 	{
 		var externalId = match[5];
-		Content.create(Enum.Source.YouTube, externalId);
+		Content.create(Content.SOURCE.YOUTUBE, externalId);
 		return true;
 	}
 
 	// Find and create SoundCloud content
-	match = Search.Regex.SoundCloud.exec(query);
+	match = Search.REGEX.SOUNDCLOUD.exec(query);
 	if(match && match[2])
 	{
 		SC
@@ -94,7 +93,7 @@ Search.createContent = function(query)
 			.then(function onSoundCloudResolve(response)
 			{
 				var externalId = response.id.toString();
-				Content.create(Enum.Source.SoundCloud, externalId);
+				Content.create(Content.SOURCE.SOUNDCLOUD, externalId);
 			});
 
 		return true;

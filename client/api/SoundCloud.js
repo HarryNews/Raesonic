@@ -1,5 +1,3 @@
-var Enum = require("../modules/Enum.js");
-
 var SoundCloud = {};
 
 // Called upon a player state change
@@ -22,14 +20,15 @@ SoundCloud.onPlayerStateChange = function(state)
 	if(state != "ended")
 		return;
 
-	Player.switchItem(Enum.Direction.Next);
+	var ItemList = require("../modules/ItemList.js");
+	Player.switchItem(ItemList.NEXT_ITEM);
 }
 
 // Called upon audio load error
 SoundCloud.onPlayerError = function()
 {
-	var ContentTab = require("../tabs/ContentTab.js");
-	ContentTab.switchContent(Enum.Direction.Next, true);
+	var Player = require("../modules/Player.js");
+	Player.onPlaybackError();
 }
 
 // Called when the cursor entered the cover image area

@@ -1,4 +1,3 @@
-var Enum = require("./Enum.js");
 var Cookie = require("./Cookie.js");
 
 var YouTube = require("../api/YouTube.js");
@@ -105,6 +104,7 @@ Player.setItem = function($item)
 
 	$("#current-time, #total-time").text("00:00");
 	
+	// Clear content data if a different item is being set
 	if($item.data("itemId") != $("#tab-content").data("itemId"))
 	{
 		$("#tab-content").data
@@ -117,14 +117,16 @@ Player.setItem = function($item)
 		ContentTab.setSwitchEnabled(true);
 	}
 
+	var Content = require("./Content.js");
+
+	// Search for content if none is assigned to the item
 	if(!$item.data("sourceId"))
 	{
 		$item.addClass("active");
-		var Content = require("./Content.js");
-		return Content.request($item.data("trackId"), true);
+		return Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
 	}
 
-	if($item.data("sourceId") == Enum.Source.YouTube)
+	if($item.data("sourceId") == Content.SOURCE.YOUTUBE)
 	{
 		if(!YouTube.loaded)
 			return;
@@ -147,7 +149,7 @@ Player.setItem = function($item)
 		return;
 	}
 
-	if($item.data("sourceId") == Enum.Source.SoundCloud)
+	if($item.data("sourceId") == Content.SOURCE.SOUNDCLOUD)
 	{
 		$item.addClass("active");
 
@@ -175,11 +177,7 @@ Player.setItem = function($item)
 							$("<img>")
 								.attr("src", imageUrl.replace("large", "t500x500"))
 								.addClass("back")
-								.click(Player.toggle)
-						);
-
-					$("#cover")
-						.append(
+								.click(Player.toggle),
 							$("<img>")
 								.attr("src", imageUrl.replace("large", "t300x300"))
 								.addClass("front")
@@ -367,6 +365,14 @@ Player.onTick = function()
 	YouTube.player.setVolume(Player.volume);
 }
 
+// Called upon a playback error
+Player.onPlaybackError = function()
+{
+	var ContentTab = require("../tabs/ContentTab.js");
+	var ItemList = require("../modules/ItemList.js");
+	ContentTab.switchContent(ItemList.NEXT_ITEM, ItemList.SKIP_TRACK);
+}
+
 // Called upon movement of the mouse cursor
 Player.onDocumentMouseMove = function(event)
 {
@@ -427,13 +433,15 @@ Player.onPauseClick = function()
 // Called upon clicking the previous item button
 Player.onPreviousClick = function()
 {
-	Player.switchItem(Enum.Direction.Previous, Enum.Switch.Manual);
+	var ItemList = require("../modules/ItemList.js");
+	Player.switchItem(ItemList.PREVIOUS_ITEM, ItemList.MANUAL_SWITCH);
 }
 
 // Called upon clicking the next item button
 Player.onNextClick = function()
 {
-	Player.switchItem(Enum.Direction.Next, Enum.Switch.Manual);
+	var ItemList = require("../modules/ItemList.js");
+	Player.switchItem(ItemList.NEXT_ITEM, ItemList.MANUAL_SWITCH);
 }
 
 // Called upon pressing a mouse button on the seekbar

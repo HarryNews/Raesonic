@@ -1,4 +1,14 @@
-var Content = {};
+var Content =
+{
+	SOURCE:
+	{
+		YOUTUBE: 1,
+		SOUNDCLOUD: 2,
+	},
+	// Action on content lookup
+	AUTOMATIC_SWITCH: false,
+	ASSIGN_TO_ITEM: true,
+};
 
 // Add specified content to the active playlist
 // If the content does not exist, it will be created
@@ -39,7 +49,7 @@ Content.create = function(sourceId, externalId)
 					sourceId,
 					externalId
 				],
-				ItemList.Prepend
+				ItemList.PREPEND
 			);
 
 			$("#items").scrollTop(0);

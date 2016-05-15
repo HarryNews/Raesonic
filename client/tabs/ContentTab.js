@@ -1,5 +1,4 @@
 var Content = require("../modules/Content.js");
-var Enum = require("../modules/Enum.js");
 
 var ContentTab = {};
 
@@ -31,7 +30,7 @@ ContentTab.switchContent = function(forward, skipTrack)
 			$item.data("externalId")
 		];
 
-		Content.request($item.data("trackId"), false, forward, skipTrack, current);
+		Content.request($item.data("trackId"), Content.AUTOMATIC_SWITCH, forward, skipTrack, current);
 		return ContentTab.setSwitchEnabled(false);
 	}
 
@@ -41,7 +40,8 @@ ContentTab.switchContent = function(forward, skipTrack)
 		if(skipTrack)
 		{
 			var Player = require("../modules/Player.js");
-			Player.switchItem(Enum.Direction.Next);
+			var ItemList = require("../modules/ItemList.js");
+			Player.switchItem(ItemList.NEXT_ITEM);
 		}
 
 		return ContentTab.setSwitchEnabled(false);
@@ -92,13 +92,15 @@ ContentTab.switchContent = function(forward, skipTrack)
 // Called upon clicking the previous content button
 ContentTab.onPreviousClick = function()
 {
-	ContentTab.switchContent(Enum.Direction.Previous);
+	var ItemList = require("../modules/ItemList.js");
+	ContentTab.switchContent(ItemList.PREVIOUS_ITEM);
 }
 
 // Called upon clicking the next content button
 ContentTab.onNextClick = function()
 {
-	ContentTab.switchContent(Enum.Direction.Next);
+	var ItemList = require("../modules/ItemList.js");
+	ContentTab.switchContent(ItemList.NEXT_ITEM);
 }
 
 // Called upon clicking the replace content button

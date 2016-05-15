@@ -2,9 +2,18 @@ var Item = require("./Item.js");
 
 var ItemList =
 {
-	UseStorage: true,
-	Append: false,
-	Prepend: true,
+	USE_STORAGE: true,
+	// New item destination
+	APPEND: false,
+	PREPEND: true,
+	// Item switch direction
+	PREVIOUS_ITEM: false,
+	NEXT_ITEM: true,
+	// Item switch mode
+	AUTO_SWITCH: false,
+	MANUAL_SWITCH: true,
+	// Action on content error
+	SKIP_TRACK: true,
 };
 
 // Set items of the item list

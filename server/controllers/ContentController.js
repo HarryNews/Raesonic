@@ -2,10 +2,10 @@ module.exports = function(core)
 {
 	var ContentController =
 	{
-		Regex:
+		REGEX:
 		{
-			YouTube: /^[A-Za-z0-9_-]{11}$/,
-			SoundCloud: /^\d+$/,
+			YOUTUBE: /^[A-Za-z0-9_-]{11}$/,
+			SOUNDCLOUD: /^\d+$/,
 		}
 	};
 
@@ -143,8 +143,8 @@ module.exports = function(core)
 	// Returns true if externalId is in valid range
 	ContentController.validateExternalId = function(externalId)
 	{
-		if(!ContentController.Regex.YouTube.test(externalId) &&
-			!ContentController.Regex.SoundCloud.test(externalId))
+		if(!ContentController.REGEX.YOUTUBE.test(externalId) &&
+			!ContentController.REGEX.SOUNDCLOUD.test(externalId))
 			return false;
 
 		return true;

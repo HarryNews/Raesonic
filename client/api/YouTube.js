@@ -1,5 +1,4 @@
 var Cookie = require("../modules/Cookie.js");
-var Enum = require("../modules/Enum.js");
 
 $.getScript("https://www.youtube.com/iframe_api");
 
@@ -40,14 +39,15 @@ YouTube.onPlayerStateChange = function(event)
 	if(state != YT.PlayerState.ENDED)
 		return;
 
-	Player.switchItem(Enum.Direction.Next);
+	var ItemList = require("../modules/ItemList.js");
+	Player.switchItem(ItemList.NEXT_ITEM);
 }
 
 // Called upon video load error
 YouTube.onPlayerError = function()
 {
-	var ContentTab = require("../tabs/ContentTab.js");
-	ContentTab.switchContent(Enum.Direction.Next, true);
+	var Player = require("../modules/Player.js");
+	Player.onPlaybackError();
 }
 
 // Called upon successful load of the external script
