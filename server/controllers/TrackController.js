@@ -134,7 +134,7 @@ module.exports = function(core)
 						return ContentController.linkContent(req.body.itemId, track.trackId, req, res);
 					}
 
-					// Found no track with that name, we can take it now
+					// Name is available, rename existing track to it
 					Track.update(changes,
 					{
 						where: { trackId: req.params.trackId }

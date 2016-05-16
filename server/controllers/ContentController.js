@@ -105,6 +105,10 @@ module.exports = function(core)
 		})
 		.then(function(content)
 		{
+			// Already linked, no action required
+			if(trackId == content.trackId)
+				return res.json(trackId);
+
 			// Grab the current trackId before it's overwritten
 			var previousTrackId = content.trackId;
 
