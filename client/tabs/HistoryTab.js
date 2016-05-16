@@ -1,3 +1,5 @@
+var Diff = require("diff");
+
 var HistoryTab =
 {
 	ALIAS: "history",
@@ -20,6 +22,7 @@ HistoryTab.request = function(historyType, entityId)
 				url: "/tracks/" + entityId + "/edits/",
 				key: "track-edits",
 				field: "trackId",
+				diff: true,
 			};
 
 			break;
@@ -81,8 +84,7 @@ HistoryTab.request = function(historyType, entityId)
 
 			$("#tab-history").data(request.key, response);
 
-			var latestArtist;
-			var latestTitle;
+			var latest = ["", ""];
 
 			response.forEach(function addAction(action)
 			{
@@ -92,11 +94,38 @@ HistoryTab.request = function(historyType, entityId)
 				var date = action[3];
 				var username = action[4];
 
-				if(artist)
-					latestArtist = artist;
+				var change = [artist, title];
 
-				if(title)
-					latestTitle = title;
+				if(request.diff)
+				{
+					for(var i = 0; i < 2; i++)
+					{
+						var diff = Diff.diffChars(latest[i], change[i] || latest[i]);
+						latest[i] = change[i] || latest[i];
+						change[i] = "";
+
+						diff.forEach(function(part)
+						{
+							if(part.added || part.removed)
+							{
+								part.value = "<span class=\"" + (part.added
+									? "added"
+									: "removed")
+									+ "\">" + part.value + "</span>";
+							}
+
+							change[i] = change[i] + part.value;
+						});
+					}
+				}
+				else
+				{
+					for(var i = 0; i < 2; i++)
+					{
+						latest[i] = change[i] || latest[i];
+						change[i] = latest[i];
+					}
+				}
 
 				date = HistoryTab.getRelativeDate(date);
 
@@ -109,10 +138,10 @@ HistoryTab.request = function(historyType, entityId)
 								.append(
 									$("<div>")
 										.addClass("artist")
-										.text(latestArtist),
+										.html(change[0]),
 									$("<div>")
 										.addClass("title")
-										.text(latestTitle)
+										.html(change[1])
 								),
 							$("<div>")
 								.addClass("details")

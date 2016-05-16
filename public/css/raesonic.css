@@ -703,11 +703,18 @@ body
 }
 #tabs .half
 {
-	width: calc(100% - 16px);
-	height: calc(50% - 16px);
-	padding: 8px;
+	width: 100%;
+	height: 50%;
 	overflow-y: scroll;
 	border-bottom: 1px solid #BBB;
+	-webkit-transition: height ease-out 200ms;
+	-moz-transition: height ease-out 200ms;
+	-o-transition: height ease-out 200ms;
+	transition: height ease-out 200ms;
+}
+#tabs .half:hover
+{
+	height: 200%;
 }
 #tabs .half::-webkit-scrollbar
 {
@@ -732,15 +739,26 @@ body
 	display: flex;
 	-webkit-flex-direction: row;
 	flex-direction: row;
-	margin-bottom: 5px;
+	padding: 6px 8px;
 }
-#tabs .half .action:last-child
+#tabs .half .action:nth-child(2n)
 {
-	margin-bottom: 0;
+	background-color: #E2E2E2;
 }
 #tabs .action .changes
 {
 	flex: 3 0 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#tabs .changes .added
+{
+	background-color: #AFA;
+}
+#tabs .changes .removed
+{
+	background-color: #FBB;
 }
 #tabs .action .details
 {
