@@ -86,11 +86,15 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			$(":nth-child(1)", $items).html(artist);
 			$(":nth-child(2)", $items).html(title);
 
-			// Update meta if the item is active
+			// Update meta and history if the item is active
 			if($items.is(".active"))
 			{
 				$("#meta-artist").html(artist);
 				$("#meta-title").html(title);
+
+				var Tab = require("./Tab.js");
+				Tab.History.clearStorage();
+				Tab.setActive(Tab.History);
 			}
 
 			$items.data("trackId", trackId);

@@ -1,17 +1,37 @@
-var ContentTab = require("../tabs/ContentTab.js");
-
-var Tab = {};
-
-// Set active tab by alias
-Tab.setActive = function(alias)
+var Tab =
 {
-	var $tab = $("#menu-" + alias);
+	Related: require("../tabs/RelatedTab.js"),
+	Content: require("../tabs/ContentTab.js"),
+	History: require("../tabs/HistoryTab.js"),
+};
+
+// Store tab alias as a data value
+Tab.setAlias = function()
+{
+	// "menu-related" > "related"
+	var tabId = $(this)
+		.attr("id")
+		.substring(5);
+
+	// "related" > "Related"
+	tabId = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+
+	$(this).data("tabId", tabId);
+}
+
+// Set active tab by object reference
+Tab.setActive = function(tab)
+{
+	var $tab = $("#menu-" + tab.ALIAS);
+	
+	tab.onSetActive();
 
 	if($tab.is(".active"))
 		return;
 
-	$("#tabs-menu div").removeClass("active");
-	$("#tabs .tab-contents").removeClass("active");
+	$("#tabs-menu div, #tabs .tab-contents")
+		.removeClass("active");
+	
 	$tab.addClass("active");
 
 	$("#tabs .tab-contents")
@@ -19,21 +39,38 @@ Tab.setActive = function(alias)
 		.addClass("active");
 }
 
+// Called upon active item change
+Tab.onItemChange = function($item)
+{
+	$.each(Tab, function(_, tab)
+	{
+		if(typeof tab == "function")
+			return;
+		
+		tab.onItemChange($item);
+	});
+}
+
 // Called upon clicking the tab
 Tab.onClick = function()
 {
-	var alias = $(this)
-		.attr("id")
-		.substring(5);
-
-	Tab.setActive(alias);
+	var tabId = $(this).data("tabId");
+	Tab.setActive( Tab[tabId] );
 }
 
 Tab.init = function()
 {
-	$("#tabs-menu div").click(Tab.onClick);
+	$("#tabs-menu div")
+		.each(Tab.setAlias)
+		.click(Tab.onClick);
 	
-	ContentTab.init();
+	$.each(Tab, function(_, tab)
+	{
+		if(typeof tab == "function")
+			return;
+
+		tab.init();
+	});
 }
 
 module.exports = Tab;

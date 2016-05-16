@@ -116,7 +116,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 			$("#tab-content").data("content", response);
 			
 			var Tab = require("./Tab.js");
-			Tab.setActive("content");
+			Tab.setActive(Tab.Content);
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)

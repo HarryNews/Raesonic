@@ -1,6 +1,9 @@
 var Content = require("../modules/Content.js");
 
-var ContentTab = {};
+var ContentTab =
+{
+	ALIAS: "content",
+};
 
 // Set ability to switch between content to the boolean value
 ContentTab.setSwitchEnabled = function(enabled)
@@ -87,6 +90,28 @@ ContentTab.switchContent = function(forward, skipTrack)
 
 	var Item = require("../modules/Item.js");
 	Item.play($item);
+}
+
+// Called when the content tab becomes active
+ContentTab.onSetActive = function()
+{
+
+}
+
+// Called upon active item change
+ContentTab.onItemChange = function($item)
+{
+	// Clear content data if a different item is being set
+	if($item.data("itemId") != $("#tab-content").data("itemId"))
+	{
+		$("#tab-content").data
+		({
+			"itemId": $item.data("itemId"),
+			"content": []
+		});
+
+		ContentTab.setSwitchEnabled(true);
+	}
 }
 
 // Called upon clicking the previous content button

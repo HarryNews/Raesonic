@@ -9,6 +9,7 @@ module.exports = function(core)
 
 	var User = sequelize.models.User;
 	var Track = sequelize.models.Track;
+	var Content = sequelize.models.Content;
 	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
 
@@ -20,7 +21,7 @@ module.exports = function(core)
 			attributes: ["editId", "artist", "title", "date"],
 			limit: 20,
 			where: { trackId: req.params.trackId },
-			order: "editId DESC",
+			order: "editId ASC",
 			include:
 			[{
 				model: User,
@@ -50,39 +51,55 @@ module.exports = function(core)
 	// Retrieve all links for the content specified
 	HistoryController.getContentLinks = function(req, res)
 	{
-		ContentLink.all
+		Content.findOne
 		({
-			attributes: ["linkId", "date"],
-			limit: 20,
-			where: { contentId: req.params.contentId },
-			order: "linkId DESC",
-			include:
-			[{
-				model: Track,
-				attributes: ["artist", "title"],
-			},
+			attributes: ["contentId"],
+			where:
 			{
-				model: User,
-				attributes: ["username"],
-			}]
-		})
-		.then(function(contentLinks)
-		{
-			var response = [];
-
-			for(var index in contentLinks)
-			{
-				response.push
-				([
-					contentLinks[index].linkId,
-					contentLinks[index].Track.artist,
-					contentLinks[index].Track.title,
-					contentLinks[index].date,
-					contentLinks[index].User.username,
-				]);
+				sourceId: req.params.sourceId,
+				externalId: req.params.externalId
 			}
-			
-			res.json(response);
+		})
+		.then(function(content)
+		{
+			// Content doesn't exist, nothing to retrieve data for
+			if(!content)
+				return res.status(404).json({ errors: ["content not found"] });
+		
+			ContentLink.all
+			({
+				attributes: ["linkId", "date"],
+				limit: 20,
+				where: { contentId: content.contentId },
+				order: "linkId ASC",
+				include:
+				[{
+					model: Track,
+					attributes: ["artist", "title"],
+				},
+				{
+					model: User,
+					attributes: ["username"],
+				}]
+			})
+			.then(function(contentLinks)
+			{
+				var response = [];
+
+				for(var index in contentLinks)
+				{
+					response.push
+					([
+						contentLinks[index].linkId,
+						contentLinks[index].Track.artist,
+						contentLinks[index].Track.title,
+						contentLinks[index].date,
+						contentLinks[index].User.username,
+					]);
+				}
+				
+				res.json(response);
+			});
 		});
 	}
 
@@ -91,7 +108,7 @@ module.exports = function(core)
 		app.get("/tracks/:trackId(\\d+)/edits",
 			HistoryController.getTrackEdits);
 
-		app.get("/content/:contentId(\\d+)/links",
+		app.get("/content/:sourceId(\\d+)/:externalId/links",
 			HistoryController.getContentLinks);
 	}
 

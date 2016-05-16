@@ -104,18 +104,8 @@ Player.setItem = function($item)
 
 	$("#current-time, #total-time").text("00:00");
 	
-	// Clear content data if a different item is being set
-	if($item.data("itemId") != $("#tab-content").data("itemId"))
-	{
-		$("#tab-content").data
-		({
-			"itemId": $item.data("itemId"),
-			"content": []
-		});
-
-		var ContentTab = require("../tabs/ContentTab.js");
-		ContentTab.setSwitchEnabled(true);
-	}
+	var Tab = require("./Tab.js");
+	Tab.onItemChange($item);
 
 	var Content = require("./Content.js");
 
