@@ -722,16 +722,16 @@ body
 #tabs .section::-webkit-scrollbar
 {
 	height: 12px;
-	width: 14px;
+	width: 13px;
 	background: #B5B5B5;
 	border-left: 1px solid #797979;
-	border-right: 1px solid #797979;
+	border-right: none;
 }
 #tabs .section::-webkit-scrollbar-thumb
 {
 	background: #E8E8E8;
 	border-left: 1px solid #797979;
-	border-right: 1px solid #797979;
+	border-right: none;
 }
 #tabs .section .action
 {
