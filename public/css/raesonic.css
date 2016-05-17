@@ -420,20 +420,20 @@ body
 }
 .window-link.inner
 {
-	background-color: #4E4861;
+	background-color: #504860;
 	color: #EBEBEB;
 }
 .window-link.inner:hover
 {
-	background-color: #5E5871;
+	background-color: #5F586F;
 }
 .window-link.inner:nth-child(even)
 {
-	background-color: #464158;
+	background-color: #494257;
 }
 .window-link.inner:nth-child(even):hover
 {
-	background-color: #565168;
+	background-color: #585167;
 }
 
 #content-right
