@@ -120,8 +120,8 @@ Item.onEditIconClick = function()
 
 	if(trackExists)
 	{
-		Item.editing.artist = Item.formatArtist( $(":nth-child(1)", $item).html() );
-		Item.editing.title = Item.formatTitle( $(":nth-child(2)", $item).html() );
+		Item.editing.artist = Item.restoreArtist( $(":nth-child(1)", $item).html() );
+		Item.editing.title = Item.restoreTitle( $(":nth-child(2)", $item).html() );
 	}
 	
 	Overlay.create("Edit track",

@@ -205,7 +205,7 @@ HistoryTab.clearStorage = function()
 	$("#tab-history").removeData();
 }
 
-// Set active tab by alias
+// Set active section by alias
 HistoryTab.setActiveSection = function(alias)
 {
 	var $tab = $("#history-menu-" + alias);
