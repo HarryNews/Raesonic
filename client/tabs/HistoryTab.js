@@ -205,6 +205,24 @@ HistoryTab.clearStorage = function()
 	$("#tab-history").removeData();
 }
 
+// Set active tab by alias
+HistoryTab.setActiveSection = function(alias)
+{
+	var $tab = $("#history-menu-" + alias);
+
+	if($tab.is(".active"))
+		return;
+
+	$("#history-menu div, #tab-history .section")
+		.removeClass("active");
+	
+	$tab.addClass("active");
+
+	$("#tab-history .section")
+		.eq( $tab.index() )
+		.addClass("active");
+}
+
 // Called when the history tab becomes active
 HistoryTab.onSetActive = function($overrideItem)
 {
@@ -235,9 +253,17 @@ HistoryTab.onItemChange = function($item)
 	HistoryTab.onSetActive($item);
 }
 
+// Called upon clicking the menu button
+HistoryTab.onMenuClick = function()
+{
+	var alias = $(this).attr("id").substring(13);
+	HistoryTab.setActiveSection(alias);
+}
+
 HistoryTab.init = function()
 {
-
+	$("#history-menu div")
+		.click(HistoryTab.onMenuClick);
 }
 
 module.exports = HistoryTab;

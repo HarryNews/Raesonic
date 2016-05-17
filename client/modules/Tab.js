@@ -8,10 +8,10 @@ var Tab =
 // Store tab alias as a data value
 Tab.setAlias = function()
 {
+	var tabId = $(this).attr("id");
+
 	// "menu-related" > "related"
-	var tabId = $(this)
-		.attr("id")
-		.substring(5);
+	tabId = tabId.substring(tabId.indexOf("menu-") + 5);
 
 	// "related" > "Related"
 	tabId = tabId.charAt(0).toUpperCase() + tabId.slice(1);
@@ -51,8 +51,8 @@ Tab.onItemChange = function($item)
 	});
 }
 
-// Called upon clicking the tab
-Tab.onClick = function()
+// Called upon clicking the menu button
+Tab.onMenuClick = function()
 {
 	var tabId = $(this).data("tabId");
 	Tab.setActive( Tab[tabId] );
@@ -62,7 +62,7 @@ Tab.init = function()
 {
 	$("#tabs-menu div")
 		.each(Tab.setAlias)
-		.click(Tab.onClick);
+		.click(Tab.onMenuClick);
 	
 	$.each(Tab, function(_, tab)
 	{
