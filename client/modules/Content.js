@@ -5,6 +5,12 @@ var Content =
 		YOUTUBE: 1,
 		SOUNDCLOUD: 2,
 	},
+	SOURCE_NAMES:
+	[
+		"None",
+		"YouTube Video",
+		"SoundCloud Track",
+	],
 	// Action on content lookup
 	AUTOMATIC_SWITCH: false,
 	ASSIGN_TO_ITEM: true,

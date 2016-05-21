@@ -314,6 +314,7 @@ body
 	background-color: rgba(0, 0, 0, 0.8);
 	width: 100%;
 	height: 100%;
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -337,6 +338,43 @@ body
 	color: #EBEBEB;
 	font-size: 17px;
 }
+#window p
+{
+	padding: 15px 20px 0 20px;
+	line-height: 15px;
+	font-size: 14px;
+}
+#window p.subject
+{
+	background-color: #F5F5F5;
+	color: #3D3749;
+	font-size: 14px;
+	line-height: 20px;
+	margin-top: 10px;
+	padding: 3px 20px 3px 20px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#window p.subject.content
+{
+	padding-left: 77px;
+}
+#window p.extra.subject
+{
+	margin-top: 3px;
+}
+#window .content-thumbnail
+{
+	width: 46px;
+	height: 46px;
+	position: absolute;
+	left: 20px;
+	margin-top: -47px;
+	object-fit: contain;
+	background-color: #000;
+	border: 1px solid #B2AFB6;
+}
 #window input
 {
 	background: none;
@@ -358,6 +396,54 @@ body
 	border-bottom: 1px solid #75698C;
 	box-shadow: 0px -1px 0 0 #75698C inset;
 }
+#window input[type="radio"]
+{
+	width: 27px;
+	height: 27px;
+	display: inline-block;
+	vertical-align: -8px;
+	margin: 12px 0 0 20px;
+	-webkit-appearance: none;
+	border: 1px solid #B2AFB6;
+	border-radius: 100%;
+	cursor: pointer;
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
+}
+#window input[type="radio"]:focus
+{
+	border: 1px solid #B2AFB6;
+	box-shadow: none;
+}
+#window input[type="radio"]:checked
+{
+	background-color: #CCC;
+}
+#window input[type="radio"]::after
+{
+	content: '';
+	display: block;
+	position: absolute;
+	width: 13px;
+	height: 13px;
+	margin: 6px;
+	border-radius: 100%;
+	background-color: rgba(117, 105, 140, 0);
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
+}
+#window input[type="radio"]:hover::after
+{
+	background-color: rgba(117, 105, 140, 0.2);
+}
+#window input[type="radio"]:checked::after
+{
+	background-color: #75698C;
+}
 #window input.error
 {
 	border-bottom: 1px solid #C10000;
@@ -372,6 +458,19 @@ body
 	color: #A10000;
 	position: absolute;
 	margin: 0 20px 0 20px;
+}
+#window label
+{
+	display: inline-block;
+	width: 265px;
+	color: #3D3749;
+	font-size: 14px;
+	padding-left: 12px;
+	cursor: pointer;
+}
+#window label:last-of-type
+{
+	margin-bottom: 20px;
 }
 #window button
 {
@@ -581,6 +680,10 @@ body
 	font-size: 18px;
 	color: #FFF;
 	cursor: pointer;
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
 }
 #tabs-menu div:hover, #tabs .section-menu div:hover
 {
@@ -767,6 +870,35 @@ body
 #tabs .action .artist, #tabs .action .date
 {
 	font-size: 13px;
+}
+#tabs .action .icon
+{
+	font-size: 14px;
+	margin: 0 4px 0 5px;
+	color: #AFA9BC;
+	-webkit-transition: color ease-out 200ms;
+	-moz-transition: color ease-out 200ms;
+	-o-transition: color ease-out 200ms;
+	transition: color ease-out 200ms;
+}
+#tabs .action .icon:hover
+{
+	color: #3D3749;
+}
+#tabs .action .flag.icon
+{
+	font-size: 13px;
+	margin-left: 4px;
+	vertical-align: 1px;
+}
+#tabs .action .active.flag.icon
+{
+	color: #D6855C;
+	cursor: default;
+}
+#tabs .action .date.icon
+{
+	cursor: default;
 }
 #tabs .section-menu
 {

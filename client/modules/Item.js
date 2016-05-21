@@ -92,66 +92,17 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				$("#meta-artist").html(artist);
 				$("#meta-title").html(title);
 
-				var Tab = require("./Tab.js");
-				Tab.History.clearStorage();
-				Tab.setActive(Tab.History);
+				setTimeout(function()
+				{
+					var Tab = require("./Tab.js");
+					Tab.History.clearStorage();
+					Tab.setActive(Tab.History);
+				}, 3000);
 			}
 
 			$items.data("trackId", trackId);
 			Overlay.destroy();
 		}
-	});
-}
-
-// Start editing the item
-Item.onEditIconClick = function()
-{
-	$item = $(this).parent();
-
-	Item.editing = 
-	{
-		itemId: $item.data("itemId"),
-		trackId: $item.data("trackId"),
-		artist: "",
-		title: "",
-	};
-	
-	var trackExists = (Item.editing.trackId != -1);
-
-	if(trackExists)
-	{
-		Item.editing.artist = Item.restoreArtist( $(":nth-child(1)", $item).html() );
-		Item.editing.title = Item.restoreTitle( $(":nth-child(2)", $item).html() );
-	}
-	
-	Overlay.create("Edit track",
-	[{
-		tag: "<input>",
-		attributes:
-		{
-			id: "edit-artist",
-			type: "text",
-			maxlength: 50,
-			placeholder: "Artist",
-		},
-		val: Item.editing.artist,
-		keyup: Item.updateEditOverlay,
-	},
-	{
-		tag: "<input>",
-		attributes:
-		{
-			id: "edit-title",
-			type: "text",
-			maxlength: 50,
-			placeholder: "Title",
-		},
-		val: Item.editing.title,
-		keyup: Item.updateEditOverlay,
-	}],
-	function onOverlayCreate()
-	{
-		Item.updateEditOverlay();
 	});
 }
 
@@ -207,6 +158,58 @@ Item.onClick = function()
 {
 	var $item = $(this).parent();
 	Item.play($item);
+}
+
+// Called upon clicking the pencil icon
+Item.onEditIconClick = function()
+{
+	$item = $(this).parent();
+
+	Item.editing = 
+	{
+		itemId: $item.data("itemId"),
+		trackId: $item.data("trackId"),
+		artist: "",
+		title: "",
+	};
+	
+	var trackExists = (Item.editing.trackId != -1);
+
+	if(trackExists)
+	{
+		Item.editing.artist = Item.restoreArtist( $(":nth-child(1)", $item).html() );
+		Item.editing.title = Item.restoreTitle( $(":nth-child(2)", $item).html() );
+	}
+	
+	Overlay.create("Edit track",
+	[{
+		tag: "<input>",
+		attributes:
+		{
+			id: "edit-artist",
+			type: "text",
+			maxlength: 50,
+			placeholder: "Artist",
+		},
+		val: Item.editing.artist,
+		keyup: Item.updateEditOverlay,
+	},
+	{
+		tag: "<input>",
+		attributes:
+		{
+			id: "edit-title",
+			type: "text",
+			maxlength: 50,
+			placeholder: "Title",
+		},
+		val: Item.editing.title,
+		keyup: Item.updateEditOverlay,
+	}],
+	function onOverlayCreate()
+	{
+		Item.updateEditOverlay();
+	});
 }
 
 // Called upon clicking the save button in the overlay

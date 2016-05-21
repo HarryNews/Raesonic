@@ -42,10 +42,14 @@ Overlay.create = function(name, elements, done)
 
 Overlay.createElement = function(data)
 {
-	var $element = $(data.tag).attr(data.attributes);
-
+	var $element = $(data.tag);
 	delete data.tag;
-	delete data.attributes;
+
+	if(data.attributes)
+	{
+		$element.attr(data.attributes);
+		delete data.attributes;
+	}
 
 	for(var method in data)
 		$element[method]( data[method] );
@@ -69,20 +73,36 @@ Overlay.isActive = function()
 	return !$("#overlay").is(".hidden");
 }
 
+// Returns active radio button
+Overlay.getActiveRadioButton = function()
+{
+	return $("#window input[type=\"radio\"]:checked");
+}
+
 // Flags an input field with an error message
-Overlay.setError = function(elementId, message)
+Overlay.setError = function(selector, message)
 {
 	// Remove previous error element if it exists
-	$(elementId + " + .input-error").remove();
+	$(selector + " + .input-error").remove();
 
 	// Add a new error element with provided message
-	$(elementId)
+	$(selector)
 		.addClass("error")
 		.after(
 			$("<div>")
 				.addClass("input-error")
 				.text(message)
 		);
+}
+
+Overlay.shakeRadioButtonLabels = function()
+{
+	$("#window label")
+		.stop(true, true)
+		.animate({"padding-left": 15}, 100)
+		.animate({"padding-left": 12}, 100)
+		.animate({"padding-left": 15}, 100)
+		.animate({"padding-left": 12}, 100);
 }
 
 // Returns true if there is at least one error

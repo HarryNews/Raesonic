@@ -64,12 +64,14 @@ Relation.vote = function(trackId, linkedId, vote)
 }
 
 // Flag a relation between two tracks as inappropriate
-Relation.flag = function(trackId, linkedId)
+Relation.flag = function(trackId, linkedId, reasonId)
 {
 	$.ajax
 	({
 		url: "/tracks/" + trackId + "/relations/" + linkedId + "/flags/",
 		type: "POST",
+		data: JSON.stringify({ reasonId: reasonId }),
+		contentType: "application/json",
 		success: function(response)
 		{
 			if(response.errors)

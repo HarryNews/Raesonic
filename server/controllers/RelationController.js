@@ -36,7 +36,7 @@ module.exports = function(core)
 		{
 			// At least one of the tracks is missing to create a relation
 			if(amount != 2)
-				return res.status(500).json({ errors: ["internal error"] });
+				return res.status(404).json({ errors: ["track not found"] });
 		});
 
 		// todo: use ReputationController.getVoteValue(req.user)
@@ -163,7 +163,7 @@ module.exports = function(core)
 		{
 			// Relation doesn't exist, nothing to vote on
 			if(!relation)
-				return res.status(500).json({ errors: ["internal error"] });
+				return res.status(404).json({ errors: ["relation not found"] });
 
 			// todo: use ReputationController.getVoteValue(req.user) * req.body.vote;
 			var voteValue = 1 * req.body.vote;
@@ -236,15 +236,31 @@ module.exports = function(core)
 		{
 			// Relation doesn't exist, nothing to flag
 			if(!relation)
-				return res.status(500).json({ errors: ["internal error"] });
+				return res.status(404).json({ errors: ["relation not found"] });
 
 			RelationFlag.findOrCreate
 			({
+				defaults: { reasonId: req.body.reasonId },
 				where:
 				{
 					relationId: relation.relationId,
 					userId: req.user.userId,
+					resolved: 0,
 				}
+			})
+			.spread(function(flag, created)
+			{
+				// No changes required, bail out
+				if(created || flag.reasonId == req.body.reasonId)
+					return;
+
+				RelationFlag.update
+				({
+					reasonId: req.body.reasonId,
+				},
+				{
+					where: { flagId: flag.flagId },
+				});
 			});
 			
 			res.json( [] );
@@ -282,6 +298,12 @@ module.exports = function(core)
 		return (vote == -1 || vote == 1);
 	}
 
+	// Returns true if the flag reason id is valid
+	RelationController.validateFlagReasonId = function(reasonId)
+	{
+		return (reasonId == 1 || reasonId == 2);
+	}
+
 	RelationController.init = function()
 	{
 		app.post("/relations",
@@ -303,6 +325,10 @@ module.exports = function(core)
 			RelationController.updateRelationVote);
 
 		app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
+			paperwork.accept
+			({
+				reasonId: paperwork.all(Number, RelationController.validateFlagReasonId),
+			}),
 			RelationController.createRelationFlag);
 	}
 

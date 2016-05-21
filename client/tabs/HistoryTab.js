@@ -1,4 +1,5 @@
 var Diff = require("diff");
+var Overlay = require("../modules/Overlay.js");
 
 var HistoryTab =
 {
@@ -8,8 +9,23 @@ var HistoryTab =
 	TYPE_CONTENT_LINKS: 2,
 };
 
-// Request history for specified entity
-HistoryTab.request = function(historyType, entityId)
+HistoryTab.FLAG_REASONS =
+{
+	[HistoryTab.TYPE_TRACK_EDITS]:
+	[
+		[1, "reason-mismatching", "Mismatching information"],
+		[2, "reason-incorrect", "Intentionally incorrect"],
+	],
+	[HistoryTab.TYPE_CONTENT_LINKS]:
+	[
+		[1, "reason-mismatching", "Mismatching association"],
+		[2, "reason-incorrect", "Intentionally incorrect"],
+		[3, "reason-unavailable", "Content not available"],
+	]
+};
+
+// Request history actions for specified entity
+HistoryTab.requestActions = function(historyType, entityId)
 {
 	var request = {};
 
@@ -19,7 +35,7 @@ HistoryTab.request = function(historyType, entityId)
 		{
 			request =
 			{
-				url: "/tracks/" + entityId + "/edits/",
+				url: "/tracks/" + entityId + "/edits",
 				key: "track-edits",
 				field: "trackId",
 				diff: true,
@@ -31,7 +47,7 @@ HistoryTab.request = function(historyType, entityId)
 		{
 			request =
 			{
-				url: "/content/" + entityId + "/links/",
+				url: "/content/" + entityId + "/links",
 				key: "content-links",
 				field: "externalId",
 			};
@@ -43,6 +59,12 @@ HistoryTab.request = function(historyType, entityId)
 			return;
 		}
 	}
+
+	// Remove existing actions
+	var $destination = $("#history-" + request.key);
+	$destination.empty();
+
+	$destination.data("entityId", entityId);
 	
 	// Remove sourceId part from the entityId
 	if(request.field == "externalId")
@@ -54,10 +76,6 @@ HistoryTab.request = function(historyType, entityId)
 		[request.key]: [],
 		[request.field]: entityId,
 	});
-
-	// Remove existing actions
-	var $destination = $("#history-" + request.key);
-	$destination.empty();
 
 	// No track attached, bail out
 	if(request.field == "trackId" && entityId == -1)
@@ -127,11 +145,12 @@ HistoryTab.request = function(historyType, entityId)
 					}
 				}
 
-				date = HistoryTab.getRelativeDate(date);
+				var relativeDate = HistoryTab.getRelativeDate(date);
 
 				$destination.prepend(
 					$("<div>")
 						.addClass("action")
+						.data("actionId", actionId)
 						.append(
 							$("<div>")
 								.addClass("changes")
@@ -148,14 +167,66 @@ HistoryTab.request = function(historyType, entityId)
 								.append(
 									$("<div>")
 										.addClass("user")
-										.text(username),
+										.text(username)
+										.append(
+											$("<div>")
+												.addClass("flag icon fa fa-flag")
+												.attr("title", "Flag for moderator attention")
+												.click(HistoryTab.onFlagIconClick)
+										),
 									$("<div>")
 										.addClass("date")
-										.text(date)
+										.text(relativeDate)
+										.append(
+											$("<div>")
+												.addClass("date icon fa fa-clock-o")
+												.attr("title", new Date(date).toString())
+										)
 								)
 						)
 				);
-			})
+			});
+		}
+	});
+}
+
+// Flag a history action as inappropriate
+HistoryTab.flagAction = function(historyType, entityId, actionId, reasonId)
+{
+	var flagUrl;
+
+	switch(historyType)
+	{
+		case HistoryTab.TYPE_TRACK_EDITS:
+		{
+			flagUrl = "/tracks/" + entityId + "/edits/" + actionId + "/flags/";
+			break;
+		}
+		case HistoryTab.TYPE_CONTENT_LINKS:
+		{
+			flagUrl = "/content/" + entityId + "/links/" + actionId + "/flags/";
+			break;
+		}
+		default:
+		{
+			return;
+		}
+	}
+
+	$.ajax
+	({
+		url: flagUrl,
+		type: "POST",
+		data: JSON.stringify({ reasonId: reasonId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+			
+			// todo: update flag icon state to active
+
+			Overlay.destroy();
 		}
 	});
 }
@@ -223,6 +294,191 @@ HistoryTab.setActiveSection = function(alias)
 		.addClass("active");
 }
 
+// Called once upon creating a flag overlay
+HistoryTab.initFlagOverlay = function(historyType)
+{
+	HistoryTab.FLAG_REASONS[historyType].forEach(function(reason)
+	{
+		var $radio = Overlay.createElement
+		({
+			tag: "<input>",
+			attributes:
+			{
+				id: reason[1],
+				type: "radio",
+				name: "flag-reason",
+			},
+			data: { "reasonId": reason[0] }
+		});
+
+		var $label = Overlay.createElement
+		({
+			tag: "<label>",
+			attributes:
+			{
+				for: reason[1],
+			},
+			text: reason[2],
+		});
+
+		$("#flag-submit")
+			.before($radio)
+			.before($label);
+	});
+}
+
+// Called upon clicking the flag icon
+HistoryTab.onFlagIconClick = function()
+{
+	if($(this).is(".active"))
+		return;
+
+	if(Overlay.isActive())
+		return;
+
+	var summary;
+	var subject;
+	var extraSubject;
+
+	var $action = $(this).closest(".action");
+	var historyType = $("#tab-history .active.section").data("type");
+
+	switch(historyType)
+	{
+		case HistoryTab.TYPE_TRACK_EDITS:
+		{
+			summary = "You are reporting the following track name:";
+			subject = $action.find(".artist").text() + "<br>" +
+				$action.find(".title").text();
+			
+			break;
+		}
+		case HistoryTab.TYPE_CONTENT_LINKS:
+		{
+			var $item = $(".item.active");
+
+			// No active item, bail out
+			if(!$item.length)
+				return;
+
+			var Content = require("../modules/Content.js");
+			var sourceName = Content.SOURCE_NAMES[ $item.data("sourceId") ];
+
+			summary = "You are reporting the following association:";
+			subject = sourceName + " <br>" +
+				"#" + $item.data("externalId");
+			extraSubject = $action.find(".artist").text() + "<br>" +
+				$action.find(".title").text();
+
+			break;
+		}
+		default:
+		{
+			return;
+		}
+	}
+
+	var elements = [];
+
+	elements.push
+	({
+		tag: "<p>",
+		text: summary,
+	},
+	{
+		tag: "<p>",
+		attributes:
+		{
+			id: "flag-subject",
+			class: (historyType == HistoryTab.TYPE_CONTENT_LINKS)
+				? "content subject"
+				: "subject",
+		},
+		html: subject,
+		data:
+		{
+			type: historyType,
+			entityId: $action.parent().data("entityId"),
+			actionId: $action.data("actionId"),
+		}
+	});
+
+	if(typeof extraSubject != "undefined")
+	{
+		if(historyType == HistoryTab.TYPE_CONTENT_LINKS)
+		{
+			elements.push
+			({
+				tag: "<img>",
+				attributes:
+				{
+					class: "content-thumbnail",
+					src: $("#content-image img").attr("src"),
+				},
+			});
+		}
+
+		elements.push
+		({
+			tag: "<p>",
+			attributes:
+			{
+				id: "flag-extra-subject",
+				class: "extra subject",
+			},
+			html: extraSubject,
+		});
+	}
+
+	elements.push
+	({
+		tag: "<p>",
+		text: "Please select one of the reasons below:",
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "flag-submit",
+			class: "inner window-link",
+		},
+		text: "Submit Report",
+		click: HistoryTab.onFlagSubmitClick,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "flag-cancel",
+			class: "window-link",
+		},
+		text: "Cancel",
+		click: Overlay.destroy,
+	});
+
+	Overlay.create("Flag for moderator attention",
+	elements,
+	function onOverlayCreate()
+	{
+		HistoryTab.initFlagOverlay(historyType);
+	});
+}
+
+// Called when the submit report button is pressed
+HistoryTab.onFlagSubmitClick = function()
+{
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+		return Overlay.shakeRadioButtonLabels();
+
+	var reasonId = $radio.data("reasonId");
+	var data = $("#flag-subject").data();
+
+	HistoryTab.flagAction(data.type, data.entityId, data.actionId,
+		reasonId);
+}
+
 // Called when the history tab becomes active
 HistoryTab.onSetActive = function($overrideItem)
 {
@@ -235,14 +491,14 @@ HistoryTab.onSetActive = function($overrideItem)
 	// Update track edits data if a different track is being set
 	if($item.data("trackId") != $("#tab-history").data("trackId"))
 	{
-		HistoryTab.request( HistoryTab.TYPE_TRACK_EDITS,
+		HistoryTab.requestActions( HistoryTab.TYPE_TRACK_EDITS,
 			$item.data("trackId") );
 	}
 
 	// Update content links data if a different content is being set
 	if($item.data("externalId") != $("#tab-history").data("externalId"))
 	{
-		HistoryTab.request( HistoryTab.TYPE_CONTENT_LINKS,
+		HistoryTab.requestActions( HistoryTab.TYPE_CONTENT_LINKS,
 			$item.data("sourceId") + "/" + $item.data("externalId") );
 	}
 }
@@ -264,6 +520,9 @@ HistoryTab.init = function()
 {
 	$("#history-menu div")
 		.click(HistoryTab.onMenuClick);
+
+	$("#history-track-edits").data("type", HistoryTab.TYPE_TRACK_EDITS);
+	$("#history-content-links").data("type", HistoryTab.TYPE_CONTENT_LINKS);
 }
 
 module.exports = HistoryTab;
