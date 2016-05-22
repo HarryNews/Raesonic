@@ -163,6 +163,11 @@ Item.onClick = function()
 // Called upon clicking the pencil icon
 Item.onEditIconClick = function()
 {
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+	
 	$item = $(this).parent();
 
 	Item.editing = 

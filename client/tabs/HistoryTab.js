@@ -1,5 +1,5 @@
 var Diff = require("diff");
-var Overlay = require("../modules/Overlay.js");
+var Flag = require("../modules/Flag.js");
 
 var HistoryTab =
 {
@@ -7,21 +7,6 @@ var HistoryTab =
 	// History action types
 	TYPE_TRACK_EDITS: 1,
 	TYPE_CONTENT_LINKS: 2,
-};
-
-HistoryTab.FLAG_REASONS =
-{
-	[HistoryTab.TYPE_TRACK_EDITS]:
-	[
-		[1, "reason-mismatching", "Mismatching information"],
-		[2, "reason-incorrect", "Intentionally incorrect"],
-	],
-	[HistoryTab.TYPE_CONTENT_LINKS]:
-	[
-		[1, "reason-mismatching", "Mismatching association"],
-		[2, "reason-incorrect", "Intentionally incorrect"],
-		[3, "reason-unavailable", "Content not available"],
-	]
 };
 
 // Request history actions for specified entity
@@ -35,10 +20,11 @@ HistoryTab.requestActions = function(historyType, entityId)
 		{
 			request =
 			{
-				url: "/tracks/" + entityId + "/edits",
+				url: "/tracks/" + entityId + "/edits/",
 				key: "track-edits",
 				field: "trackId",
 				diff: true,
+				entityType: Flag.ENTITY.TRACK_EDIT,
 			};
 
 			break;
@@ -47,9 +33,10 @@ HistoryTab.requestActions = function(historyType, entityId)
 		{
 			request =
 			{
-				url: "/content/" + entityId + "/links",
+				url: "/content/" + entityId + "/links/",
 				key: "content-links",
 				field: "externalId",
+				entityType: Flag.ENTITY.CONTENT_LINK,
 			};
 
 			break;
@@ -64,7 +51,7 @@ HistoryTab.requestActions = function(historyType, entityId)
 	var $destination = $("#history-" + request.key);
 	$destination.empty();
 
-	$destination.data("entityId", entityId);
+	var fullEntityId = entityId;
 	
 	// Remove sourceId part from the entityId
 	if(request.field == "externalId")
@@ -111,6 +98,7 @@ HistoryTab.requestActions = function(historyType, entityId)
 				var title = action[2];
 				var date = action[3];
 				var username = action[4];
+				var active = action[5];
 
 				var change = [artist, title];
 
@@ -150,7 +138,6 @@ HistoryTab.requestActions = function(historyType, entityId)
 				$destination.prepend(
 					$("<div>")
 						.addClass("action")
-						.data("actionId", actionId)
 						.append(
 							$("<div>")
 								.addClass("changes")
@@ -171,8 +158,17 @@ HistoryTab.requestActions = function(historyType, entityId)
 										.append(
 											$("<div>")
 												.addClass("flag icon fa fa-flag")
+												.toggleClass("active", active)
 												.attr("title", "Flag for moderator attention")
-												.click(HistoryTab.onFlagIconClick)
+												.data
+												({
+													entityType: request.entityType,
+													entityId: fullEntityId,
+													secondId: actionId,
+													artist: change[0],
+													title: change[1],
+												})
+												.click(Flag.onIconClick)
 										),
 									$("<div>")
 										.addClass("date")
@@ -186,47 +182,6 @@ HistoryTab.requestActions = function(historyType, entityId)
 						)
 				);
 			});
-		}
-	});
-}
-
-// Flag a history action as inappropriate
-HistoryTab.flagAction = function(historyType, entityId, actionId, reasonId)
-{
-	var flagUrl;
-
-	switch(historyType)
-	{
-		case HistoryTab.TYPE_TRACK_EDITS:
-		{
-			flagUrl = "/tracks/" + entityId + "/edits/" + actionId + "/flags/";
-			break;
-		}
-		case HistoryTab.TYPE_CONTENT_LINKS:
-		{
-			flagUrl = "/content/" + entityId + "/links/" + actionId + "/flags/";
-			break;
-		}
-		default:
-		{
-			return;
-		}
-	}
-
-	$.ajax
-	({
-		url: flagUrl,
-		type: "POST",
-		data: JSON.stringify({ reasonId: reasonId }),
-		contentType: "application/json",
-		success: function(response)
-		{
-			if(response.errors)
-				return;
-			
-			// todo: update flag icon state to active
-
-			Overlay.destroy();
 		}
 	});
 }
@@ -292,191 +247,6 @@ HistoryTab.setActiveSection = function(alias)
 	$("#tab-history .section")
 		.eq( $tab.index() )
 		.addClass("active");
-}
-
-// Called once upon creating a flag overlay
-HistoryTab.initFlagOverlay = function(historyType)
-{
-	HistoryTab.FLAG_REASONS[historyType].forEach(function(reason)
-	{
-		var $radio = Overlay.createElement
-		({
-			tag: "<input>",
-			attributes:
-			{
-				id: reason[1],
-				type: "radio",
-				name: "flag-reason",
-			},
-			data: { "reasonId": reason[0] }
-		});
-
-		var $label = Overlay.createElement
-		({
-			tag: "<label>",
-			attributes:
-			{
-				for: reason[1],
-			},
-			text: reason[2],
-		});
-
-		$("#flag-submit")
-			.before($radio)
-			.before($label);
-	});
-}
-
-// Called upon clicking the flag icon
-HistoryTab.onFlagIconClick = function()
-{
-	if($(this).is(".active"))
-		return;
-
-	if(Overlay.isActive())
-		return;
-
-	var summary;
-	var subject;
-	var extraSubject;
-
-	var $action = $(this).closest(".action");
-	var historyType = $("#tab-history .active.section").data("type");
-
-	switch(historyType)
-	{
-		case HistoryTab.TYPE_TRACK_EDITS:
-		{
-			summary = "You are reporting the following track name:";
-			subject = $action.find(".artist").text() + "<br>" +
-				$action.find(".title").text();
-			
-			break;
-		}
-		case HistoryTab.TYPE_CONTENT_LINKS:
-		{
-			var $item = $(".item.active");
-
-			// No active item, bail out
-			if(!$item.length)
-				return;
-
-			var Content = require("../modules/Content.js");
-			var sourceName = Content.SOURCE_NAMES[ $item.data("sourceId") ];
-
-			summary = "You are reporting the following association:";
-			subject = sourceName + " <br>" +
-				"#" + $item.data("externalId");
-			extraSubject = $action.find(".artist").text() + "<br>" +
-				$action.find(".title").text();
-
-			break;
-		}
-		default:
-		{
-			return;
-		}
-	}
-
-	var elements = [];
-
-	elements.push
-	({
-		tag: "<p>",
-		text: summary,
-	},
-	{
-		tag: "<p>",
-		attributes:
-		{
-			id: "flag-subject",
-			class: (historyType == HistoryTab.TYPE_CONTENT_LINKS)
-				? "content subject"
-				: "subject",
-		},
-		html: subject,
-		data:
-		{
-			type: historyType,
-			entityId: $action.parent().data("entityId"),
-			actionId: $action.data("actionId"),
-		}
-	});
-
-	if(typeof extraSubject != "undefined")
-	{
-		if(historyType == HistoryTab.TYPE_CONTENT_LINKS)
-		{
-			elements.push
-			({
-				tag: "<img>",
-				attributes:
-				{
-					class: "content-thumbnail",
-					src: $("#content-image img").attr("src"),
-				},
-			});
-		}
-
-		elements.push
-		({
-			tag: "<p>",
-			attributes:
-			{
-				id: "flag-extra-subject",
-				class: "extra subject",
-			},
-			html: extraSubject,
-		});
-	}
-
-	elements.push
-	({
-		tag: "<p>",
-		text: "Please select one of the reasons below:",
-	},
-	{
-		tag: "<div>",
-		attributes:
-		{
-			id: "flag-submit",
-			class: "inner window-link",
-		},
-		text: "Submit Report",
-		click: HistoryTab.onFlagSubmitClick,
-	},
-	{
-		tag: "<div>",
-		attributes:
-		{
-			id: "flag-cancel",
-			class: "window-link",
-		},
-		text: "Cancel",
-		click: Overlay.destroy,
-	});
-
-	Overlay.create("Flag for moderator attention",
-	elements,
-	function onOverlayCreate()
-	{
-		HistoryTab.initFlagOverlay(historyType);
-	});
-}
-
-// Called when the submit report button is pressed
-HistoryTab.onFlagSubmitClick = function()
-{
-	var $radio = Overlay.getActiveRadioButton();
-
-	if(!$radio.length)
-		return Overlay.shakeRadioButtonLabels();
-
-	var reasonId = $radio.data("reasonId");
-	var data = $("#flag-subject").data();
-
-	HistoryTab.flagAction(data.type, data.entityId, data.actionId,
-		reasonId);
 }
 
 // Called when the history tab becomes active

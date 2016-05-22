@@ -18,17 +18,34 @@ module.exports = function(core)
 	// Retrieve all track name changes
 	HistoryController.getTrackEdits = function(req, res)
 	{
+		var include =
+		[{
+			model: User,
+			attributes: ["userId", "username"],
+		}];
+
+		if(req.user)
+		{
+			include.push
+			({
+				model: TrackEditFlag,
+				attributes: ["flagId", "resolved", "userId"],
+				where:
+				{
+					userId: req.user.userId,
+					resolved: 0,
+				},
+				required: false,
+			});
+		}
+
 		TrackEdit.all
 		({
-			attributes: ["editId", "artist", "title", "date"],
+			attributes: ["editId", "artist", "title", "date", "userId"],
 			limit: 20,
 			where: { trackId: req.params.trackId },
 			order: "editId ASC",
-			include:
-			[{
-				model: User,
-				attributes: ["username"],
-			}]
+			include: include,
 		})
 		.then(function(trackEdits)
 		{
@@ -43,6 +60,8 @@ module.exports = function(core)
 					trackEdits[index].title,
 					trackEdits[index].date,
 					trackEdits[index].User.username,
+					(typeof trackEdits[index].TrackEditFlags != "undefined" &&
+						trackEdits[index].TrackEditFlags.length != 0),
 				]);
 			}
 			
@@ -67,22 +86,39 @@ module.exports = function(core)
 			// Content doesn't exist, nothing to retrieve data for
 			if(!content)
 				return res.status(404).json({ errors: ["content not found"] });
+
+			var include =
+			[{
+				model: Track,
+				attributes: ["artist", "title"],
+			},
+			{
+				model: User,
+				attributes: ["username"],
+			}];
+
+			if(req.user)
+			{
+				include.push
+				({
+					model: ContentLinkFlag,
+					attributes: ["flagId", "resolved", "userId"],
+					where:
+					{
+						userId: req.user.userId,
+						resolved: 0,
+					},
+					required: false,
+				});
+			}
 		
 			ContentLink.all
 			({
-				attributes: ["linkId", "date"],
+				attributes: ["linkId", "date", "trackId", "userId"],
 				limit: 20,
 				where: { contentId: content.contentId },
 				order: "linkId ASC",
-				include:
-				[{
-					model: Track,
-					attributes: ["artist", "title"],
-				},
-				{
-					model: User,
-					attributes: ["username"],
-				}]
+				include: include,
 			})
 			.then(function(contentLinks)
 			{
@@ -97,6 +133,8 @@ module.exports = function(core)
 						contentLinks[index].Track.title,
 						contentLinks[index].date,
 						contentLinks[index].User.username,
+						(typeof contentLinks[index].ContentLinkFlags != "undefined" &&
+							contentLinks[index].ContentLinkFlags.length != 0),
 					]);
 				}
 				
