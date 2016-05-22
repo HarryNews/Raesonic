@@ -208,65 +208,6 @@ module.exports = function(core)
 		});
 	}
 
-	// Create a flag marking relation as inappropriate
-	RelationController.createRelationFlag = function(req, res)
-	{
-		if(!req.user)
-			return res.status(401).json({ errors: ["not authenticated"] });
-
-		Relation.findOne
-		({
-			attributes: ["relationId"],
-			where:
-			{
-				$or:
-				[
-					{
-						trackId: req.params.trackId,
-						linkedId: req.params.linkedId
-					},
-					{
-						trackId: req.params.linkedId,
-						linkedId: req.params.trackId
-					}
-				]
-			}
-		})
-		.then(function(relation)
-		{
-			// Relation doesn't exist, nothing to flag
-			if(!relation)
-				return res.status(404).json({ errors: ["relation not found"] });
-
-			RelationFlag.findOrCreate
-			({
-				defaults: { reasonId: req.body.reasonId },
-				where:
-				{
-					relationId: relation.relationId,
-					userId: req.user.userId,
-					resolved: 0,
-				}
-			})
-			.spread(function(flag, created)
-			{
-				// No changes required, bail out
-				if(created || flag.reasonId == req.body.reasonId)
-					return;
-
-				RelationFlag.update
-				({
-					reasonId: req.body.reasonId,
-				},
-				{
-					where: { flagId: flag.flagId },
-				});
-			});
-			
-			res.json( [] );
-		});
-	}
-
 	// Apply vote changes to a relation
 	RelationController.updateRelationTrust = function(relation, voteValue, res)
 	{
@@ -298,12 +239,6 @@ module.exports = function(core)
 		return (vote == -1 || vote == 1);
 	}
 
-	// Returns true if the flag reason id is valid
-	RelationController.validateFlagReasonId = function(reasonId)
-	{
-		return (reasonId == 1 || reasonId == 2);
-	}
-
 	RelationController.init = function()
 	{
 		app.post("/relations",
@@ -323,13 +258,6 @@ module.exports = function(core)
 				vote: paperwork.all(Number, RelationController.validateVote),
 			}),
 			RelationController.updateRelationVote);
-
-		app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
-			paperwork.accept
-			({
-				reasonId: paperwork.all(Number, RelationController.validateFlagReasonId),
-			}),
-			RelationController.createRelationFlag);
 	}
 
 	return RelationController;
