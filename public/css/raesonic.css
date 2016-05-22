@@ -696,6 +696,24 @@ body
 	cursor: default;
 }
 
+#tabs-overlay
+{
+	position: absolute;
+	background-color: #565062;
+	width: 100%;
+	height: calc(100% - 327px);
+	bottom: 0;
+	opacity: 0;
+	-webkit-transition: opacity ease-out 500ms;
+	-moz-transition: opacity ease-out 500ms;
+	-o-transition: opacity ease-out 500ms;
+	transition: opacity ease-out 500ms;
+}
+#tabs-overlay.visible
+{
+	opacity: 1;
+}
+
 #tabs .tab-contents
 {
 	display: none;
