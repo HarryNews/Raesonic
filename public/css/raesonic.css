@@ -704,6 +704,7 @@ body
 	height: calc(100% - 327px);
 	bottom: 0;
 	opacity: 0;
+	pointer-events: none;
 	-webkit-transition: opacity ease-out 500ms;
 	-moz-transition: opacity ease-out 500ms;
 	-o-transition: opacity ease-out 500ms;
@@ -712,6 +713,7 @@ body
 #tabs-overlay.visible
 {
 	opacity: 1;
+	pointer-events: all;
 }
 
 #tabs .tab-contents
@@ -756,15 +758,12 @@ body
 	flex-wrap: wrap;
 	position: relative;
 }
-#tabs .column-item div
-{
-	width: 100%;
-	display: flex;
-	justify-content: center;
-}
 #tabs .column-item .overlay-icon
 {
 	height: 85px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
 	padding-top: calc(50% - 25px);
 	position: absolute;
 	top: calc(50% - 60px);
@@ -818,10 +817,6 @@ body
 	box-sizing: border-box;
 	background-color: rgba(0, 0, 0, 0);
 	color: #000;
-}
-#tab-history
-{
-	flex-direction: column;
 }
 #tabs .section
 {
@@ -946,10 +941,39 @@ body
 	padding-right: 1px;
 	font-size: 21px;
 	margin-top: 2px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
 }
 #related-downvote
 {
 	margin-bottom: 11px;
+}
+
+#tab-content .content-info
+{
+	position: absolute;
+	top: 132px;
+	left: calc(50% - 220px);
+	width: 440px;
+	text-align: center;
+	overflow: hidden;
+}
+#tab-content .content-info div
+{
+	width: 440px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+#tab-content .content-info .info-author
+{
+	font-size: 20px;
+}
+
+#tab-history
+{
+	flex-direction: column;
 }
 
 

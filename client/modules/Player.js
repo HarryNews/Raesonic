@@ -87,6 +87,7 @@ Player.setItem = function($item)
 
 	$("#items .item").removeClass("active");
 	$("#content-image").empty();
+	$("#content-name, #content-author").text("");
 
 	var ItemList = require("./ItemList.js");
 	ItemList.scrollTo($item);
@@ -138,6 +139,9 @@ Player.setItem = function($item)
 					.attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg")
 					.addClass("wide")
 			);
+
+		$("#content-name").text("#" + externalId);
+		$("#content-author").text("–");
 
 		return;
 	}
@@ -207,6 +211,9 @@ Player.setItem = function($item)
 				$("#cover")
 					.unbind()
 					.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
+
+				$("#content-name").text(response.title);
+				$("#content-author").text(response.user.username);
 			})
 			.catch(function(error)
 			{
