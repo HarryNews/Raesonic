@@ -78,16 +78,16 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				.filterByData("itemId", itemId)
 				.data("externalId");
 
-			var $items = $(".item").filterByData("externalId", externalId)
+			var $item = $(".item").filterByData("externalId", externalId)
 
 			artist = Item.formatArtist(artist);
 			title = Item.formatTitle(title);
 
-			$(":nth-child(1)", $items).html(artist);
-			$(":nth-child(2)", $items).html(title);
+			$(":nth-child(1)", $item).html(artist);
+			$(":nth-child(2)", $item).html(title);
 
 			// Update meta and history if the item is active
-			if($items.is(".active"))
+			if($item.is(".active"))
 			{
 				$("#meta-artist").html(artist);
 				$("#meta-title").html(title);
@@ -97,10 +97,16 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 					var Tab = require("./Tab.js");
 					Tab.History.clearStorage();
 					Tab.setActive(Tab.History);
+					
+					setTimeout(function()
+					{
+						var Tab = require("./Tab.js");
+						Tab.onItemChange($item);
+					}, 1000);
 				}, 3000);
 			}
 
-			$items.data("trackId", trackId);
+			$item.data("trackId", trackId);
 			Overlay.destroy();
 		}
 	});

@@ -42,6 +42,11 @@ Tab.setActive = function(tab)
 // Called upon active item change
 Tab.onItemChange = function($item)
 {
+	// Allow tab interaction if a track is linked to the item
+	($item.data("trackId") == -1)
+		? $("#tabs-overlay").addClass("visible")
+		: $("#tabs-overlay.visible").removeClass("visible");
+
 	$.each(Tab, function(_, tab)
 	{
 		if(typeof tab == "function")

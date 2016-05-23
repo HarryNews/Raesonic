@@ -104,9 +104,6 @@ Player.setItem = function($item)
 		.width(0);
 
 	$("#current-time, #total-time").text("00:00");
-	
-	var Tab = require("./Tab.js");
-	Tab.onItemChange($item);
 
 	var Content = require("./Content.js");
 
@@ -114,7 +111,9 @@ Player.setItem = function($item)
 	if(!$item.data("sourceId"))
 	{
 		$item.addClass("active");
-		$("#tabs-overlay.visible").removeClass("visible");
+
+		var Tab = require("./Tab.js");
+		Tab.onItemChange($item);
 
 		return Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
 	}
@@ -125,7 +124,9 @@ Player.setItem = function($item)
 			return;
 
 		$item.addClass("active");
-		$("#tabs-overlay.visible").removeClass("visible");
+		
+		var Tab = require("./Tab.js");
+		Tab.onItemChange($item);
 
 		$("#cover").empty().hide();
 		$("#video").show();
@@ -149,7 +150,9 @@ Player.setItem = function($item)
 	if($item.data("sourceId") == Content.SOURCE.SOUNDCLOUD)
 	{
 		$item.addClass("active");
-		$("#tabs-overlay.visible").removeClass("visible");
+		
+		var Tab = require("./Tab.js");
+		Tab.onItemChange($item);
 
 		if(YouTube.loaded)
 		{
