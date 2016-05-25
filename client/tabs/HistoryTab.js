@@ -190,19 +190,20 @@ HistoryTab.requestActions = function(historyType, entityId)
 // (c) John Resig & Faiz
 HistoryTab.getRelativeDate = function(date)
 {
-	var date = new Date((date || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
-		diff = ( ( ( new Date() ).getTime() - date.getTime() ) / 1000),
-		dayDiff = Math.floor(diff / 86400);
+	var date = new Date((date || "").replace(/-/g, "/").replace(/[TZ]/g, " "));
+	var timezoneOffset = date.getTimezoneOffset() * 60000;
+	var diff = ( ( ( new Date() ).getTime() - date.getTime() + timezoneOffset ) / 1000 );
+	var dayDiff = Math.floor(diff / 86400);
 
-	var year = date.getFullYear(),
-		month = date.getMonth() + 1,
-		day = date.getDate();
+	var year = date.getFullYear();
+	var month = date.getMonth() + 1;
+	var day = date.getDate();
 
 	if (isNaN(dayDiff) || dayDiff < 0 || dayDiff >= 31)
 		return (
-			year.toString() + "-"
-			+ ( (month < 10) ? "0" + month.toString() : month.toString() ) + "-"
-			+ ( (day < 10) ? "0" + day.toString() : day.toString() )
+			( (day < 10) ? "0" + day.toString() : day.toString() ) + "." +
+			( (month < 10) ? "0" + month.toString() : month.toString() ) + "." +
+			year.toString()
 		);
 
 		var r =
