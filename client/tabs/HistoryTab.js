@@ -188,9 +188,9 @@ HistoryTab.requestActions = function(historyType, entityId)
 
 // Returns a relative date in a readable format
 // (c) John Resig & Faiz
-HistoryTab.getRelativeDate = function(date)
+HistoryTab.getRelativeDate = function(dateStr)
 {
-	var date = new Date((date || "").replace(/-/g, "/").replace(/[TZ]/g, " "));
+	var date = new Date((dateStr || "").replace(/-/g, "/").replace(/[TZ]/g, " ").slice(0, -5));
 	var timezoneOffset = date.getTimezoneOffset() * 60000;
 	var diff = ( ( ( new Date() ).getTime() - date.getTime() + timezoneOffset ) / 1000 );
 	var dayDiff = Math.floor(diff / 86400);
