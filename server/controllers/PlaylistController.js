@@ -1,6 +1,6 @@
 module.exports = function(core)
 {
-	var RandomString = require("RandomString");
+	var RandomString = require("randomstring");
 
 	var PlaylistController =
 	{
