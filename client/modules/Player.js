@@ -110,11 +110,7 @@ Player.setItem = function($item)
 	// Search for content if none is assigned to the item
 	if(!$item.data("sourceId"))
 	{
-		$item.addClass("active");
-
-		var Tab = require("./Tab.js");
-		Tab.onItemChange($item);
-
+		ItemList.setActiveItem($item);
 		return Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
 	}
 
@@ -123,10 +119,7 @@ Player.setItem = function($item)
 		if(!YouTube.loaded)
 			return;
 
-		$item.addClass("active");
-		
-		var Tab = require("./Tab.js");
-		Tab.onItemChange($item);
+		ItemList.setActiveItem($item);
 
 		$("#cover").empty().hide();
 		$("#video").show();
@@ -149,10 +142,7 @@ Player.setItem = function($item)
 
 	if($item.data("sourceId") == Content.SOURCE.SOUNDCLOUD)
 	{
-		$item.addClass("active");
-		
-		var Tab = require("./Tab.js");
-		Tab.onItemChange($item);
+		ItemList.setActiveItem($item);
 
 		if(YouTube.loaded)
 		{

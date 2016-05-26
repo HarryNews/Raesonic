@@ -118,6 +118,19 @@ ItemList.getSwitchItem = function(forward, manual)
 	return $item;
 }
 
+// Set specified item as active
+ItemList.setActiveItem = function($item)
+{
+	$item.addClass("active");
+	
+	Item.active = $item.data();
+	Item.active.artist = $("#meta-artist").html();
+	Item.active.title = $("#meta-title").html();
+
+	var Tab = require("./Tab.js");
+	Tab.onItemChange($item);
+}
+
 // Scroll to the specified item
 ItemList.scrollTo = function($item)
 {

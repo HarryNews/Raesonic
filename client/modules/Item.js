@@ -263,11 +263,17 @@ Item.onAddIconClick = function()
 		.attr("id", "add-list")
 		.css("top", topOffset);
 	
-	$dropdown.append(
-		$("<div>")
-			.addClass("list-element")
-			.html("<div class=\"icon fa fa-exchange\"></div>Artist – Title")
-	);
+	// Active item exists and differs from selected, both have tracks attached
+	if(Item.active && Item.active.trackId != $item.data("trackId") &&
+		Item.active.trackId != -1 && $item.data("trackId") != -1)
+	{
+		$dropdown.append(
+			$("<div>")
+				.addClass("list-element")
+				.html("<div class=\"icon fa fa-exchange\"></div>" +
+					Item.active.artist + " – " + Item.active.title)
+		);
+	}
 
 	for(var i = 1; i < 10; i++)
 	{
