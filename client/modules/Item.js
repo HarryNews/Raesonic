@@ -162,11 +162,14 @@ Item.restoreTitle = function(title)
 // Fades out and removes the dropdown
 Item.fadeRemoveDropdown = function()
 {
-	$("#add-list").fadeOut(200, function onDropdownFadeOut()
-	{
-		$(this).remove();
-	});
-	
+	$("#add-list")
+		.fadeOut(200, function onDropdownFadeOut()
+		{
+			$(this).remove();
+		})
+		.parent()
+		.removeClass("adding");
+
 	$("body").unbind("mousedown", Item.onDocumentMouseDown);
 }
 
@@ -247,24 +250,24 @@ Item.onAddIconClick = function()
 
 	var $dropdown = $("<div>").attr("id", "add-list");
 	
-	$dropdown	
-		.append(
-			$("<div>")
-				.addClass("list-element")
-				.html("<div class=\"icon fa fa-exchange\"></div>Artist – Title")
-		)
-		.append(
-			$("<div>")
-				.addClass("list-element")
-				.html("<div class=\"icon fa fa-list\"></div>Playlist 1")
-		)
-		.append(
-			$("<div>")
-				.addClass("list-element")
-				.html("<div class=\"icon fa fa-list\"></div>Playlist 2")
-		);
+	$dropdown.append(
+		$("<div>")
+			.addClass("list-element")
+			.html("<div class=\"icon fa fa-exchange\"></div>Artist – Title")
+	);
 
-	$item.append( $dropdown.fadeIn(200) );
+	for(var i = 1; i < 10; i++)
+	{
+		$dropdown.append(
+			$("<div>")
+				.addClass("list-element")
+				.html("<div class=\"icon fa fa-list\"></div>Playlist " + i)
+		);
+	}
+
+	$item
+		.addClass("adding")
+		.append( $dropdown.fadeIn(200) );
 
 	$("body").bind("mousedown", Item.onDocumentMouseDown);
 }

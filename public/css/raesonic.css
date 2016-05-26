@@ -225,6 +225,14 @@ body
 {
 	background-color: #494257;
 }
+.item.adding, item.adding.odd
+{
+	background-color: #686076 !important;
+}
+.item.adding
+{
+	background-color: #5B536A !important;
+}
 .item.hidden
 {
 	display: none;
@@ -314,10 +322,25 @@ body
 {
 	position: absolute;
 	width: 50%;
+	max-height: 185px;
 	top: 100%;
 	right: 0;
 	z-index: 1;
-	overflow: hidden;
+	overflow-y: scroll;
+}
+#add-list::-webkit-scrollbar
+{
+	height: 12px;
+	width: 13px;
+	background: #B5B5B5;
+	border-left: 1px solid #797979;
+	border-right: none;
+}
+#add-list::-webkit-scrollbar-thumb
+{
+	background: #E8E8E8;
+	border-left: 1px solid #797979;
+	border-right: none;
 }
 #add-list .icon
 {
@@ -326,10 +349,10 @@ body
 }
 #add-list .list-element
 {
-	padding: 10px 15px;
+	padding: 10px 13px;
 	display: flex;
 	align-items: center;
-	background-color: #EBE0FF;
+	background-color: #E4D6FF;
 	cursor: pointer;
 	white-space: nowrap;
 	color: #3A3745;
@@ -341,7 +364,7 @@ body
 }
 #add-list .list-element:hover
 {
-	background-color: #EEE5FF;
+	background-color: #ECE0FF;
 }
 #add-list .list-element:nth-child(even)
 {
@@ -349,7 +372,7 @@ body
 }
 #add-list .list-element:nth-child(even):hover
 {
-	background-color: #F5F0FF;
+	background-color: #F8F5FF;
 }
 
 #overlay
