@@ -125,7 +125,7 @@ ItemList.scrollTo = function($item)
 	({
 		scrollTop:
 			Math.max(
-				$item.height() * ( $item.siblings(":visible").addBack().index($item) - 1 ),
+				Item.getScrollOffset($item, -1),
 				0
 			)
 	}, 500);

@@ -173,6 +173,12 @@ Item.fadeRemoveDropdown = function()
 	$("body").unbind("mousedown", Item.onDocumentMouseDown);
 }
 
+// Returns vertical offset of the item
+Item.getScrollOffset = function($item, offset)
+{
+	return $item.height() * ( $item.siblings(":visible").addBack().index($item) + (offset || 0) )
+}
+
 // Called upon clicking the item's artist or title element
 Item.onClick = function()
 {
@@ -248,7 +254,14 @@ Item.onAddIconClick = function()
 
 	Item.fadeRemoveDropdown();
 
-	var $dropdown = $("<div>").attr("id", "add-list");
+	// Below item or above item if it doesn't fit on screen
+	var topOffset = Item.getScrollOffset($item, 1);
+	if( $item.offset().top > ( $(document).height() - 280 ) )
+		topOffset = Item.getScrollOffset($item, -5) + 15;
+
+	var $dropdown = $("<div>")
+		.attr("id", "add-list")
+		.css("top", topOffset);
 	
 	$dropdown.append(
 		$("<div>")

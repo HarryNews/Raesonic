@@ -196,18 +196,16 @@ body
 {
 	overflow-y: scroll;
 	height: calc(100% - 38px);
+	position: relative;
 }
 
 .item, .item.odd
 {
 	height: 40px;
-	/* overflow: hidden;
-	Required to fix the redundant spacing issue in filled playlists.
-	Might have to change how dropdown renders, to be able to use it again. */
+	overflow: hidden;
 	color: #F2F2F2;
 	background-color: #353040;
 	font-size: 16px;
-	position: relative;
 	-webkit-transition: background-color ease-out 200ms, color ease-out 200ms;
 	-moz-transition: background-color ease-out 200ms, color ease-out 200ms;
 	-o-transition: background-color ease-out 200ms, color ease-out 200ms;
