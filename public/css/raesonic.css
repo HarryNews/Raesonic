@@ -201,10 +201,13 @@ body
 .item, .item.odd
 {
 	height: 40px;
-	overflow: hidden;
+	/* overflow: hidden;
+	Required to fix the redundant spacing issue in filled playlists.
+	Might have to change how dropdown renders, to be able to use it again. */
 	color: #F2F2F2;
 	background-color: #353040;
 	font-size: 16px;
+	position: relative;
 	-webkit-transition: background-color ease-out 200ms, color ease-out 200ms;
 	-moz-transition: background-color ease-out 200ms, color ease-out 200ms;
 	-o-transition: background-color ease-out 200ms, color ease-out 200ms;
@@ -255,7 +258,20 @@ body
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.item .icon
+/* Artist/title formatting */
+.item div span
+{
+	opacity: 0.8;
+}
+.item.active div span
+{
+	opacity: 0.5;
+}
+.item .title span
+{
+	margin-left: 5px;
+}
+.item > .icon
 {
 	display: inline-block;
 	width: 16px;
@@ -265,7 +281,7 @@ body
 	float: right;
 	cursor: pointer;
 }
-.item .icon:after
+.item > .icon:after
 {
 	content: '';
 	display: block;
@@ -281,11 +297,11 @@ body
 	-o-transition: border-color ease-out 200ms;
 	transition: border-color ease-out 200ms;
 }
-.item .icon:hover:after
+.item > .icon:hover:after
 {
 	border: 1px solid rgba(255, 255, 255, 0.8);
 }
-.item.active .icon:hover:after
+.item.active > .icon:hover:after
 {
 	border: 1px solid #3A3745;
 }
@@ -294,17 +310,46 @@ body
 	margin-bottom: 1px;
 	font-size: 18px;
 }
-.item div span
+#add-list
 {
-	opacity: 0.8;
+	position: absolute;
+	width: 50%;
+	top: 100%;
+	right: 0;
+	z-index: 1;
+	overflow: hidden;
 }
-.item.active div span
+#add-list .icon
 {
-	opacity: 0.5;
+	padding: 1px 8px 0 0;
+	font-size: 14px;
 }
-.item .title span
+#add-list .list-element
 {
-	margin-left: 5px;
+	padding: 10px 15px;
+	display: flex;
+	align-items: center;
+	background-color: #EBE0FF;
+	cursor: pointer;
+	white-space: nowrap;
+	color: #3A3745;
+	font-size: 13px;
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
+}
+#add-list .list-element:hover
+{
+	background-color: #EEE5FF;
+}
+#add-list .list-element:nth-child(even)
+{
+	background-color: #F2EBFF;
+}
+#add-list .list-element:nth-child(even):hover
+{
+	background-color: #F5F0FF;
 }
 
 #overlay

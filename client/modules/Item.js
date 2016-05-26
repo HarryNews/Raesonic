@@ -159,6 +159,17 @@ Item.restoreTitle = function(title)
 	return title.replace(/<span>(.+)<\/span>/g, "($1)");
 }
 
+// Fades out and removes the dropdown
+Item.fadeRemoveDropdown = function()
+{
+	$("#add-list").fadeOut(200, function onDropdownFadeOut()
+	{
+		$(this).remove();
+	});
+	
+	$("body").unbind("mousedown", Item.onDocumentMouseDown);
+}
+
 // Called upon clicking the item's artist or title element
 Item.onClick = function()
 {
@@ -174,7 +185,7 @@ Item.onEditIconClick = function()
 	if(!Account.authenticated)
 		return Account.showLoginOverlay();
 	
-	$item = $(this).parent();
+	var $item = $(this).parent();
 
 	Item.editing = 
 	{
@@ -223,6 +234,41 @@ Item.onEditIconClick = function()
 	});
 }
 
+// Called upon clicking the plus icon
+Item.onAddIconClick = function()
+{
+	var $item = $(this).parent();
+
+	// Dropdown is shown on the same item, just remove it
+	if($item.find("#add-list").length)
+		return Item.fadeRemoveDropdown();
+
+	Item.fadeRemoveDropdown();
+
+	var $dropdown = $("<div>").attr("id", "add-list");
+	
+	$dropdown	
+		.append(
+			$("<div>")
+				.addClass("list-element")
+				.html("<div class=\"icon fa fa-exchange\"></div>Artist – Title")
+		)
+		.append(
+			$("<div>")
+				.addClass("list-element")
+				.html("<div class=\"icon fa fa-list\"></div>Playlist 1")
+		)
+		.append(
+			$("<div>")
+				.addClass("list-element")
+				.html("<div class=\"icon fa fa-list\"></div>Playlist 2")
+		);
+
+	$item.append( $dropdown.fadeIn(200) );
+
+	$("body").bind("mousedown", Item.onDocumentMouseDown);
+}
+
 // Called upon clicking the save button in the overlay
 Item.onItemSaveClick = function()
 {
@@ -244,6 +290,16 @@ Item.onItemSaveClick = function()
 Item.onItemRemoveClick = function()
 {
 	Item.remove(Item.editing.itemId);
+}
+
+// Called when the mouse is pressed somewhere
+Item.onDocumentMouseDown = function(event)
+{
+	// Ignore clicks on the dropdown
+	if($(event.target).parents("#add-list").length)
+		return;
+
+	Item.fadeRemoveDropdown();
 }
 
 module.exports = Item;

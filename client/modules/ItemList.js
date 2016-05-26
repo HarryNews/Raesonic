@@ -52,12 +52,13 @@ ItemList.addItem = function(item, prepend)
 			.append(
 				$("<div>")
 					.addClass("artist")
-					.html( Item.formatArtist(item[1]) ),
+					.html( Item.formatArtist( item[1] ) ),
 				$("<div>")
 					.addClass("title")
-					.html( Item.formatTitle(item[2]) ),
+					.html( Item.formatTitle( item[2] ) ),
 				$("<div>")
-					.addClass("icon add fa fa-plus")
+					.addClass("add icon fa fa-plus")
+					.click(Item.onAddIconClick)
 			)
 			.data("trackId", item[0]);
 
@@ -72,12 +73,12 @@ ItemList.addItem = function(item, prepend)
 				"initial":
 				[
 					item[4],
-					item[5]
-				]
+					item[5],
+				],
 			})
 			.append(
 				$("<div>")
-					.addClass("icon edit fa fa-pencil")
+					.addClass("edit icon fa fa-pencil")
 					.click(Item.onEditIconClick)
 			);
 	}
