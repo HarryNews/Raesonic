@@ -18,7 +18,10 @@ module.exports = function(config)
 		define:
 		{
 			timestamps: false
-		}
+		},
+		logging: db.logging
+			? console.log
+			: false,
 	});
 
 	require("./ModelController.js")(sequelize);

@@ -19,6 +19,7 @@ module.exports =
 		host: "localhost",
 		name: "raesonic",
 		user: "user",
-		password: "password"
+		password: "password",
+		logging: true
 	}
 }
