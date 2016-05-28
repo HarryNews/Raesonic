@@ -1,6 +1,10 @@
 module.exports = function(core)
 {
-	var RelationController = {};
+	var RelationController =
+	{
+		STATUS_CREATED: 1,
+		STATUS_UPVOTED: 2,
+	};
 
 	var app = core.app;
 	var sequelize = core.sequelize;
@@ -49,15 +53,20 @@ module.exports = function(core)
 				trackId: req.body.trackId,
 				linkedId: req.body.linkedId
 			},
-			defaults: { trust: voteValue }
+			defaults: { trust: voteValue },
 		})
 		.spread(function(relation, created)
 		{
-			res.json(relation.relationId);
-
-			// Add no vote records if no relation was created
+			// If the relation already exists, upvote it and bail out
 			if(!created)
+			{
+				res.json( [relation.relationId, RelationController.STATUS_UPVOTED] );
+				RelationController.setRelationVote(relation, 1, req);
+
 				return;
+			}
+
+			res.json( [relation.relationId, RelationController.STATUS_CREATED] );
 
 			RelationVote.create
 			({
@@ -165,45 +174,50 @@ module.exports = function(core)
 			if(!relation)
 				return res.status(404).json({ errors: ["relation not found"] });
 
-			// todo: use ReputationController.getVoteValue(req.user) * req.body.vote;
-			var voteValue = 1 * req.body.vote;
+			RelationController.setRelationVote(relation, req.body.vote, req, res);
+		});
+	}
 
-			RelationVote.findOrCreate
+	// Find or create a relation vote
+	RelationController.setRelationVote = function(relation, vote, req, res)
+	{
+		// todo: use ReputationController.getVoteValue(req.user) * vote;
+		var voteValue = 1 * vote;
+
+		RelationVote.findOrCreate
+		({
+			attributes: ["value"],
+			where:
+			{
+				relationId: relation.relationId,
+				userId: req.user.userId,
+			},
+			defaults: { value: voteValue }
+		})
+		.spread(function(vote, created)
+		{
+			// New vote created, update relation and bail out
+			if(created)
+				return RelationController.updateRelationTrust(relation, voteValue, res);
+
+			// Revert trust changes from the previous user's vote
+			(vote.value > 0)
+				? relation.trust = relation.trust - vote.value
+				: relation.doubt = relation.doubt + vote.value;
+
+			// Add current vote and apply trust changes
+			RelationController.updateRelationTrust(relation, voteValue, res);
+
+			RelationVote.update
 			({
-				attributes: ["value"],
+				value: voteValue
+			},
+			{
 				where:
 				{
 					relationId: relation.relationId,
 					userId: req.user.userId,
-				},
-				defaults: { value: voteValue }
-			})
-			.spread(function(vote, created)
-			{
-				// New vote created, update relation and bail out
-				if(created)
-					return RelationController.updateRelationTrust(relation, voteValue, res);
-
-				// Revert trust changes from the previous vote
-				(vote.value > 0)
-					? relation.trust = relation.trust - vote.value
-					: relation.doubt = relation.doubt + vote.value;
-
-				// Add current vote and apply trust changes
-				RelationController.updateRelationTrust(relation, voteValue, res);
-
-				// todo: use actual user id
-				RelationVote.update
-				({
-					value: voteValue
-				},
-				{
-					where:
-					{
-						relationId: relation.relationId,
-						userId: 1
-					}
-				});
+				}
 			});
 		});
 	}
@@ -224,6 +238,9 @@ module.exports = function(core)
 			where: { relationId: relation.relationId }
 		});
 
+		if(!res)
+			return;
+		
 		res.json(relation.trust - relation.doubt);
 	}
 

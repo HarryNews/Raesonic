@@ -92,6 +92,10 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				$("#meta-artist").html(artist);
 				$("#meta-title").html(title);
 
+				Item.active.trackId = trackId;
+				Item.active.artist = artist;
+				Item.active.title = title;
+
 				setTimeout(function()
 				{
 					var Tab = require("./Tab.js");
@@ -159,6 +163,12 @@ Item.restoreTitle = function(title)
 	return title.replace(/<span>(.+)<\/span>/g, "($1)");
 }
 
+// Replaces <span> with <span class="padded">
+Item.padSpans = function(field)
+{
+	return field.replace(/<span>/g, "<span class=\"padded\">");
+}
+
 // Fades out and removes the dropdown
 Item.fadeRemoveDropdown = function()
 {
@@ -171,12 +181,20 @@ Item.fadeRemoveDropdown = function()
 		.removeClass("adding");
 
 	$("body").unbind("mousedown", Item.onDocumentMouseDown);
+	$("#items").unbind("scroll", Item.onItemListScroll);
 }
 
 // Returns vertical offset of the item
 Item.getScrollOffset = function($item, offset)
 {
-	return $item.height() * ( $item.siblings(":visible").addBack().index($item) + (offset || 0) )
+	return $item.height() *
+		(
+			$item
+				.siblings(":visible")
+				.addBack()
+				.index($item) +
+					(offset || 0)
+		)
 }
 
 // Called upon clicking the item's artist or title element
@@ -270,8 +288,9 @@ Item.onAddIconClick = function()
 		$dropdown.append(
 			$("<div>")
 				.addClass("list-element")
-				.html("<div class=\"icon fa fa-exchange\"></div>" +
-					Item.active.artist + " – " + Item.active.title)
+				.html( "<div class=\"icon fa fa-exchange\"></div>" +
+					Item.active.artist + " – " + Item.padSpans(Item.active.title) )
+				.click(Item.onRelationElementClick)
 		);
 	}
 
@@ -289,6 +308,7 @@ Item.onAddIconClick = function()
 		.append( $dropdown.fadeIn(200) );
 
 	$("body").bind("mousedown", Item.onDocumentMouseDown);
+	$("#items").bind("scroll", Item.onItemListScroll);
 }
 
 // Called upon clicking the save button in the overlay
@@ -314,6 +334,85 @@ Item.onItemRemoveClick = function()
 	Item.remove(Item.editing.itemId);
 }
 
+// Called upon clicking a track item in the dropdown list
+Item.onRelationElementClick = function()
+{
+	if(Overlay.isActive())
+		return;
+
+	Item.fadeRemoveDropdown();
+
+	$item = $(this).parents(".item");
+
+	var trackName = Item.active.artist + "<br>" +
+		Item.padSpans(Item.active.title);
+
+	var linkedName = $(":nth-child(1)", $item).html() + "<br>" +
+		Item.padSpans( $(":nth-child(2)", $item).html() );
+
+	Overlay.create("Create new recommendation",
+	[{
+		tag: "<p>",
+		text: "You are suggesting that these tracks are similar:",
+	},
+	{
+		tag: "<p>",
+		attributes:
+		{
+			id: "relation-subject",
+			class: "subject",
+		},
+		html: trackName,
+		data:
+		{
+			trackId: Item.active.trackId,
+			linkedId: $item.data("trackId"),
+		}
+	},
+	{
+		tag: "<p>",
+		attributes:
+		{
+			id: "relation-extra-subject",
+			class: "extra subject final",
+		},
+		html: linkedName,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "relation-create",
+			class: "inner window-link",
+		},
+		text: "Create Recommendation",
+		click: Item.onRelationCreateClick,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "relation-cancel",
+			class: "window-link",
+		},
+		text: "Cancel",
+		click: Overlay.destroy,
+	}],
+	function onOverlayCreate()
+	{
+		
+	});
+}
+
+// Called upon clicking the create relation button
+Item.onRelationCreateClick = function()
+{
+	var data = $("#relation-subject").data();
+
+	var Relation = require("./Relation.js");
+	Relation.create(data.trackId, data.linkedId);
+}
+
 // Called when the mouse is pressed somewhere
 Item.onDocumentMouseDown = function(event)
 {
@@ -321,6 +420,12 @@ Item.onDocumentMouseDown = function(event)
 	if($(event.target).parents("#add-list").length)
 		return;
 
+	Item.fadeRemoveDropdown();
+}
+
+// Called when the item list is scrolled
+Item.onItemListScroll = function()
+{
 	Item.fadeRemoveDropdown();
 }
 

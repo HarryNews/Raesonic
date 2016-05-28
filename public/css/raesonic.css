@@ -344,12 +344,11 @@ body
 {
 	padding: 1px 8px 0 0;
 	font-size: 14px;
+	vertical-align: -1px;
 }
 #add-list .list-element
 {
 	padding: 10px 13px;
-	display: flex;
-	align-items: center;
 	background-color: #E4D6FF;
 	cursor: pointer;
 	white-space: nowrap;
@@ -371,6 +370,10 @@ body
 #add-list .list-element:nth-child(even):hover
 {
 	background-color: #F8F5FF;
+}
+#add-list .list-element span.padded
+{
+	margin-left: 4px;
 }
 
 #overlay
@@ -426,9 +429,21 @@ body
 {
 	padding-left: 77px;
 }
+#window p.subject span
+{
+	opacity: 0.8;
+}
+#window p.subject span.padded
+{
+	margin-left: 2px;
+}
 #window p.extra.subject
 {
 	margin-top: 3px;
+}
+#window p.final.subject
+{
+	margin-bottom: 15px;
 }
 #window .content-thumbnail
 {

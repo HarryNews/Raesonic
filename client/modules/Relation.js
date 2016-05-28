@@ -1,4 +1,9 @@
-var Relation = {};
+ var Relation =
+ {
+ 	// Response status codes
+	STATUS_CREATED: 1,
+	STATUS_UPVOTED: 2,
+ };
 
 // Create a relation between two tracks
 Relation.create = function(trackId, linkedId)
@@ -14,10 +19,13 @@ Relation.create = function(trackId, linkedId)
 			if(response.errors)
 				return;
 
-			var relationId = response;
+			var relationId = response[0];
+			var status = response[1];
 
-			// todo: save relationId in a storage
-			// todo: show message about successful creation
+			var Overlay = require("./Overlay.js");
+			Overlay.destroy();
+			
+			// todo: show message according to status
 		}
 	});
 }
@@ -59,25 +67,6 @@ Relation.vote = function(trackId, linkedId, vote)
 			var trust = response;
 			
 			// todo: update relation's trust display
-		}
-	});
-}
-
-// Flag a relation between two tracks as inappropriate
-Relation.flag = function(trackId, linkedId, reasonId)
-{
-	$.ajax
-	({
-		url: "/tracks/" + trackId + "/relations/" + linkedId + "/flags/",
-		type: "POST",
-		data: JSON.stringify({ reasonId: reasonId }),
-		contentType: "application/json",
-		success: function(response)
-		{
-			if(response.errors)
-				return;
-			
-			// todo: update flag icon state to active
 		}
 	});
 }
