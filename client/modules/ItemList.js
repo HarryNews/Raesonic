@@ -2,6 +2,7 @@ var Item = require("./Item.js");
 
 var ItemList =
 {
+	// For setting items
 	USE_STORAGE: true,
 	// New item destination
 	APPEND: false,
@@ -14,6 +15,8 @@ var ItemList =
 	MANUAL_SWITCH: true,
 	// Action on content error
 	SKIP_TRACK: true,
+	// For clearing filter
+	IGNORE_STORAGE: true,
 };
 
 // Set items of the item list
@@ -195,7 +198,7 @@ ItemList.setFilter = function(query)
 }
 
 // Clear item filtering and restore previous items
-ItemList.clearFilter = function()
+ItemList.clearFilter = function(ignoreStorage)
 {
 	var hiddenCount = $(".item.hidden").length;
 	$(".item").removeClass("hidden odd even");
@@ -203,7 +206,7 @@ ItemList.clearFilter = function()
 	var storage = $("#items").data("storage");
 	var storageInUse = (storage && storage.length);
 
-	if(!storageInUse)
+	if(!storageInUse || ignoreStorage)
 	{
 		if(hiddenCount > 0)
 			ItemList.scrollTo( $(".item.active") );

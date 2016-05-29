@@ -160,6 +160,14 @@ Search.onKeyUp = function(event)
 // Called upon clicking the search clear button
 Search.onClearClick = function()
 {
+	// With input in place, first click doesn't restore the storage
+	if(Search.restricted && $("#search").val().length)
+	{
+		Search.clear();
+		ItemList.clearFilter(ItemList.IGNORE_STORAGE);
+		return;
+	}
+
 	var Relation = require("./Relation.js");
 
 	if(Relation.active)
