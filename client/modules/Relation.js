@@ -70,7 +70,7 @@ Relation.request = function(trackId)
 				name: Item.restoreArtist(Item.active.artist, true) + " – " + 
 					Item.restoreTitle(Item.active.title)
 			};
-			
+
 			var Search = require("./Search.js");
 			Search.clear();
 
@@ -117,9 +117,30 @@ Relation.onViewRelationsClick = function()
 	Relation.request(Item.active.trackId);
 }
 
+// Called upon pressing the plus icon on the related tab
+Relation.onAddItemClick = function()
+{
+	var $item = $(".item.active");
+
+	if(!$item.length)
+		return;
+
+	var isHiding = ($item.find("#add-list").length);
+
+	$item.find(".add.icon").click();
+
+	if(isHiding)
+		return;
+
+	// Line up the dropdown with the related tab
+	$("#add-list").css("top", $("#items").scrollTop() +
+		$("#tab-related").offset().top - $("#items").offset().top);
+}
+
 Relation.init = function()
 {
-	$("#related-overlay").click(Relation.onViewRelationsClick)
+	$("#related-overlay").click(Relation.onViewRelationsClick);
+	$("#related-add").click(Relation.onAddItemClick);
 }
 
 module.exports = Relation;
