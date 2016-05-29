@@ -9,8 +9,10 @@ module.exports = function(core)
 
 	var User = sequelize.models.User;
 	var Content = sequelize.models.Content;
+	var Relation = sequelize.models.Relation;
 	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
+	var RelationFlag = sequelize.models.RelationFlag;
 	var TrackEditFlag = sequelize.models.TrackEditFlag;
 	var ContentLinkFlag = sequelize.models.ContentLinkFlag;
 

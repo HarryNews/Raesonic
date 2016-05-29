@@ -96,9 +96,34 @@ module.exports = function(core)
 	{
 		var trackId = req.params.trackId;
 
+		var include =
+		[{
+			model: Track,
+			as: "Track"
+		},
+		{
+			model: Track,
+			as: "Linked"
+		}];
+
+		if(req.user)
+		{
+			include.push
+			({
+				model: RelationFlag,
+				attributes: ["flagId", "resolved", "userId"],
+				where:
+				{
+					userId: req.user.userId,
+					resolved: 0,
+				},
+				required: false,
+			});
+		}
+
 		Relation.all
 		({
-			attributes: ["trust", "doubt"],
+			attributes: ["relationId", "trackId", "linkedId", "trust", "doubt"],
 			where:
 			{
 				$or:
@@ -108,17 +133,7 @@ module.exports = function(core)
 				]
 			},
 			limit: 100,
-			include:
-			[
-				{
-					model: Track,
-					as: "Track"
-				},
-				{
-					model: Track,
-					as: "Linked"
-				}
-			]
+			include: include,
 		})
 		.then(function(relations)
 		{
@@ -138,7 +153,9 @@ module.exports = function(core)
 						relations[index].Linked.trackId,
 						relations[index].Linked.artist,
 						relations[index].Linked.title,
-						(relations[index].trust - relations[index].doubt)
+						(relations[index].trust - relations[index].doubt),
+						(typeof relations[index].RelationFlags != "undefined" &&
+							relations[index].RelationFlags.length != 0),
 					]);
 
 					continue;
@@ -150,7 +167,9 @@ module.exports = function(core)
 					relations[index].Track.trackId,
 					relations[index].Track.artist,
 					relations[index].Track.title,
-					(relations[index].trust - relations[index].doubt)
+					(relations[index].trust - relations[index].doubt),
+					(typeof relations[index].RelationFlags != "undefined" &&
+						relations[index].RelationFlags.length != 0),
 				]);
 			}
 			

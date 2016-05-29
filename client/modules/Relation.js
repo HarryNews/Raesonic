@@ -57,6 +57,7 @@ Relation.request = function(trackId)
 					false, // no sourceId
 					false, // no externalId
 					relation[3], // rating
+					relation[4], // flagged
 				]);
 			});
 
@@ -67,6 +68,9 @@ Relation.request = function(trackId)
 
 			Relation.active =
 			{
+				trackId: Item.active.trackId,
+				artist: Item.active.artist,
+				title: Item.active.title,
 				name: Item.restoreArtist(Item.active.artist, true) + " – " + 
 					Item.restoreTitle(Item.active.title)
 			};
@@ -141,6 +145,9 @@ Relation.init = function()
 {
 	$("#related-overlay").click(Relation.onViewRelationsClick);
 	$("#related-add").click(Relation.onAddItemClick);
+
+	var Flag = require("./Flag.js");
+	$("#related-flag").click(Flag.onIconClick)
 }
 
 module.exports = Relation;

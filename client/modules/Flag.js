@@ -14,6 +14,11 @@ var Flag =
 
 Flag.REASONS =
 {
+	[Flag.ENTITY.RELATION]:
+	[
+		[1, "reason-mismatching", "Mismatching recommendation"],
+		[2, "reason-incorrect", "Intentionally incorrect"],
+	],
 	[Flag.ENTITY.TRACK_EDIT]:
 	[
 		[1, "reason-mismatching", "Mismatching information"],
@@ -136,6 +141,14 @@ Flag.onIconClick = function()
 
 	switch(entityType)
 	{
+		case Flag.ENTITY.RELATION:
+		{
+			summary = "You are reporting the following recommendation:";
+			subject = data.artist + "<br>" + data.title;
+			extraSubject = data.secondArtist + "<br>" + data.secondTitle;
+
+			break;
+		}
 		case Flag.ENTITY.TRACK_EDIT:
 		{
 			summary = "You are reporting the following track name:";

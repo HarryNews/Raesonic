@@ -826,6 +826,10 @@ body
 	color: #3D3749;
 	cursor: pointer;
 }
+#tabs .tab-contents .active.icon
+{
+	color: #D6855C;
+}
 #tabs .tab-contents .icon.inactive
 {
 	color: rgba(61, 55, 74, 0.2);
@@ -851,13 +855,17 @@ body
 	flex-wrap: wrap;
 	position: relative;
 }
+#tabs .column-item .icon
+{
+	padding: 5px;
+}
 #tabs .column-item .overlay-icon
 {
 	height: 85px;
 	width: 100%;
 	display: flex;
 	justify-content: center;
-	padding-top: calc(50% - 25px);
+	padding: calc(50% - 25px) 0 0 0 !important;
 	position: absolute;
 	top: calc(50% - 60px);
 	left: 0;
@@ -1015,10 +1023,6 @@ body
 	margin-left: 4px;
 	vertical-align: 1px;
 }
-#tabs .action .active.flag.icon
-{
-	color: #D6855C;
-}
 #tabs .action .date.icon
 {
 	cursor: default;
@@ -1071,24 +1075,28 @@ body
 	color: #3D3749;
 }
 
-#related-upvote
+#tab-related .column-item.icon
 {
-	margin-top: 5px;
+	height: 30px;
+	margin-top: 50%;
+	padding: 5px;
 }
 #related-rating
 {
 	padding-right: 1px;
 	font-size: 21px;
-	margin: 12px 0 8px 0;
+	margin: 7px 0 2px 0;
 	width: 100%;
 	display: flex;
 	justify-content: center;
 }
-#related-downvote
-{
-	margin-bottom: 11px;
-}
 
+#tab-content .column-item.icon
+{
+	height: 30px;
+	margin-top: 25%;
+	padding: 5px;
+}
 #tab-content .content-info
 {
 	position: absolute;

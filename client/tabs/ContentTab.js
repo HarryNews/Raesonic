@@ -14,7 +14,7 @@ ContentTab.setSwitchEnabled = function(enabled)
 
 // Select next or previous content
 // If the skipTrack boolean is true, track will be skipped if there's no content replacement
-ContentTab.switchContent = function(forward, skipTrack)
+ContentTab.switchContent = function(forward, skipTrack, missingContent)
 {
 	var $item = $(".item.active");
 
@@ -25,7 +25,7 @@ ContentTab.switchContent = function(forward, skipTrack)
 	var content = $("#tab-content").data("content");
 
 	// No content data, request and retry
-	if(!content || !content.length)
+	if( (!content || !content.length) && !missingContent )
 	{
 		var current =
 		[
@@ -39,7 +39,7 @@ ContentTab.switchContent = function(forward, skipTrack)
 	}
 
 	// No alternative content has been found
-	if(content.length < 2)
+	if(missingContent || content.length < 2)
 	{
 		if(skipTrack)
 		{

@@ -267,7 +267,7 @@ HistoryTab.onSetActive = function($overrideItem)
 	}
 
 	// Update content links data if a different content is being set
-	if($item.data("externalId") != $("#tab-history").data("externalId"))
+	if($item.data("externalId") && $item.data("externalId") != $("#tab-history").data("externalId"))
 	{
 		HistoryTab.requestActions( HistoryTab.TYPE_CONTENT_LINKS,
 			$item.data("sourceId") + "/" + $item.data("externalId") );

@@ -89,7 +89,13 @@ ItemList.addItem = function(item, prepend)
 
 	// If the relation rating is known, store it on the item
 	if(item[6])
-		$item.data("rating", item[6]);
+	{
+		$item.data
+		({
+			"rating": item[6],
+			"flagged": item[7],
+		});
+	}
 
 	$item
 		.children()

@@ -128,15 +128,15 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 				Tab.setActive(Tab.Content);
 			}
 
+			var nearest = response[0];
+
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
 			{
 				var ContentTab = require("../tabs/ContentTab.js");
-				ContentTab.switchContent(switchDirection, skipTrack);
+				ContentTab.switchContent(switchDirection, skipTrack, !nearest);
 				return;
 			}
-
-			var nearest = response[0];
 
 			// No content available, clear content and bail out
 			if(!nearest)
