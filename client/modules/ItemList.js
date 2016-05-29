@@ -62,6 +62,7 @@ ItemList.addItem = function(item, prepend)
 			)
 			.data("trackId", item[0]);
 
+	// If the itemId is known, store extra values
 	if(item[3])
 	{
 		$item
@@ -82,6 +83,10 @@ ItemList.addItem = function(item, prepend)
 					.click(Item.onEditIconClick)
 			);
 	}
+
+	// If the relation rating is known, store it on the item
+	if(item[6])
+		$item.data("rating", item[6]);
 
 	$item
 		.children()

@@ -44,8 +44,43 @@ Relation.request = function(trackId)
 
 			var relations = response;
 
-			// todo: save relations in a storage
-			// todo: switch to the list view of track relations
+			var items = [];
+
+			relations.forEach(function(relation)
+			{
+				items.push
+				([
+					relation[0], // trackId
+					relation[1], // artist
+					relation[2], // title
+					false, // no itemId
+					false, // no sourceId
+					false, // no externalId
+					relation[3], // rating
+				]);
+			});
+
+			var Item = require("./Item.js");
+			$("#related-second-image").html( $("#content-image").html() );
+			$("#related-second-title").html(Item.active.title);
+			$("#related-second-artist").html(Item.active.artist);
+
+			Relation.active =
+			{
+				name: Item.restoreArtist(Item.active.artist, true) + " – " + 
+					Item.restoreTitle(Item.active.title)
+			};
+			
+			var Search = require("./Search.js");
+			Search.clear();
+
+			var ItemList = require("./ItemList.js");
+			ItemList.setItems(items, ItemList.USE_STORAGE);
+			Item.play( $(".item:first") );
+
+			Search.updatePlaceholder();
+
+			$("#related-overlay").fadeOut(200);
 		}
 	});
 }
@@ -69,6 +104,22 @@ Relation.vote = function(trackId, linkedId, vote)
 			// todo: update relation's trust display
 		}
 	});
+}
+
+// Called upon pressing the view relations button
+Relation.onViewRelationsClick = function()
+{
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	Relation.request(Item.active.trackId);
+}
+
+Relation.init = function()
+{
+	$("#related-overlay").click(Relation.onViewRelationsClick)
 }
 
 module.exports = Relation;

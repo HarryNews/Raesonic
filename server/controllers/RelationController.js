@@ -50,10 +50,24 @@ module.exports = function(core)
 		({
 			where:
 			{
-				trackId: req.body.trackId,
-				linkedId: req.body.linkedId
+				$or:
+				[
+					{
+						trackId: req.body.trackId,
+						linkedId: req.body.linkedId,
+					},
+					{
+						trackId: req.body.linkedId,
+						linkedId: req.body.trackId,
+					}
+				]
 			},
-			defaults: { trust: voteValue },
+			defaults:
+			{
+				trackId: req.body.trackId,
+				linkedId: req.body.linkedId,
+				trust: voteValue,
+			},
 		})
 		.spread(function(relation, created)
 		{

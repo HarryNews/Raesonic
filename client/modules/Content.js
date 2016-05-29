@@ -121,27 +121,41 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 			$("#tab-content").data("content", response);
 			
-			var Tab = require("./Tab.js");
-			Tab.setActive(Tab.Content);
+			// Switch tab to content tab unless viewing recommendations
+			if(!$item.data("rating"))
+			{
+				var Tab = require("./Tab.js");
+				Tab.setActive(Tab.Content);
+			}
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
 			{
 				var ContentTab = require("../tabs/ContentTab.js");
-				return ContentTab.switchContent(switchDirection, skipTrack);
+				ContentTab.switchContent(switchDirection, skipTrack);
+				return;
 			}
 
 			var nearest = response[0];
 
-			// No content available for this item, bail out
+			// No content available, clear content and bail out
 			if(!nearest)
+			{
+				var Player = require("./Player.js");
+				Player.clearContent();
 				return;
+			}
 
 			$item
 				.data
 				({
 					"sourceId": nearest[0],
-					"externalId": nearest[1]
+					"externalId": nearest[1],
+					"initial":
+					[
+						nearest[0],
+						nearest[1],
+					],
 				})
 				.removeClass("active");
 

@@ -82,11 +82,14 @@ Player.setItem = function($item)
 	if($item.is(".active"))
 		return;
 
-	$("#meta-artist").html( $(":nth-child(1)", $item).html() );
-	$("#meta-title").html( $(":nth-child(2)", $item).html() );
+	var artist = $(":nth-child(1)", $item).html();
+	var title = $(":nth-child(2)", $item).html();
+
+	$("#meta-artist").html(artist);
+	$("#meta-title").html(title);
 
 	$("#items .item").removeClass("active");
-	$("#content-image").empty();
+	$("#content-image, #related-first-image").empty();
 	$("#content-name, #content-author").text("");
 
 	var ItemList = require("./ItemList.js");
@@ -106,6 +109,14 @@ Player.setItem = function($item)
 	$("#current-time, #total-time").text("00:00");
 
 	var Content = require("./Content.js");
+
+	// Update the related tab if viewing recommendations
+	if($item.data("rating"))
+	{
+		$("#related-rating").text( $item.data("rating") );
+		$("#related-first-title").html(title);
+		$("#related-first-artist").html(artist);
+	}
 
 	// Search for content if none is assigned to the item
 	if(!$item.data("sourceId"))
@@ -134,6 +145,10 @@ Player.setItem = function($item)
 					.addClass("wide")
 			);
 
+		// Update the related tab if viewing recommendations
+		if($item.data("rating"))
+			$("#related-first-image").html( $("#content-image").html() );
+
 		$("#content-name").text("#" + externalId);
 		$("#content-author").text("–");
 
@@ -156,62 +171,66 @@ Player.setItem = function($item)
 		var trackString = "/tracks/" + $item.data("externalId");
 
 		SC
-			.get(trackString)
-			.then(function onSoundCloudResponse(response, error)
+		.get(trackString)
+		.then(function onSoundCloudResponse(response, error)
+		{
+			var imageUrl = response.artwork_url || response.user.avatar_url;
+
+			if(imageUrl)
 			{
-				var imageUrl = response.artwork_url || response.user.avatar_url;
-
-				if(imageUrl)
-				{
-					$("#cover")
-						.append(
-							$("<img>")
-								.attr("src", imageUrl.replace("large", "t500x500"))
-								.addClass("back")
-								.click(Player.toggle),
-							$("<img>")
-								.attr("src", imageUrl.replace("large", "t300x300"))
-								.addClass("front")
-								.click(Player.toggle)
-						);
-
-					$("#content-image")
-						.append(
-							$("<img>").attr("src", imageUrl.replace("large", "t300x300"))
-						);
-				}
-
 				$("#cover")
 					.append(
-						$("<a>")
-							.attr({ "href": response.permalink_url, "target": "_blank" })
-							.click(Player.pause)
-							.append(
-								$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
-							)
+						$("<img>")
+							.attr("src", imageUrl.replace("large", "t500x500"))
+							.addClass("back")
+							.click(Player.toggle),
+						$("<img>")
+							.attr("src", imageUrl.replace("large", "t300x300"))
+							.addClass("front")
+							.click(Player.toggle)
 					);
 
-				$("#cover")
+				$("#content-image")
 					.append(
-						$("<a>")
-							.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
-							.text(response.user.username)
-							.delay(5000)
-							.fadeOut(2000)
+						$("<img>").attr("src", imageUrl.replace("large", "t300x300"))
+					);
+
+				// Update the related tab if viewing recommendations
+				if($item.data("rating"))
+					$("#related-first-image").html( $("#content-image").html() );
+			}
+
+			$("#cover")
+				.append(
+					$("<a>")
+						.attr({ "href": response.permalink_url, "target": "_blank" })
+						.click(Player.pause)
+						.append(
+							$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
 						)
-					.show();
+				);
 
-				$("#cover")
-					.unbind()
-					.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
+			$("#cover")
+				.append(
+					$("<a>")
+						.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
+						.text(response.user.username)
+						.delay(5000)
+						.fadeOut(2000)
+					)
+				.show();
 
-				$("#content-name").text(response.title);
-				$("#content-author").text(response.user.username);
-			})
-			.catch(function(error)
-			{
-				SoundCloud.onPlayerError(error);
-			});
+			$("#cover")
+				.unbind()
+				.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
+
+			$("#content-name").text(response.title);
+			$("#content-author").text(response.user.username);
+		})
+		.catch(function(error)
+		{
+			SoundCloud.onPlayerError(error);
+		});
 
 		SC.stream(trackString).then(function(trackPlayer)
 		{
@@ -223,6 +242,27 @@ Player.setItem = function($item)
 
 		return;
 	}
+}
+
+// Remove active content
+Player.clearContent = function()
+{
+	if(!YouTube.loaded)
+		return;
+
+	YouTube.player.stopVideo();
+	YouTube.player.clearVideo();
+
+	$("#video").hide();
+
+	$("#cover")
+		.empty()
+		.append(
+			$("<p>")
+				.addClass("content-error")
+				.text("No content available")
+		)
+		.show();
 }
 
 // Play next/previous item

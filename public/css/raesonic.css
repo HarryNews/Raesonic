@@ -191,6 +191,10 @@ body
 	cursor: pointer;
 	display: none;
 }
+#search-clear.visible
+{
+	display: block !important;
+}
 
 #items
 {
@@ -664,6 +668,13 @@ body
 {
 	background-color: #19181D;
 }
+#cover .content-error
+{
+	height: 100%;
+	color: #717171;
+	text-align: center;
+	padding-top: 27%;
+}
 #cover .back
 {
 	width: 480px;
@@ -710,7 +721,7 @@ body
 	opacity: 0.8;
 }
 
-.meta
+#content-right > .meta
 {
 	background-color: #383243;
 	padding-left: 8px;
@@ -832,7 +843,7 @@ body
 }
 #tabs .column-item
 {
-	height: 125px;
+	height: 120px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -891,14 +902,32 @@ body
 }
 #tabs .column .meta
 {
-	height: 55px;
-	width: 125px;
-	display: flex;
-	justify-content: center;
-	flex-direction: column;
-	box-sizing: border-box;
-	background-color: rgba(0, 0, 0, 0);
-	color: #000;
+	position: absolute;
+	width: 160%;
+	bottom: 3%;
+	left: -30%;
+	text-align: center;
+}
+#tabs .column .meta-title
+{
+	font-size: 14px;
+	margin-bottom: 2px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+#tabs .column .meta-artist
+{
+	font-size: 16px;
+}
+/* Artist/title formatting */
+#tabs .column .meta span
+{
+	opacity: 0.8;
+}
+#tabs .column .meta-title span
+{
+	margin-left: 2px;
 }
 #tabs .section
 {
@@ -1042,11 +1071,15 @@ body
 	color: #3D3749;
 }
 
+#related-upvote
+{
+	margin-top: 5px;
+}
 #related-rating
 {
 	padding-right: 1px;
 	font-size: 21px;
-	margin-top: 2px;
+	margin: 12px 0 8px 0;
 	width: 100%;
 	display: flex;
 	justify-content: center;
@@ -1059,7 +1092,7 @@ body
 #tab-content .content-info
 {
 	position: absolute;
-	top: 132px;
+	top: 131px;
 	left: calc(50% - 220px);
 	width: 440px;
 	text-align: center;

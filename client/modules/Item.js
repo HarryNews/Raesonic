@@ -151,10 +151,12 @@ Item.formatTitle = function(title)
 	return title.replace(/\((.+)\)/g, "<span>$1</span>");
 }
 
-// Replaces <span>&</span> with &+
-Item.restoreArtist = function(artist)
+// Replaces <span>&</span> with &+ / &
+Item.restoreArtist = function(artist, clean)
 {
-	return artist.replace(/<span>&amp;<\/span>/g, "&+");
+	return artist.replace(/<span>&amp;<\/span>/g, clean
+		? "&"
+		: "&+");
 }
 
 // Replaces <span>(...)</span> with (...)

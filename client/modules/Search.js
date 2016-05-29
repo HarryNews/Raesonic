@@ -7,6 +7,7 @@ var Search =
 		YOUTUBE: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
 		SOUNDCLOUD: /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/,
 	},
+	restricted: false,
 }
 
 // Clear search input
@@ -16,9 +17,37 @@ Search.clear = function()
 	$("#search-clear").hide();
 }
 
+// Update search placeholder
+Search.updatePlaceholder = function()
+{
+	var placeholder = "Enter a search query or content URL";
+
+	var Relation = require("./Relation.js");
+
+	if(Relation.active)
+	{
+		placeholder = "Viewing recommendations for " +
+			Relation.active.name;
+		Search.restricted = true;
+	}
+	else
+	{
+		Search.restricted = false;
+	}
+
+	$("#search").attr("placeholder", placeholder);
+	$("#search-clear").toggleClass("visible", Search.restricted);
+}
+
 // Search item list for the query
 Search.locally = function(query)
 {
+	if(Search.restricted)
+	{
+		ItemList.setFilter(query);
+		return;
+	}
+
 	// Adding a content by URL, update and bail
 	if(query.indexOf("http") == 0)
 	{
@@ -116,6 +145,10 @@ Search.onKeyUp = function(event)
 		return;
 	}
 
+	// Content creation and global search are restricted, bail out
+	if(Search.restricted)
+		return;
+
 	var isContentUrl = Search.createContent(query);
 
 	if(isContentUrl)
@@ -127,14 +160,26 @@ Search.onKeyUp = function(event)
 // Called upon clicking the search clear button
 Search.onClearClick = function()
 {
+	var Relation = require("./Relation.js");
+
+	if(Relation.active)
+	{
+		Relation.active = false;
+		$("#related-overlay").fadeIn(200);
+	}
+
 	Search.clear();
 	ItemList.clearFilter();
+
+	Search.updatePlaceholder();
 }
 
 Search.init = function()
 {
 	$("#search").keyup(Search.onKeyUp);
 	$("#search-clear").click(Search.onClearClick);
+
+	Search.updatePlaceholder();
 }
 
 module.exports = Search;

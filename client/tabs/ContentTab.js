@@ -34,7 +34,8 @@ ContentTab.switchContent = function(forward, skipTrack)
 		];
 
 		Content.request($item.data("trackId"), Content.AUTOMATIC_SWITCH, forward, skipTrack, current);
-		return ContentTab.setSwitchEnabled(false);
+		ContentTab.setSwitchEnabled(false);
+		return;
 	}
 
 	// No alternative content has been found
@@ -47,7 +48,8 @@ ContentTab.switchContent = function(forward, skipTrack)
 			Player.switchItem(ItemList.NEXT_ITEM);
 		}
 
-		return ContentTab.setSwitchEnabled(false);
+		ContentTab.setSwitchEnabled(false);
+		return;
 	}
 
 	ContentTab.setSwitchEnabled(true);
