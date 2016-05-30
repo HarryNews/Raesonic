@@ -111,7 +111,7 @@ Player.setItem = function($item)
 	var Content = require("./Content.js");
 
 	// Update the related tab if viewing recommendations
-	if($item.data("rating"))
+	if($item.data("rating") != null)
 	{
 		$("#related-rating").text( $item.data("rating") );
 		$("#related-first-title").html(title);
@@ -166,7 +166,7 @@ Player.setItem = function($item)
 			);
 
 		// Update the related tab if viewing recommendations
-		if($item.data("rating"))
+		if($item.data("rating") != null)
 			$("#related-first-image").html( $("#content-image").html() );
 
 		$("#content-name").text("#" + externalId);
@@ -216,7 +216,7 @@ Player.setItem = function($item)
 					);
 
 				// Update the related tab if viewing recommendations
-				if($item.data("rating"))
+				if($item.data("rating") != null)
 					$("#related-first-image").html( $("#content-image").html() );
 			}
 

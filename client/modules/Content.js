@@ -122,7 +122,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 			$("#tab-content").data("content", response);
 			
 			// Switch tab to content tab unless viewing recommendations
-			if(!$item.data("rating"))
+			if($item.data("rating") == null)
 			{
 				var Tab = require("./Tab.js");
 				Tab.setActive(Tab.Content);

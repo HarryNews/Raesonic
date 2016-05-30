@@ -66,7 +66,7 @@ ItemList.addItem = function(item, prepend)
 			.data("trackId", item[0]);
 
 	// If the itemId is known, store extra values
-	if(item[3])
+	if(item[3] != null)
 	{
 		$item
 			.data
@@ -88,7 +88,7 @@ ItemList.addItem = function(item, prepend)
 	}
 
 	// If the relation rating is known, store it on the item
-	if(item[6])
+	if(item[6] != null)
 	{
 		$item.data
 		({
