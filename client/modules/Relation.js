@@ -3,6 +3,9 @@
  	// Response status codes
 	STATUS_CREATED: 1,
 	STATUS_UPVOTED: 2,
+	// User vote types
+	VOTE_POSITIVE: 1,
+	VOTE_NEGATIVE: -1,
  };
 
 // Create a relation between two tracks
@@ -103,9 +106,24 @@ Relation.vote = function(trackId, linkedId, vote)
 			if(response.errors)
 				return;
 
-			var trust = response;
+			var $item = $(".item").filterByData("trackId", trackId);
+
+			// Couldn't find the item, bail out
+			if(!$item.length)
+				return;
+
+			// Item is no longer active, bail out
+			if(!$item.is(".active"))
+				return;
+
+			var rating = response[0];
+			var voteValue = response[1];
+
+			$item.data("vote", voteValue);
 			
-			// todo: update relation's trust display
+			$("#related-rating").text(rating);
+			$("#related-downvote").toggleClass( "active", (vote < 0) );
+			$("#related-upvote").toggleClass( "active", (vote > 0) );
 		}
 	});
 }
@@ -122,7 +140,7 @@ Relation.onViewRelationsClick = function()
 }
 
 // Called upon pressing the plus icon on the related tab
-Relation.onAddItemClick = function()
+Relation.onAddIconClick = function()
 {
 	var $item = $(".item.active");
 
@@ -141,13 +159,39 @@ Relation.onAddItemClick = function()
 		$("#tab-related").offset().top - $("#items").offset().top);
 }
 
+// Called upon pressing the upvote icon on the related tab
+Relation.onUpvoteIconClick = function()
+{
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	Relation.vote(Item.active.trackId, Relation.active.trackId,
+		Relation.VOTE_POSITIVE);
+}
+
+// Called upon pressing the downvote icon on the related tab
+Relation.onDownvoteIconClick = function()
+{
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	Relation.vote(Item.active.trackId, Relation.active.trackId,
+		Relation.VOTE_NEGATIVE);
+}
+
 Relation.init = function()
 {
 	$("#related-overlay").click(Relation.onViewRelationsClick);
-	$("#related-add").click(Relation.onAddItemClick);
+	$("#related-add").click(Relation.onAddIconClick);
+	$("#related-upvote").click(Relation.onUpvoteIconClick);
+	$("#related-downvote").click(Relation.onDownvoteIconClick);
 
 	var Flag = require("./Flag.js");
-	$("#related-flag").click(Flag.onIconClick)
+	$("#related-flag").click(Flag.onIconClick);
 }
 
 module.exports = Relation;

@@ -274,8 +274,12 @@ module.exports = function(core)
 
 		if(!res)
 			return;
-		
-		res.json(relation.trust - relation.doubt);
+
+		res.json
+		([
+			(relation.trust - relation.doubt),
+			voteValue,
+		]);
 	}
 
 	// Returns true if an id is in valid range
