@@ -60,8 +60,7 @@ module.exports = function(core)
 					trackEdits[index].title,
 					trackEdits[index].date,
 					trackEdits[index].User.username,
-					(typeof trackEdits[index].TrackEditFlags != "undefined" &&
-						trackEdits[index].TrackEditFlags.length != 0),
+					(trackEdits[index].TrackEditFlags != null),
 				]);
 			}
 			
@@ -133,8 +132,7 @@ module.exports = function(core)
 						contentLinks[index].Track.title,
 						contentLinks[index].date,
 						contentLinks[index].User.username,
-						(typeof contentLinks[index].ContentLinkFlags != "undefined" &&
-							contentLinks[index].ContentLinkFlags.length != 0),
+						(contentLinks[index].ContentLinkFlags != null),
 					]);
 				}
 				

@@ -132,6 +132,10 @@ Player.setItem = function($item)
 				secondTitle: Relation.active.title,
 			})
 			.toggleClass( "active", $item.data("flagged") );
+
+		var vote = $item.data("vote");
+		$("#related-downvote").toggleClass( "active", (vote < 0) );
+		$("#related-upvote").toggleClass( "active", (vote > 0) );
 	}
 
 	// Search for content if none is assigned to the item

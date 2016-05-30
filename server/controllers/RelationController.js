@@ -110,6 +110,17 @@ module.exports = function(core)
 		{
 			include.push
 			({
+				model: RelationVote,
+				attributes: ["voteId", "value", "userId"],
+				where:
+				{
+					userId: req.user.userId,
+				},
+				required: false,
+			});
+
+			include.push
+			({
 				model: RelationFlag,
 				attributes: ["flagId", "resolved", "userId"],
 				where:
@@ -145,34 +156,24 @@ module.exports = function(core)
 
 			for(var index in relations)
 			{
-				if(relations[index].Track.trackId == trackId)
-				{
-					// Looking for track relations, push linked data
-					response.push
-					([
-						relations[index].Linked.trackId,
-						relations[index].Linked.artist,
-						relations[index].Linked.title,
-						(relations[index].trust - relations[index].doubt),
-						(typeof relations[index].RelationFlags != "undefined" &&
-							relations[index].RelationFlags.length != 0),
-					]);
+				// Retrieve data of tracks opposite to the request origin
+				var track = (relations[index].Track.trackId == trackId)
+					? relations[index].Linked
+					: relations[index].Track;
 
-					continue;
-				}
-
-				// Looking for linked relations, push track data
 				response.push
 				([
-					relations[index].Track.trackId,
-					relations[index].Track.artist,
-					relations[index].Track.title,
+					track.trackId,
+					track.artist,
+					track.title,
 					(relations[index].trust - relations[index].doubt),
-					(typeof relations[index].RelationFlags != "undefined" &&
-						relations[index].RelationFlags.length != 0),
+					relations[index].RelationVotes[0]
+						? relations[index].RelationVotes[0].value
+						: 0,
+					(relations[index].RelationFlags != null),
 				]);
 			}
-			
+
 			res.json(response);
 		});
 	}

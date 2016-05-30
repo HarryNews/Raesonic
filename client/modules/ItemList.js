@@ -93,7 +93,8 @@ ItemList.addItem = function(item, prepend)
 		$item.data
 		({
 			"rating": item[6],
-			"flagged": item[7],
+			"vote": item[7],
+			"flagged": item[8],
 		});
 	}
 
