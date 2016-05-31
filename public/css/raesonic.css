@@ -911,9 +911,9 @@ body
 #tabs .column .meta
 {
 	position: absolute;
-	width: 160%;
+	width: 150%;
 	bottom: 3%;
-	left: -30%;
+	left: -25%;
 	text-align: center;
 }
 #tabs .column .meta-title
