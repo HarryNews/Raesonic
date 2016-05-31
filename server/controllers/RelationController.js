@@ -170,7 +170,7 @@ module.exports = function(core)
 					relations[index].RelationVotes[0]
 						? relations[index].RelationVotes[0].value
 						: 0,
-					(relations[index].RelationFlags != null),
+					(relations[index].RelationFlags[0] != null),
 				]);
 			}
 
