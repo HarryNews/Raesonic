@@ -60,9 +60,9 @@ Relation.request = function(trackId)
 					relation[0], // trackId
 					relation[1], // artist
 					relation[2], // title
-					false, // no itemId
-					false, // no sourceId
-					false, // no externalId
+					null, // no itemId
+					null, // no sourceId
+					null, // no externalId
 					relation[3], // rating
 					relation[4], // vote
 					relation[5], // flagged
