@@ -47,6 +47,10 @@ Relation.request = function(trackId)
 
 			var relations = response;
 
+			// todo: show toast, that no recommendations were found
+			if(!relations.length)
+				return;
+
 			var items = [];
 
 			relations.forEach(function(relation)
