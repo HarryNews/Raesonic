@@ -2,8 +2,13 @@ module.exports = function(core)
 {
 	var RelationController =
 	{
+		// Response status codes
 		STATUS_CREATED: 1,
 		STATUS_UPVOTED: 2,
+		// User vote types
+		VOTE_POSITIVE: 1,
+		VOTE_CLEAR: 0,
+		VOTE_NEGATIVE: -1,
 	};
 
 	var app = core.app;
@@ -215,6 +220,9 @@ module.exports = function(core)
 	// Find or create a relation vote
 	RelationController.setRelationVote = function(relation, vote, req, res)
 	{
+		if(vote == RelationController.VOTE_CLEAR)
+			return RelationController.clearRelationVote(relation, req, res);
+
 		// todo: use ReputationController.getVoteValue(req.user) * vote;
 		var voteValue = 1 * vote;
 
@@ -235,9 +243,7 @@ module.exports = function(core)
 				return RelationController.updateRelationTrust(relation, voteValue, res);
 
 			// Revert trust changes from the previous user's vote
-			(vote.value > 0)
-				? relation.trust = relation.trust - vote.value
-				: relation.doubt = relation.doubt + vote.value;
+			relation = RelationController.revertPreviousVote(relation, vote.value);
 
 			// Add current vote and apply trust changes
 			RelationController.updateRelationTrust(relation, voteValue, res);
@@ -256,12 +262,55 @@ module.exports = function(core)
 		});
 	}
 
+	// Clear existing relation vote
+	RelationController.clearRelationVote = function(relation, req, res)
+	{
+		RelationVote.findOne
+		({
+			attributes: ["voteId", "value"],
+			where:
+			{
+				relationId: relation.relationId,
+				userId: req.user.userId,
+			},
+		})
+		.then(function(vote)
+		{
+			// Vote doesn't exist, bail out
+			if(!vote)
+				return res.json( [] );
+
+			// Revert trust changes from the previous user's vote
+			relation = RelationController.revertPreviousVote(relation, vote.value);
+
+			// Apply trust changes
+			RelationController.updateRelationTrust(relation, 0, res);
+
+			// Delete existing vote
+			vote.destroy();
+		});
+	}
+
+	// Revert trust changes from the previous user's vote
+	RelationController.revertPreviousVote = function(relation, voteValue)
+	{
+		(voteValue > 0)
+			? relation.trust = relation.trust - voteValue
+			: relation.doubt = relation.doubt + voteValue;
+
+		return relation;
+	}
+
 	// Apply vote changes to a relation
 	RelationController.updateRelationTrust = function(relation, voteValue, res)
 	{
-		(voteValue > 0)
-			? relation.trust = relation.trust + voteValue
-			: relation.doubt = relation.doubt - voteValue;
+		// Adjust trust based on the new vote
+		if(voteValue != 0)
+		{
+			(voteValue > 0)
+				? relation.trust = relation.trust + voteValue
+				: relation.doubt = relation.doubt - voteValue;
+		}
 
 		Relation.update
 		({
@@ -291,7 +340,7 @@ module.exports = function(core)
 	// Returns true if the vote is valid
 	RelationController.validateVote = function(vote)
 	{
-		return (vote == -1 || vote == 1);
+		return (vote == -1 || vote == 0 || vote == 1);
 	}
 
 	RelationController.init = function()

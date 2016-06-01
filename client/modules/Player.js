@@ -113,29 +113,8 @@ Player.setItem = function($item)
 	// Update the related tab if viewing recommendations
 	if($item.data("rating") != null)
 	{
-		$("#related-rating").text( $item.data("rating") );
-		$("#related-first-title").html(title);
-		$("#related-first-artist").html(artist);
-
-		var Flag = require("./Flag.js");
 		var Relation = require("./Relation.js");
-
-		$("#related-flag")
-			.data
-			({
-				entityType: Flag.ENTITY.RELATION,
-				entityId: $item.data("trackId"),
-				secondId: Relation.active.trackId,
-				artist: artist,
-				title: title,
-				secondArtist: Relation.active.artist,
-				secondTitle: Relation.active.title,
-			})
-			.toggleClass( "active", $item.data("flagged") );
-
-		var vote = $item.data("vote");
-		$("#related-downvote").toggleClass( "active", (vote < 0) );
-		$("#related-upvote").toggleClass( "active", (vote > 0) );
+		Relation.onRelationItemChange($item, artist, title);
 	}
 
 	// Search for content if none is assigned to the item

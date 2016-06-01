@@ -5,6 +5,7 @@
 	STATUS_UPVOTED: 2,
 	// User vote types
 	VOTE_POSITIVE: 1,
+	VOTE_CLEAR: 0,
 	VOTE_NEGATIVE: -1,
  };
 
@@ -131,12 +132,62 @@ Relation.vote = function(trackId, linkedId, vote)
 			var voteValue = response[1];
 
 			$item.data("vote", voteValue);
-			
-			$("#related-rating").text(rating);
-			$("#related-downvote").toggleClass( "active", (vote < 0) );
-			$("#related-upvote").toggleClass( "active", (vote > 0) );
+			Relation.updateActiveRating(rating, vote);
 		}
 	});
+}
+
+// Sets vote on the active relation
+Relation.setActiveVote = function(vote, $icon)
+{
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	if($icon.is(".active"))
+		vote = Relation.VOTE_CLEAR;
+
+	Relation.vote(Item.active.trackId, Relation.active.trackId, vote);
+}
+
+// Updates rating and rating elements state on related tab
+Relation.updateActiveRating = function(rating, vote)
+{
+	$("#related-rating").text(rating);
+
+	$("#related-upvote")
+		.attr( "title", "These tracks are similar" +
+			( (vote > 0) ? " (click to undo)" : "" ) )
+		.toggleClass( "active", (vote > 0) );
+
+	$("#related-downvote")
+		.attr( "title", "These tracks are different" +
+			( (vote < 0) ? " (click to undo)" : "") )
+		.toggleClass( "active", (vote < 0) );
+}
+
+// Called when a relation item is selected, and when it is made active
+Relation.onRelationItemChange = function($item, artist, title)
+{
+	$("#related-first-title").html(title);
+	$("#related-first-artist").html(artist);
+
+	Relation.updateActiveRating( $item.data("rating"), $item.data("vote") );
+
+	var Flag = require("./Flag.js");
+	$("#related-flag")
+		.data
+		({
+			entityType: Flag.ENTITY.RELATION,
+			entityId: $item.data("trackId"),
+			secondId: Relation.active.trackId,
+			artist: artist,
+			title: title,
+			secondArtist: Relation.active.artist,
+			secondTitle: Relation.active.title,
+		})
+		.toggleClass( "active", $item.data("flagged") );
 }
 
 // Called upon pressing the view relations button
@@ -173,25 +224,13 @@ Relation.onAddIconClick = function()
 // Called upon pressing the upvote icon on the related tab
 Relation.onUpvoteIconClick = function()
 {
-	var Item = require("./Item.js");
-
-	if(!Item.active)
-		return;
-
-	Relation.vote(Item.active.trackId, Relation.active.trackId,
-		Relation.VOTE_POSITIVE);
+	Relation.setActiveVote( Relation.VOTE_POSITIVE, $(this) );
 }
 
 // Called upon pressing the downvote icon on the related tab
 Relation.onDownvoteIconClick = function()
 {
-	var Item = require("./Item.js");
-
-	if(!Item.active)
-		return;
-
-	Relation.vote(Item.active.trackId, Relation.active.trackId,
-		Relation.VOTE_NEGATIVE);
+	Relation.setActiveVote( Relation.VOTE_NEGATIVE, $(this) );
 }
 
 Relation.init = function()
