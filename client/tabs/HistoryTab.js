@@ -277,6 +277,11 @@ HistoryTab.onSetActive = function($overrideItem)
 // Called upon active item change
 HistoryTab.onItemChange = function($item)
 {
+	var $tab = $("#menu-" + HistoryTab.ALIAS);
+
+	if(!$tab.is(".active"))
+		return;
+
 	HistoryTab.onSetActive($item);
 }
 
