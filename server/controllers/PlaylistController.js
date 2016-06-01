@@ -18,7 +18,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -176,7 +175,7 @@ module.exports = function(core)
 							-1,
 							"Unknown Artist",
 							"Unknown Track",
-							item.itemId
+							item.itemId,
 						];
 
 						return res.json(response);
@@ -187,7 +186,7 @@ module.exports = function(core)
 						content.Track.trackId,
 						content.Track.artist,
 						content.Track.title,
-						item.itemId
+						item.itemId,
 					];
 
 					res.json(response);
@@ -277,12 +276,12 @@ module.exports = function(core)
 			if(user && user.userId == playlist.userId)
 				return confirm();
 
-			// Shared playlists can only be accessed by aliases
+			// Shared playlists can only be reached by their alias
 			if(!condition.alias &&
 				playlist.access == PlaylistController.SHARED_ACCESS)
 				return res.status(403).json({ errors: ["no access"] });
 
-			// Playlist owners don't reach this point, deny access
+			// Playlist owners don't reach this line, deny access
 			if(playlist.access == PlaylistController.PRIVATE_ACCESS)
 				return res.status(403).json({ errors: ["no access"] });
 

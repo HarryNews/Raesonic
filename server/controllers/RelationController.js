@@ -14,7 +14,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
@@ -364,7 +363,7 @@ module.exports = function(core)
 		{ transaction: tr });
 	}
 
-	// Returns true if an id is in valid range
+	// Returns true if the id is in valid range
 	RelationController.validateId = function(id)
 	{
 		return (id > 0);

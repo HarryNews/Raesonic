@@ -5,7 +5,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 

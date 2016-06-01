@@ -12,7 +12,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -113,17 +112,14 @@ module.exports = function(core)
 			var previousTrackId = content.trackId;
 
 			// Update trackId of the content
-			Content.update
+			content.update
 			({
 				trackId: trackId
-			},
-			{
-				where: { contentId: content.contentId }
 			})
 			.then(function()
 			{
 				// Remove the previously linked track if it has no references
-				var TrackController = require("./TrackController.js")(core);
+				TrackController = core.controllers.Track;
 				TrackController.removeUnusedTrack(previousTrackId);
 
 				res.json(trackId);

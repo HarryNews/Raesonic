@@ -5,7 +5,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var User = sequelize.models.User;
 	var Content = sequelize.models.Content;
@@ -139,18 +138,17 @@ module.exports = function(core)
 		})
 		.spread(function(flag, created)
 		{
-			res.json( [] );
-
 			// No changes required, bail out
 			if(created || flag.reasonId == req.body.reasonId)
-				return;
+				return res.json( [] );
 
-			model.update
+			flag.update
 			({
 				reasonId: req.body.reasonId,
-			},
+			})
+			.then(function()
 			{
-				where: { flagId: flag.flagId },
+				res.json( [] );
 			});
 		});
 	};

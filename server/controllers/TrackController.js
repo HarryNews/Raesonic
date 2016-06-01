@@ -5,7 +5,6 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
-	var passport = core.passport;
 
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
@@ -25,53 +24,56 @@ module.exports = function(core)
 			where:
 			{
 				artist: req.body.artist,
-				title: req.body.title
+				title: req.body.title,
 			}
 		})
 		.spread(function(track, created)
 		{
-			// Item is not linked directly with the track, so we get the item's content first
+			// Look up content of the item to link it with the track
 			Content.findOne
 			({
 				attributes: ["contentId"],
 				include:
 				[{
 					model: Item,
-					where: { itemId: req.body.itemId }
-				}]
+					where: { itemId: req.body.itemId },
+				}],
 			})
 			.then(function(content)
 			{
-				// Link content with the track we've found/created
-				Content.update
-				({
-					trackId: track.trackId
-				},
-				{
-					where: { contentId: content.contentId }
-				});
-
-				res.json(track.trackId);
-
-				ContentLink.create
+				// Link content with the track
+				content.update
 				({
 					trackId: track.trackId,
-					userId: req.user.userId,
-					contentId: content.contentId
+				})
+				.then(function()
+				{
+					ContentLink.create
+					({
+						trackId: track.trackId,
+						userId: req.user.userId,
+						contentId: content.contentId,
+					})
+					.then(function()
+					{
+						// Don't log the edit, if the track existed before
+						if(!created)
+							return res.json(track.trackId);
+
+						TrackEdit.create
+						({
+							artist: req.body.artist,
+							title: req.body.title,
+							userId: req.user.userId,
+							trackId: track.trackId,
+						})
+						.then(function()
+						{
+							res.json(track.trackId);
+						})
+					});
 				});
 			});
-
-			// Add no track edits if no tracks were created
-			if(!created)
-				return;
-
-			TrackEdit.create
-			({
-				artist: req.body.artist,
-				title: req.body.title,
-				userId: req.user.userId,
-				trackId: track.trackId
-			})
 		});
 	}
 
@@ -122,33 +124,38 @@ module.exports = function(core)
 					where:
 					{
 						artist: artist.name,
-						title: title.name
+						title: title.name,
 					}
 				})
 				.then(function(track)
 				{
-					// Track already exists, link content with it
+					// Track already exists, link the content with it
 					if(track)
 					{
 						var ContentController = core.controllers.Content;
-						return ContentController.linkContent(req.body.itemId, track.trackId, req, res);
+						ContentController.linkContent(req.body.itemId, track.trackId,
+							req, res);
+
+						return;
 					}
 
-					// Name is available, rename existing track to it
+					// Name is available, rename the existing track
 					Track.update(changes,
 					{
-						where: { trackId: req.params.trackId }
+						where: { trackId: req.params.trackId },
 					})
 					.then(function()
 					{
-						res.json(req.params.trackId);
+						changes.userId = req.user.userId;
+						changes.trackId = req.params.trackId;
+
+						TrackEdit
+						.create(changes)
+						.then(function()
+						{
+							res.json(req.params.trackId);
+						});
 					});
-
-					changes.userId = req.user.userId;
-					changes.trackId = req.params.trackId;
-					TrackEdit.create(changes);
-
-					return;
 				});
 
 				return;
@@ -162,12 +169,13 @@ module.exports = function(core)
 
 			Track.findOrCreate
 			({
-				where: changes
+				where: changes,
 			})
 			.spread(function(track, created)
 			{
 				var ContentController = core.controllers.Content;
-				ContentController.linkContent(req.body.itemId, track.trackId, req, res);
+				ContentController.linkContent(req.body.itemId, track.trackId,
+					req, res);
 
 				// Add no track edits if no tracks were created
 				if(!created)
@@ -190,7 +198,7 @@ module.exports = function(core)
 				$or:
 				[
 					{ trackId: trackId },
-					{ linkedId: trackId }
+					{ linkedId: trackId },
 				]
 			}
 		})
@@ -203,7 +211,7 @@ module.exports = function(core)
 			// Count content linked with the track
 			Content.count
 			({
-				where: { trackId: trackId }
+				where: { trackId: trackId },
 			})
 			.then(function(contentCount)
 			{
@@ -213,14 +221,22 @@ module.exports = function(core)
 
 				var params = { where: { trackId: trackId } };
 
-				TrackEdit.destroy(params);
-				ContentLink.destroy(params);
-				Track.destroy(params);
+				TrackEdit
+				.destroy(params)
+				.then(function()
+				{
+					ContentLink
+					.destroy(params)
+					.then(function()
+					{
+						Track.destroy(params);
+					});
+				});
 			});
 		});
 	}
 
-	// Returns true if an id is in valid range
+	// Returns true if the id is in valid range
 	TrackController.validateId = function(id)
 	{
 		return (id > 0);
