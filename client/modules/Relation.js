@@ -69,6 +69,12 @@ Relation.request = function(trackId)
 				]);
 			});
 
+			items.sort(function(a, b)
+			{
+				// Sort by rating, desc
+				return b[6] - a[6];
+			});
+
 			var Item = require("./Item.js");
 			$("#related-second-image").html( $("#content-image").html() );
 			$("#related-second-title").html(Item.active.title);
