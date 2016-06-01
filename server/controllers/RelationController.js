@@ -226,68 +226,111 @@ module.exports = function(core)
 		// todo: use ReputationController.getVoteValue(req.user) * vote;
 		var voteValue = 1 * vote;
 
-		RelationVote.findOrCreate
-		({
-			attributes: ["value"],
-			where:
-			{
-				relationId: relation.relationId,
-				userId: req.user.userId,
-			},
-			defaults: { value: voteValue }
-		})
-		.spread(function(vote, created)
+		sequelize.transaction(function(tr)
 		{
-			// New vote created, update relation and bail out
-			if(created)
-				return RelationController.updateRelationTrust(relation, voteValue, res);
-
-			// Revert trust changes from the previous user's vote
-			relation = RelationController.revertPreviousVote(relation, vote.value);
-
-			// Add current vote and apply trust changes
-			RelationController.updateRelationTrust(relation, voteValue, res);
-
-			RelationVote.update
+			return RelationVote.findOrCreate
 			({
-				value: voteValue
-			},
-			{
+				attributes: ["voteId", "value", "relationId", "userId"],
 				where:
 				{
 					relationId: relation.relationId,
 					userId: req.user.userId,
-				}
+				},
+				defaults: { value: voteValue },
+				transaction: tr,
+			})
+			.spread(function(relationVote, created)
+			{
+				// New vote created, update relation and bail out
+				if(created)
+					return RelationController.updateRelationTrust(relation,
+						voteValue, tr);
+
+				// Revert trust changes from the previous user's vote
+				relation = RelationController.revertPreviousVote(relation,
+					relationVote.value);
+
+				return relationVote.update
+				({
+					value: voteValue
+				},
+				{ transaction: tr })
+				.then(function()
+				{
+					// Add current vote and apply trust changes
+					return RelationController.updateRelationTrust(relation,
+						voteValue, tr);
+				});
 			});
+		})
+		.then(function(relation)
+		{
+			if(!res)
+				return;
+
+			res.json
+			([
+				(relation.trust - relation.doubt),
+				voteValue,
+			]);
+		})
+		.catch(function(err)
+		{
+			return res.status(500).json({ errors: ["internal error"] });
 		});
 	}
 
 	// Clear existing relation vote
 	RelationController.clearRelationVote = function(relation, req, res)
 	{
-		RelationVote.findOne
-		({
-			attributes: ["voteId", "value"],
-			where:
-			{
-				relationId: relation.relationId,
-				userId: req.user.userId,
-			},
-		})
-		.then(function(vote)
+		sequelize.transaction(function(tr)
 		{
-			// Vote doesn't exist, bail out
-			if(!vote)
-				return res.json( [] );
+			return RelationVote.findOne
+			({
+				attributes: ["voteId", "value", "relationId", "userId"],
+				where:
+				{
+					relationId: relation.relationId,
+					userId: req.user.userId,
+				},
+				transaction: tr,
+			})
+			.then(function(relationVote)
+			{
+				// Relation vote doesn't exist, bail out
+				if(!relationVote)
+					return relation;
 
-			// Revert trust changes from the previous user's vote
-			relation = RelationController.revertPreviousVote(relation, vote.value);
+				// Revert trust changes from the previous user's vote
+				relation = RelationController.revertPreviousVote(relation,
+					relationVote.value);
 
-			// Apply trust changes
-			RelationController.updateRelationTrust(relation, 0, res);
+				// Delete existing vote
+				return relationVote.destroy
+				({
+					transaction: tr,
+				})
+				.then(function()
+				{
+					// Apply trust changes
+					return RelationController.updateRelationTrust(relation, 0, tr);
+				});
+			});
+		})
+		.then(function(relation)
+		{
+			if(!res)
+				return;
 
-			// Delete existing vote
-			vote.destroy();
+			res.json
+			([
+				(relation.trust - relation.doubt),
+				0,
+			]);
+		})
+		.catch(function(err)
+		{
+			return res.status(500).json({ errors: ["internal error"] });
 		});
 	}
 
@@ -302,33 +345,23 @@ module.exports = function(core)
 	}
 
 	// Apply vote changes to a relation
-	RelationController.updateRelationTrust = function(relation, voteValue, res)
+	RelationController.updateRelationTrust = function(relation, voteValue, tr)
 	{
-		// Adjust trust based on the new vote
-		if(voteValue != 0)
+		// If a new vote has been set
+		if(voteValue)
 		{
+			// Adjust trust based on the new vote
 			(voteValue > 0)
 				? relation.trust = relation.trust + voteValue
 				: relation.doubt = relation.doubt - voteValue;
 		}
 
-		Relation.update
+		return relation.update
 		({
 			trust: relation.trust,
 			doubt: relation.doubt
 		},
-		{
-			where: { relationId: relation.relationId }
-		});
-
-		if(!res)
-			return;
-
-		res.json
-		([
-			(relation.trust - relation.doubt),
-			voteValue,
-		]);
+		{ transaction: tr });
 	}
 
 	// Returns true if an id is in valid range
