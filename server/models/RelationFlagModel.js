@@ -12,7 +12,7 @@ module.exports = function(sequelize)
 	});
 
 	var Relation = sequelize.models.Relation;
-	Relation.hasMany(RelationFlag, { foreignKey: "relationId" });
+	Relation.hasMany(RelationFlag, { foreignKey: "relationId", onDelete: "cascade" });
 	RelationFlag.belongsTo(Relation, { foreignKey: "relationId" });
 	
 	var User = sequelize.models.User;

@@ -13,7 +13,7 @@ module.exports = function(sequelize)
 	Item.belongsTo(Content, { foreignKey: "contentId" });
 
 	var Playlist = sequelize.models.Playlist;
-	Playlist.hasMany(Item, { foreignKey: "playlistId" });
+	Playlist.hasMany(Item, { foreignKey: "playlistId", onDelete: "cascade" });
 	Item.belongsTo(Playlist, { foreignKey: "playlistId" });
 	
 	return Item;

@@ -16,7 +16,8 @@ module.exports = function(core)
 		
 		var PlaylistController = core.controllers.Playlist;
 
-		PlaylistController.verifyOwnership(req.user, PlaylistController.BY_ITEMID, req.params.itemId, res,
+		PlaylistController.verifyOwnership(req.user,
+			PlaylistController.BY_ITEMID, req.params.itemId, res,
 		function onConfirm()
 		{
 			// User is the playlist owner, delete the item

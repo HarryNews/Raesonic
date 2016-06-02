@@ -11,7 +11,7 @@ module.exports = function(sequelize)
 	});
 
 	var Relation = sequelize.models.Relation;
-	Relation.hasMany(RelationVote, { foreignKey: "relationId" });
+	Relation.hasMany(RelationVote, { foreignKey: "relationId", onDelete: "cascade" });
 	RelationVote.belongsTo(Relation, { foreignKey: "relationId" });
 	
 	var User = sequelize.models.User;

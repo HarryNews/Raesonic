@@ -12,10 +12,10 @@ module.exports = function(sequelize)
 
 	var Track = sequelize.models.Track;
 
-	Track.hasMany(Relation, { foreignKey: "trackId" });
+	Track.hasMany(Relation, { foreignKey: "trackId", onDelete: "cascade" });
 	Relation.belongsTo(Track, { foreignKey: "trackId", as: "Track" });
 
-	Track.hasMany(Relation, { foreignKey: "linkedId"});
+	Track.hasMany(Relation, { foreignKey: "linkedId", onDelete: "cascade" });
 	Relation.belongsTo(Track, { foreignKey: "linkedId", as: "Linked" });
 	
 	return Relation;

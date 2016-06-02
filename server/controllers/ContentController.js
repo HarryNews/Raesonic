@@ -91,44 +91,52 @@ module.exports = function(core)
 	}
 
 	// Find content by the itemId, and link it to the track with specified trackId
-	ContentController.linkContent = function(itemId, trackId, req, res)
+	ContentController.linkContent = function(itemId, track, tr, req, res, done)
 	{
-		Content.findOne
+		return Content.findOne
 		({
 			attributes: ["contentId", "trackId"],
 			include:
 			[{
 				model: Item,
-				where: { itemId: itemId }
-			}]
+				where: { itemId: itemId },
+			}],
+			transaction: tr,
 		})
 		.then(function(content)
 		{
 			// Already linked, no action required
-			if(trackId == content.trackId)
-				return res.json(trackId);
+			if(track.trackId == content.trackId)
+				return done(track);
 
-			// Grab the current trackId before it's overwritten
+			// Store current trackId before it changes
 			var previousTrackId = content.trackId;
 
 			// Update trackId of the content
-			content.update
+			return content.update
 			({
-				trackId: trackId
-			})
+				trackId: track.trackId,
+			},
+			{ transaction: tr })
 			.then(function()
 			{
 				// Remove the previously linked track if it has no references
 				TrackController = core.controllers.Track;
-				TrackController.removeUnusedTrack(previousTrackId);
 
-				res.json(trackId);
-
-				ContentLink.create
-				({
-					trackId: trackId,
-					userId: req.user.userId,
-					contentId: content.contentId
+				return TrackController.removeUnusedTrack(previousTrackId, tr,
+				function onComplete()
+				{
+					return ContentLink.create
+					({
+						trackId: track.trackId,
+						userId: req.user.userId,
+						contentId: content.contentId
+					},
+					{ transaction: tr })
+					.then(function()
+					{
+						return done(track);
+					});
 				});
 			});
 		});

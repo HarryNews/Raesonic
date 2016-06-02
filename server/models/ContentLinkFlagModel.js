@@ -12,7 +12,7 @@ module.exports = function(sequelize)
 	});
 
 	var ContentLink = sequelize.models.ContentLink;
-	ContentLink.hasMany(ContentLinkFlag, { foreignKey: "linkId" });
+	ContentLink.hasMany(ContentLinkFlag, { foreignKey: "linkId", onDelete: "cascade" });
 	ContentLinkFlag.belongsTo(ContentLink, { foreignKey: "linkId" });
 	
 	var User = sequelize.models.User;

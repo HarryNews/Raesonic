@@ -41,43 +41,58 @@ module.exports = function(core)
 			})
 			.then(function(content)
 			{
-				// Link content with the track
-				content.update
-				({
-					trackId: track.trackId,
-				})
-				.then(function()
+				sequelize.transaction(function(tr)
 				{
-					ContentLink.create
+					// Link content with the track
+					return content.update
 					({
 						trackId: track.trackId,
-						userId: req.user.userId,
-						contentId: content.contentId,
-					})
+					},
+					{ transaction: tr })
 					.then(function()
 					{
-						// Don't log the edit, if the track existed before
-						if(!created)
-							return res.json(track.trackId);
-
-						TrackEdit.create
+						return ContentLink.create
 						({
-							artist: req.body.artist,
-							title: req.body.title,
-							userId: req.user.userId,
 							trackId: track.trackId,
-						})
+							userId: req.user.userId,
+							contentId: content.contentId,
+						},
+						{ transaction: tr })
 						.then(function()
 						{
-							res.json(track.trackId);
-						})
+							// Don't log the edit, if the track existed before
+							if(!created)
+								return track;
+
+							return TrackEdit.create
+							({
+								artist: req.body.artist,
+								title: req.body.title,
+								userId: req.user.userId,
+								trackId: track.trackId,
+							},
+							{ transaction: tr })
+							.then(function()
+							{
+								return track;
+							})
+						});
 					});
+				})
+				.then(function(track)
+				{
+					res.json(track.trackId);
+				})
+				.catch(function(err)
+				{
+					return res.status(500).json({ errors: ["internal error"] });
 				});
 			});
 		});
 	}
 
-	// Attempt to edit track information of the item's content without ruining anything
+	// Edit track information of the item's content
+	// Tracks may be split and merged throughout the method
 	TrackController.editTrack = function(req, res)
 	{
 		if(!req.user)
@@ -97,7 +112,7 @@ module.exports = function(core)
 		// Count amount of content the track is linked with
 		Content.count
 		({
-			where: { trackId: req.params.trackId }
+			where: { trackId: req.params.trackId },
 		})
 		.then(function(amount)
 		{
@@ -107,91 +122,126 @@ module.exports = function(core)
 
 			var changes = {};
 
-			// If the track belongs to a single content, it is updated, otherwise a new track is
-			// created and linked. That should prevent erroneous track changes, when the
-			// content is linked to mismatching tracks
-			if(amount == 1)
+			sequelize.transaction(function(tr)
 			{
-				if(artist.changed)
-					changes.artist = artist.name;
-
-				if(title.changed)
-					changes.title = title.name;
-
-				// Check if a track with that name already exists
-				Track.findOne
-				({
-					where:
-					{
-						artist: artist.name,
-						title: title.name,
-					}
-				})
-				.then(function(track)
+				// If the track belongs to a single content, it is updated, otherwise
+				// a new track is created and linked. That should prevent erroneous
+				// track changes, when the content is linked to mismatching tracks
+				if(amount == 1)
 				{
-					// Track already exists, link the content with it
-					if(track)
-					{
-						var ContentController = core.controllers.Content;
-						ContentController.linkContent(req.body.itemId, track.trackId,
-							req, res);
+					if(artist.changed)
+						changes.artist = artist.name;
 
-						return;
-					}
+					if(title.changed)
+						changes.title = title.name;
 
-					// Name is available, rename the existing track
-					Track.update(changes,
-					{
-						where: { trackId: req.params.trackId },
+					// Check if a track with the new name already exists
+					return Track.findOne
+					({
+						where:
+						{
+							artist: artist.name,
+							title: title.name,
+						},
+						transaction: tr,
 					})
-					.then(function()
+					.then(function(conflictingTrack)
 					{
-						changes.userId = req.user.userId;
-						changes.trackId = req.params.trackId;
+						// Track already exists, link the content with it
+						if(conflictingTrack)
+						{
+							var ContentController = core.controllers.Content;
 
-						TrackEdit
-						.create(changes)
+							return ContentController.linkContent(req.body.itemId,
+								conflictingTrack, tr, req, res,
+							function onContentLink(track)
+							{
+								return track;
+							});
+						}
+
+						// Name is available, rename the existing track
+						return Track.update
+						(changes,
+						{
+							where: { trackId: req.params.trackId },
+							transaction: tr,
+						})
 						.then(function()
 						{
-							res.json(req.params.trackId);
+							var track = { trackId: req.params.trackId };
+
+							changes.userId = req.user.userId;
+							changes.trackId = req.params.trackId;
+
+							return TrackEdit.create
+							(changes,
+							{ transaction: tr })
+							.then(function()
+							{
+								return track;
+							});
+						});
+					});
+
+					return;
+				}
+
+				// There's multiple content linked with the track, the item's
+				// content is linked to a new/existing track with the new name
+
+				// No track updates below this line so both fields are required
+				changes = 
+				{
+					artist: artist.name,
+					title: title.name,
+				};
+
+				return Track.findOrCreate
+				({
+					where: changes,
+					transaction: tr,
+				})
+				.spread(function(track, created)
+				{
+					var ContentController = core.controllers.Content;
+
+					return ContentController.linkContent(req.body.itemId, track,
+						tr, req, res,
+					function onContentLink(track)
+					{
+						// Add no track edits if no tracks were created
+						if(!created)
+							return track;
+
+						changes.userId = req.user.userId;
+						changes.trackId = track.trackId;
+
+						return TrackEdit
+						.create(changes,
+						{ transaction: tr })
+						.then(function()
+						{
+							return track;
 						});
 					});
 				});
-
-				return;
-			}
-
-			// There are more than one content linked to this track, so we link the
-			// existing track with that name, or create a new one if it doesn't exist
-
-			changes.artist = artist.name;
-			changes.title = title.name;
-
-			Track.findOrCreate
-			({
-				where: changes,
 			})
-			.spread(function(track, created)
+			.then(function(track)
 			{
-				var ContentController = core.controllers.Content;
-				ContentController.linkContent(req.body.itemId, track.trackId,
-					req, res);
-
-				// Add no track edits if no tracks were created
-				if(!created)
-					return;
-
-				changes.userId = req.user.userId;
-				changes.trackId = track.trackId;
-				TrackEdit.create(changes);
+				res.json(track.trackId);
+			})
+			.catch(function(err)
+			{
+				return res.status(500).json({ errors: ["internal error"] });
 			});
 		});
 	}
 
 	// Delete a track if it has no references
-	TrackController.removeUnusedTrack = function(trackId)
+	TrackController.removeUnusedTrack = function(trackId, tr, done)
 	{
-		Relation.count
+		return Relation.count
 		({
 			where:
 			{
@@ -199,38 +249,37 @@ module.exports = function(core)
 				[
 					{ trackId: trackId },
 					{ linkedId: trackId },
-				]
-			}
+				],
+			},
+			transaction: tr,
 		})
 		.then(function(relationCount)
 		{
 			// Track has relations, keep it
 			if(relationCount > 0)
-				return;
+				return done();
 
 			// Count content linked with the track
-			Content.count
+			return Content.count
 			({
 				where: { trackId: trackId },
+				transaction: tr,
 			})
 			.then(function(contentCount)
 			{
-				// Track is linked to a content, keep it
+				// Track is linked with content, keep it
 				if(contentCount > 0)
-					return;
+					return done();
 
-				var params = { where: { trackId: trackId } };
-
-				TrackEdit
-				.destroy(params)
+				// Remove the track and all associated rows
+				return Track.destroy
+				({
+					where: { trackId: trackId },
+					transaction: tr,
+				})
 				.then(function()
 				{
-					ContentLink
-					.destroy(params)
-					.then(function()
-					{
-						Track.destroy(params);
-					});
+					return done();
 				});
 			});
 		});

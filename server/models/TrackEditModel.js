@@ -12,7 +12,7 @@ module.exports = function(sequelize)
 	});
 	
 	var Track = sequelize.models.Track;
-	Track.hasMany(TrackEdit, { foreignKey: "trackId" });
+	Track.hasMany(TrackEdit, { foreignKey: "trackId", onDelete: "cascade" });
 	TrackEdit.belongsTo(Track, { foreignKey: "trackId" });
 	
 	var User = sequelize.models.User;

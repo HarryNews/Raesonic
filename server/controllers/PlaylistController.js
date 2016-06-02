@@ -138,7 +138,8 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
-		PlaylistController.verifyOwnership(req.user, PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
+		PlaylistController.verifyOwnership(req.user,
+			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
 		function onConfirm()
 		{
 			// User is the playlist owner, proceed to adding item
