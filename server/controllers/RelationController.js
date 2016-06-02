@@ -2,6 +2,9 @@ module.exports = function(core)
 {
 	var RelationController =
 	{
+		// Vote update reasons
+		MODE_CREATE_RELATION: 1,
+		MODE_UPDATE_VOTE: 2,
 		// Response status codes
 		STATUS_CREATED: 1,
 		STATUS_UPVOTED: 2,
@@ -45,52 +48,71 @@ module.exports = function(core)
 			// At least one of the tracks is missing to create a relation
 			if(amount != 2)
 				return res.status(404).json({ errors: ["track not found"] });
-		});
 
-		// todo: use ReputationController.getVoteValue(req.user)
-		var voteValue = 1;
+			// todo: use ReputationController.getVoteValue(req.user)
+			var voteValue = 1;
 
-		Relation.findOrCreate
-		({
-			where:
+			sequelize.transaction(function(tr)
 			{
-				$or:
-				[
+				return Relation.findOrCreate
+				({
+					where:
+					{
+						$or:
+						[
+							{
+								trackId: req.body.trackId,
+								linkedId: req.body.linkedId,
+							},
+							{
+								trackId: req.body.linkedId,
+								linkedId: req.body.trackId,
+							}
+						]
+					},
+					defaults:
 					{
 						trackId: req.body.trackId,
 						linkedId: req.body.linkedId,
+						trust: voteValue,
 					},
-					{
-						trackId: req.body.linkedId,
-						linkedId: req.body.trackId,
-					}
-				]
-			},
-			defaults:
+					transaction: tr,
+				})
+				.spread(function(relation, created)
+				{
+					// If the relation already exists, upvote it and bail out
+					if(!created)
+						return relation;
+
+					return RelationVote.create
+					({
+						relationId: relation.relationId,
+						userId: req.user.userId,
+						value: voteValue
+					},
+					{ transaction: tr });
+				});
+			})
+			.then(function(entity)
 			{
-				trackId: req.body.trackId,
-				linkedId: req.body.linkedId,
-				trust: voteValue,
-			},
-		})
-		.spread(function(relation, created)
-		{
-			// If the relation already exists, upvote it and bail out
-			if(!created)
+				// If the relation already exists, upvote it and bail out
+				if(entity.Model == Relation)
+				{
+					RelationController.setRelationVote(entity, 1, req, res,
+						RelationController.MODE_CREATE_RELATION);
+
+					return;
+				}
+
+				res.json
+				([
+					entity.relationId,
+					RelationController.STATUS_CREATED,
+				]);
+			})
+			.catch(function(err)
 			{
-				res.json( [relation.relationId, RelationController.STATUS_UPVOTED] );
-				RelationController.setRelationVote(relation, 1, req);
-
-				return;
-			}
-
-			res.json( [relation.relationId, RelationController.STATUS_CREATED] );
-
-			RelationVote.create
-			({
-				relationId: relation.relationId,
-				userId: req.user.userId,
-				value: voteValue
+				return res.status(500).json({ errors: ["internal error"] });
 			});
 		});
 	}
@@ -212,12 +234,13 @@ module.exports = function(core)
 			if(!relation)
 				return res.status(404).json({ errors: ["relation not found"] });
 
-			RelationController.setRelationVote(relation, req.body.vote, req, res);
+			RelationController.setRelationVote(relation, req.body.vote, req, res,
+				RelationController.MODE_UPDATE_VOTE);
 		});
 	}
 
 	// Find or create a relation vote
-	RelationController.setRelationVote = function(relation, vote, req, res)
+	RelationController.setRelationVote = function(relation, vote, req, res, mode)
 	{
 		if(vote == RelationController.VOTE_CLEAR)
 			return RelationController.clearRelationVote(relation, req, res);
@@ -249,6 +272,10 @@ module.exports = function(core)
 				relation = RelationController.revertPreviousVote(relation,
 					relationVote.value);
 
+				// Vote value has not changed, bail out
+				if(relationVote.value == voteValue)
+					return relation;
+
 				return relationVote.update
 				({
 					value: voteValue
@@ -264,8 +291,18 @@ module.exports = function(core)
 		})
 		.then(function(relation)
 		{
-			if(!res)
+			// The user attempted to create a relation that already exists
+			// Send a response that the relation was successfully upvoted
+			if(mode == RelationController.MODE_CREATE_RELATION)
+			{
+				res.json
+				([
+					relation.relationId,
+					RelationController.STATUS_UPVOTED,
+				]);
+
 				return;
+			}
 
 			res.json
 			([
@@ -318,9 +355,6 @@ module.exports = function(core)
 		})
 		.then(function(relation)
 		{
-			if(!res)
-				return;
-
 			res.json
 			([
 				(relation.trust - relation.doubt),
