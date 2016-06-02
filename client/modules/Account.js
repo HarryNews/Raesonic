@@ -32,6 +32,9 @@ Account.create = function(username, password)
 
 			if(error == "username not available")
 				return Overlay.setError("#signup-username", "not available");
+
+			// if(error == "internal error")
+			// todo: show toast about the error, suggesting to try again later
 		}
 	});
 }

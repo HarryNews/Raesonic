@@ -196,17 +196,18 @@ module.exports = function(core)
 	}
 
 	// Creates a main playlist for the newly created account
-	PlaylistController.createMainPlaylist = function(userId, done)
+	PlaylistController.createMainPlaylist = function(user, tr)
 	{
-		Playlist.create
+		return Playlist.create
 		({
 			name: "Main",
-			userId: userId,
+			userId: user.userId,
 			alias: RandomString.generate(PlaylistController.DEFAULT_ALIAS_LENGTH),
-		})
-		.then(function(playlist)
+		},
+		{ transaction: tr })
+		.then(function()
 		{
-			done(playlist);
+			return user;
 		});
 	}
 

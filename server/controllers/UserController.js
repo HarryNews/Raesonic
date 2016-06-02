@@ -22,23 +22,32 @@ module.exports = function(core)
 		{
 			password = UserController.encyptPassword(password);
 
-			User.findOrCreate
-			({
-				where: { username: username },
-				defaults: { password: password },
-			})
-			.spread(function(user, created)
+			sequelize.transaction(function(tr)
 			{
-				if(!created)
-					return next(null, false, "username not available");
-
-				PlaylistController = core.controllers.Playlist;
-
-				PlaylistController.createMainPlaylist(user.userId,
-				function onCreate()
+				return User.findOrCreate
+				({
+					where: { username: username },
+					defaults: { password: password },
+					transaction: tr,
+				})
+				.spread(function(user, created)
 				{
-					next(null, user);
+					if(!created)
+						throw new Error("username not available");
+
+					PlaylistController = core.controllers.Playlist;
+					return PlaylistController.createMainPlaylist(user, tr);
 				});
+			})
+			.then(function(user)
+			{
+				return next(null, user);
+			})
+			.catch(function(err)
+			{
+				(err.message == "username not available")
+					? next(null, false, err.message)
+					: next(err);
 			});
 		})
 	);
