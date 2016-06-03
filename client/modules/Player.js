@@ -109,6 +109,7 @@ Player.setItem = function($item)
 	$("#current-time, #total-time").text("00:00");
 
 	var Content = require("./Content.js");
+	Content.onItemChange($item, artist, title);
 
 	// Update the related tab if viewing recommendations
 	if($item.data("rating") != null)
@@ -404,9 +405,9 @@ Player.onTick = function()
 // Called upon a playback error
 Player.onPlaybackError = function()
 {
-	var ContentTab = require("../tabs/ContentTab.js");
-	var ItemList = require("../modules/ItemList.js");
-	ContentTab.switchContent(ItemList.NEXT_ITEM, ItemList.SKIP_TRACK);
+	var Content = require("./Content.js");
+	var ItemList = require("./ItemList.js");
+	Content.switchContent(ItemList.NEXT_ITEM, ItemList.SKIP_TRACK);
 }
 
 // Called upon movement of the mouse cursor
@@ -454,29 +455,29 @@ Player.onDocumentMouseUp = function()
 	YouTube.player.seekTo(seek * YouTube.player.getDuration(), true);
 }
 
-// Called upon clicking the play button
-Player.onPlayClick = function()
+// Called upon clicking the play icon
+Player.onPlayIconClick = function()
 {
 	Player.play();
 }
 
-// Called upon clicking the pause button
-Player.onPauseClick = function()
+// Called upon clicking the pause icon
+Player.onPauseIconClick = function()
 {
 	Player.pause();
 }
 
-// Called upon clicking the previous item button
-Player.onPreviousClick = function()
+// Called upon clicking the previous item icon
+Player.onPreviousIconClick = function()
 {
-	var ItemList = require("../modules/ItemList.js");
+	var ItemList = require("./ItemList.js");
 	Player.switchItem(ItemList.PREVIOUS_ITEM, ItemList.MANUAL_SWITCH);
 }
 
-// Called upon clicking the next item button
-Player.onNextClick = function()
+// Called upon clicking the next item icon
+Player.onNextIconClick = function()
 {
-	var ItemList = require("../modules/ItemList.js");
+	var ItemList = require("./ItemList.js");
 	Player.switchItem(ItemList.NEXT_ITEM, ItemList.MANUAL_SWITCH);
 }
 
@@ -570,7 +571,7 @@ Player.onVolumeDrag = function()
 }
 
 // Called upon clicking the mute toggle button
-Player.onSpeakerClick = function()
+Player.onSpeakerIconClick = function()
 {
 	if(Player.muted && Player.volume < 1)
 	{
@@ -594,13 +595,13 @@ Player.init = function()
 	$(document).mousemove(Player.onDocumentMouseMove);
 	$(document).mouseup(Player.onDocumentMouseUp);
 
-	$("#play").click(Player.onPlayClick);
-	$("#pause").click(Player.onPauseClick);
-	$("#previous").click(Player.onPreviousClick);
-	$("#next").click(Player.onNextClick);
+	$("#play").click(Player.onPlayIconClick);
+	$("#pause").click(Player.onPauseIconClick);
+	$("#previous").click(Player.onPreviousIconClick);
+	$("#next").click(Player.onNextIconClick);
 	$("#seekbar").mousedown(Player.onSeekbarMouseDown);
 	$("#volume").mousedown(Player.onVolumeMouseDown);
-	$("#speaker").click(Player.onSpeakerClick);
+	$("#speaker").click(Player.onSpeakerIconClick);
 
 	Player.updateVolume();
 

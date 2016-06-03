@@ -885,6 +885,7 @@ body
 }
 #tabs .column-item .overlay-icon.active
 {
+	color: #FFF;
 	opacity: 1;
 	cursor: pointer;
 }

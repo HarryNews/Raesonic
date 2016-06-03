@@ -137,7 +137,7 @@ Relation.vote = function(trackId, linkedId, vote)
 	});
 }
 
-// Sets vote on the active relation
+// Set vote on the active relation
 Relation.setActiveVote = function(vote, $icon)
 {
 	var Item = require("./Item.js");
@@ -151,7 +151,7 @@ Relation.setActiveVote = function(vote, $icon)
 	Relation.vote(Item.active.trackId, Relation.active.trackId, vote);
 }
 
-// Updates rating and rating elements state on related tab
+// Update rating and rating elements state on related tab
 Relation.updateActiveRating = function(rating, vote)
 {
 	$("#related-rating").text(rating);

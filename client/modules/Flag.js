@@ -158,7 +158,7 @@ Flag.onIconClick = function()
 		}
 		case Flag.ENTITY.CONTENT_LINK:
 		{
-			var Content = require("../modules/Content.js");
+			var Content = require("./Content.js");
 
 			var sourceId = data.entityId.charAt(0);
 			var externalId = data.entityId.substring(2);

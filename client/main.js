@@ -5,6 +5,7 @@ $(document).ready(function()
 {
 	var Account = require("./modules/Account.js");
 	var Player = require("./modules/Player.js");
+	var Content = require("./modules/Content.js");
 	var Playlist = require("./modules/Playlist.js");
 	var Relation = require("./modules/Relation.js");
 	var Search = require("./modules/Search.js");
@@ -22,6 +23,7 @@ $(document).ready(function()
 	YouTube.init();
 	SoundCloud.init();
 
+	Content.init();
 	Relation.init();
 	Search.init();
 	Overlay.init();

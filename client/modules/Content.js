@@ -45,18 +45,17 @@ Content.create = function(sourceId, externalId)
 			var ItemList = require("./ItemList.js");
 			ItemList.clearFilter();
 
-			ItemList.addItem
-			(
-				[
-					trackId,
-					artist,
-					title,
-					itemId,
-					sourceId,
-					externalId
-				],
-				ItemList.PREPEND
-			);
+			var item =
+			[
+				trackId,
+				artist,
+				title,
+				itemId,
+				sourceId,
+				externalId,
+			];
+
+			ItemList.addItem(item, ItemList.PREPEND);
 
 			$("#items").scrollTop(0);
 			Playlist.setTrackCounter($(".item").length);
@@ -78,12 +77,9 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 	{
 		$("#tab-content").data( "content", [current] );
 
-		// Skip track if automatic content switch failed
+		// Skip track if the automatic content switch failed
 		if(!assignToItem && skipTrack)
-		{
-			var ContentTab = require("../tabs/ContentTab.js");
-			ContentTab.switchContent(switchDirection, skipTrack);
-		}
+			Content.switchContent(switchDirection, skipTrack);
 
 		return;
 	}
@@ -109,12 +105,9 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 			{
 				$("#tab-content").data( "content", [current] );
 
-				// Skip track if automatic content switch failed
+				// Skip track if the automatic content switch failed
 				if(!assignToItem && skipTrack)
-				{
-					var ContentTab = require("../tabs/ContentTab.js");
-					ContentTab.switchContent(switchDirection, skipTrack);
-				}
+					Content.switchContent(switchDirection, skipTrack);
 
 				return;
 			}
@@ -132,11 +125,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
-			{
-				var ContentTab = require("../tabs/ContentTab.js");
-				ContentTab.switchContent(switchDirection, skipTrack, !nearest);
-				return;
-			}
+				return Content.switchContent(switchDirection, skipTrack, !nearest);
 
 			// No content available, clear content and bail out
 			if(!nearest)
@@ -163,6 +152,214 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 			Item.play($item);
 		}
 	});
+}
+
+// Select next or previous content
+// If the skipTrack is true, track will be skipped if there's no alternative content
+Content.switchContent = function(forward, skipTrack, missingContent)
+{
+	var $item = $(".item.active");
+
+	// No active item, disable content switch
+	if(!$item.length)
+		return Content.setSwitchEnabled(false);
+
+	var content = $("#tab-content").data("content");
+
+	// No content data, request and retry
+	if( (!content || !content.length) && !missingContent )
+	{
+		var current =
+		[
+			$item.data("sourceId"),
+			$item.data("externalId"),
+		];
+
+		Content.setSwitchEnabled(false);
+		Content.request($item.data("trackId"), Content.AUTOMATIC_SWITCH,
+			forward, skipTrack, current);
+
+		return;
+	}
+
+	// No alternative content, disable switching and bail out
+	if(missingContent || content.length < 2)
+	{
+		if(skipTrack)
+		{
+			var Player = require("./Player.js");
+			var ItemList = require("./ItemList.js");
+			Player.switchItem(ItemList.NEXT_ITEM);
+		}
+
+		Content.setSwitchEnabled(false);
+		return;
+	}
+
+	var newContent;
+
+	// Look for content before/after the active one
+	for(var index = 0; index < content.length; index++)
+	{
+		if($item.data("sourceId") == content[index][0] &&
+			$item.data("externalId") == content[index][1])
+		{
+			newContent = forward
+				? content[++index]
+				: content[--index];
+
+			break;
+		}
+	}
+
+	// Cycle to the first/last content
+	if(!newContent)
+		newContent = forward
+			? content[0]
+			: content[content.length - 1];
+
+	var initialContent = $item.data("initial");
+	var isInitialContent = (newContent[0] == initialContent[0] &&
+		newContent[1] == initialContent[1]);
+
+	$("#content-replace").toggleClass("active", !isInitialContent);
+
+	$item
+		.data
+		({
+			sourceId: newContent[0],
+			externalId: newContent[1],
+			unsaved: !isInitialContent,
+		})
+		.removeClass("active");
+
+	var Item = require("./Item.js");
+	Item.play($item);
+
+	Content.setSwitchEnabled(true);
+}
+
+// Save active content selection as the item's content
+Content.saveItemContent = function($item)
+{
+	$.ajax
+	({
+		url: "/items/" + $item.data("itemId") + "/content/",
+		type: "PUT",
+		data: JSON.stringify
+		({
+			sourceId: $item.data("sourceId"),
+			externalId: $item.data("externalId"),
+		}),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var content = $("#tab-content").data("content") || [];
+
+			// Look for index of the newly selected content
+			for(var index = 0; index < content.length; index++)
+			{
+				if($item.data("sourceId") == content[index][0] &&
+					$item.data("externalId") == content[index][1])
+				{
+					// Look for index of the initial content
+					var initialContent = $item.data("initial");
+					for(var secondIndex = 0; secondIndex < content.length; secondIndex++)
+					{
+						if(initialContent[0] == content[secondIndex][0] &&
+							initialContent[1] == content[secondIndex][1])
+						{
+							// Update initial content values
+							$item.data("initial", content[index]);
+
+							// Swap the initial and the newly selected content
+							content[secondIndex] = content[index];
+							content[index] = initialContent;
+
+							$("#tab-content").data("content", content);
+
+							break;
+						}
+					}
+
+					break;
+				}
+			}
+
+			$("#content-replace").removeClass("active");
+		}
+	});
+}
+
+// Set ability to switch between content to the boolean value
+Content.setSwitchEnabled = function(enabled)
+{
+	$("#content-previous, #content-next")
+		.toggleClass("inactive", !enabled);
+}
+
+// Called when an item is selected, and when it is made active
+Content.onItemChange = function($item)
+{
+	// Keep content data if the itemId is the same
+	if($item.data("itemId") == $("#tab-content").data("itemId"))
+		return;
+
+	$("#tab-content").data
+	({
+		"itemId": $item.data("itemId"),
+		"content": [],
+	});
+
+	Content.setSwitchEnabled(true);
+
+	var initialContent = $item.data("initial");
+	var isInitialContent = ($item.data("sourceId") == initialContent[0] &&
+		$item.data("externalId") == initialContent[1]);
+
+	$("#content-replace").toggleClass("active", !isInitialContent);
+}
+
+// Called upon clicking the previous content icon
+Content.onPreviousIconClick = function()
+{
+	var ItemList = require("./ItemList.js");
+	Content.switchContent(ItemList.PREVIOUS_ITEM);
+}
+
+// Called upon clicking the next content icon
+Content.onNextIconClick = function()
+{
+	var ItemList = require("./ItemList.js");
+	Content.switchContent(ItemList.NEXT_ITEM);
+}
+
+// Called upon clicking the replace content icon
+Content.onReplaceIconClick = function()
+{
+	var $icon = $(this);
+
+	// Inactive icon, bail out
+	if(!$icon.is(".active"))
+		return;
+
+	var $item = $(".item.active");
+
+	// No active item, remove active class and bail out
+	if(!$item.length)
+		return $icon.removeClass("active");
+
+	Content.saveItemContent($item);
+}
+
+Content.init = function()
+{
+	$("#content-previous").click(Content.onPreviousIconClick);
+	$("#content-next").click(Content.onNextIconClick);
+	$("#content-replace").click(Content.onReplaceIconClick);
 }
 
 module.exports = Content;

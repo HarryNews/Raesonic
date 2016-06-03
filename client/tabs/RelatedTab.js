@@ -1,5 +1,3 @@
-var Relation = require("../modules/Relation.js");
-
 var RelatedTab =
 {
 	ALIAS: "related",
