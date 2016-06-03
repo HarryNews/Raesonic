@@ -1,8 +1,20 @@
+var History = require("./History.js");
+
 var Tab =
 {
-	Related: require("../tabs/RelatedTab.js"),
-	Content: require("../tabs/ContentTab.js"),
-	History: require("../tabs/HistoryTab.js"),
+	Related:
+	{
+		ALIAS: "related",
+	},
+	Content:
+	{
+		ALIAS: "content",
+	},
+	History:
+	{
+		ALIAS: "history",
+		onSetActive: History.onTabSetActive,
+	},
 };
 
 // Store tab alias as a data value
@@ -23,11 +35,13 @@ Tab.setAlias = function()
 Tab.setActive = function(tab)
 {
 	var $tab = $("#menu-" + tab.ALIAS);
-	
-	tab.onSetActive();
 
+	// Tab is already active, bail out
 	if($tab.is(".active"))
 		return;
+	
+	if(tab.onSetActive)
+		tab.onSetActive();
 
 	$("#tabs-menu div, #tabs .tab-contents")
 		.removeClass("active");
@@ -39,6 +53,13 @@ Tab.setActive = function(tab)
 		.addClass("active");
 }
 
+// Returns true if the tab is active
+Tab.isActive = function(tab)
+{
+	var $tab = $("#menu-" + tab.ALIAS);
+	return $tab.is(".active");
+}
+
 // Called upon active item change
 Tab.onItemChange = function($item)
 {
@@ -46,14 +67,6 @@ Tab.onItemChange = function($item)
 	($item.data("trackId") == -1)
 		? $("#tabs-overlay").addClass("visible")
 		: $("#tabs-overlay.visible").removeClass("visible");
-
-	$.each(Tab, function(_, tab)
-	{
-		if(typeof tab == "function")
-			return;
-		
-		tab.onItemChange($item);
-	});
 }
 
 // Called upon clicking the menu button
@@ -68,14 +81,6 @@ Tab.init = function()
 	$("#tabs-menu div")
 		.each(Tab.setAlias)
 		.click(Tab.onMenuClick);
-	
-	$.each(Tab, function(_, tab)
-	{
-		if(typeof tab == "function")
-			return;
-
-		tab.init();
-	});
 }
 
 module.exports = Tab;

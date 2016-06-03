@@ -8,6 +8,7 @@ $(document).ready(function()
 	var Content = require("./modules/Content.js");
 	var Playlist = require("./modules/Playlist.js");
 	var Relation = require("./modules/Relation.js");
+	var History = require("./modules/History.js");
 	var Search = require("./modules/Search.js");
 	var Tab = require("./modules/Tab.js");
 	var Overlay = require("./modules/Overlay.js");
@@ -25,6 +26,7 @@ $(document).ready(function()
 
 	Content.init();
 	Relation.init();
+	History.init();
 	Search.init();
 	Overlay.init();
 	Tab.init();

@@ -109,7 +109,7 @@ Player.setItem = function($item)
 	$("#current-time, #total-time").text("00:00");
 
 	var Content = require("./Content.js");
-	Content.onItemChange($item, artist, title);
+	Content.onItemChange($item);
 
 	// Update the related tab if viewing recommendations
 	if($item.data("rating") != null)

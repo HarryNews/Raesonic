@@ -1,22 +1,21 @@
 var Diff = require("diff");
-var Flag = require("../modules/Flag.js");
+var Flag = require("./Flag.js");
 
-var HistoryTab =
+var History =
 {
-	ALIAS: "history",
 	// History action types
 	TYPE_TRACK_EDITS: 1,
 	TYPE_CONTENT_LINKS: 2,
 };
 
-// Request history actions for specified entity
-HistoryTab.requestActions = function(historyType, entityId)
+// Request a type of history actions for the specified entity
+History.request = function(historyType, entityId)
 {
 	var request = {};
 
 	switch(historyType)
 	{
-		case HistoryTab.TYPE_TRACK_EDITS:
+		case History.TYPE_TRACK_EDITS:
 		{
 			request =
 			{
@@ -29,7 +28,7 @@ HistoryTab.requestActions = function(historyType, entityId)
 
 			break;
 		}
-		case HistoryTab.TYPE_CONTENT_LINKS:
+		case History.TYPE_CONTENT_LINKS:
 		{
 			request =
 			{
@@ -133,66 +132,122 @@ HistoryTab.requestActions = function(historyType, entityId)
 					}
 				}
 
-				var relativeDate = HistoryTab.getRelativeDate(date);
+				var $changes = $("<div>")
+					.addClass("changes")
+					.append(
+						$("<div>")
+							.addClass("artist")
+							.html(change[0]),
+						$("<div>")
+							.addClass("title")
+							.html(change[1])
+					);
 
-				$destination.prepend(
-					$("<div>")
-						.addClass("action")
-						.append(
-							$("<div>")
-								.addClass("changes")
-								.append(
-									$("<div>")
-										.addClass("artist")
-										.html(change[0]),
-									$("<div>")
-										.addClass("title")
-										.html(change[1])
-								),
-							$("<div>")
-								.addClass("details")
-								.append(
-									$("<div>")
-										.addClass("user")
-										.text(username)
-										.append(
-											$("<div>")
-												.addClass("flag icon fa fa-flag")
-												.toggleClass("active", active)
-												.attr("title", "Flag for moderator attention")
-												.data
-												({
-													entityType: request.entityType,
-													entityId: fullEntityId,
-													secondId: actionId,
-													artist: change[0],
-													title: change[1],
-												})
-												.click(Flag.onIconClick)
-										),
-									$("<div>")
-										.addClass("date")
-										.text(relativeDate)
-										.append(
-											$("<div>")
-												.addClass("date icon fa fa-clock-o")
-												.attr("title", new Date(date).toString())
-										)
-								)
-						)
-				);
+				var relativeDate = History.getRelativeDate(date);
+
+				var $details = $("<div>")
+					.addClass("details")
+					.append(
+						$("<div>")
+							.addClass("user")
+							.text(username)
+							.append(
+								$("<div>")
+									.addClass("flag icon fa fa-flag")
+									.toggleClass("active", active)
+									.attr("title", "Flag for moderator attention")
+									.data
+									({
+										entityType: request.entityType,
+										entityId: fullEntityId,
+										secondId: actionId,
+										artist: change[0],
+										title: change[1],
+									})
+									.click(Flag.onIconClick)
+							),
+						$("<div>")
+							.addClass("date")
+							.text(relativeDate)
+							.append(
+								$("<div>")
+									.addClass("date icon fa fa-clock-o")
+									.attr("title", new Date(date).toString())
+							)
+					);
+
+				var $action = $("<div>")
+					.addClass("action")
+					.append($changes, $details);
+
+				$destination.prepend($action);
 			});
 		}
 	});
 }
 
+// Request actions for each item's entity that changed
+History.updateItemActions = function($item)
+{
+	// No active item, bail out
+	if(!$item.length)
+		return;
+
+	// Update track edit actions if the track changed
+	if($item.data("trackId") != $("#tab-history").data("trackId"))
+	{
+		History.request( History.TYPE_TRACK_EDITS,
+			$item.data("trackId") );
+	}
+
+	// Update content link actions if the content changed
+	if($item.data("externalId") &&
+		$item.data("externalId") != $("#tab-history").data("externalId"))
+	{
+		History.request( History.TYPE_CONTENT_LINKS,
+			$item.data("sourceId") + "/" + $item.data("externalId") );
+	}
+}
+
+// Clear storage variables
+History.clearStorage = function()
+{
+	$("#tab-history").removeData();
+}
+
+// Set active section by alias
+History.setActiveSection = function(alias)
+{
+	var $section = $("#history-menu-" + alias);
+
+	if($section.is(".active"))
+		return;
+
+	$("#history-menu div, #tab-history .section")
+		.removeClass("active");
+	
+	$section.addClass("active");
+
+	$("#tab-history .section")
+		.eq( $section.index() )
+		.addClass("active");
+}
+
 // Returns a relative date in a readable format
 // (c) John Resig & Faiz
-HistoryTab.getRelativeDate = function(dateStr)
+History.getRelativeDate = function(dateStr)
 {
-	var date = new Date((dateStr || "").replace(/-/g, "/").replace(/[TZ]/g, " ").slice(0, -5));
+	var date = new Date(
+		(dateStr || "")
+			.replace(/-/g, "/")
+			.replace(/[TZ]/g, " ")
+			.slice(0, -5)
+	);
+
 	var timezoneOffset = date.getTimezoneOffset() * 60000;
-	var diff = ( ( ( new Date() ).getTime() - date.getTime() + timezoneOffset ) / 1000 );
+	var diff = ( ( ( new Date() ).getTime() -
+		date.getTime() + timezoneOffset ) / 1000 );
+
 	var dayDiff = Math.floor(diff / 86400);
 
 	var year = date.getFullYear();
@@ -226,79 +281,37 @@ HistoryTab.getRelativeDate = function(dateStr)
 		return r;
 }
 
-// Clear storage variables
-HistoryTab.clearStorage = function()
-{
-	$("#tab-history").removeData();
-}
-
-// Set active section by alias
-HistoryTab.setActiveSection = function(alias)
-{
-	var $tab = $("#history-menu-" + alias);
-
-	if($tab.is(".active"))
-		return;
-
-	$("#history-menu div, #tab-history .section")
-		.removeClass("active");
-	
-	$tab.addClass("active");
-
-	$("#tab-history .section")
-		.eq( $tab.index() )
-		.addClass("active");
-}
 
 // Called when the history tab becomes active
-HistoryTab.onSetActive = function($overrideItem)
+History.onTabSetActive = function()
 {
-	var $item = $overrideItem || $(".item.active");
-
-	// No active item, bail out
-	if(!$item.length)
-		return;
-
-	// Update track edits data if a different track is being set
-	if($item.data("trackId") != $("#tab-history").data("trackId"))
-	{
-		HistoryTab.requestActions( HistoryTab.TYPE_TRACK_EDITS,
-			$item.data("trackId") );
-	}
-
-	// Update content links data if a different content is being set
-	if($item.data("externalId") && $item.data("externalId") != $("#tab-history").data("externalId"))
-	{
-		HistoryTab.requestActions( HistoryTab.TYPE_CONTENT_LINKS,
-			$item.data("sourceId") + "/" + $item.data("externalId") );
-	}
+	History.updateItemActions( $(".item.active") );
 }
 
-// Called upon active item change
-HistoryTab.onItemChange = function($item)
+// Called when an item is made active
+History.onItemChange = function($item)
 {
-	var $tab = $("#menu-" + HistoryTab.ALIAS);
+	var Tab = require("./Tab.js");
 
-	if(!$tab.is(".active"))
+	if(!Tab.isActive(Tab.History))
 		return;
 
-	HistoryTab.onSetActive($item);
+	History.updateItemActions($item);
 }
 
 // Called upon clicking the menu button
-HistoryTab.onMenuClick = function()
+History.onSectionMenuClick = function()
 {
-	var alias = $(this).attr("id").substring(13);
-	HistoryTab.setActiveSection(alias);
+	var alias = $(this)
+		.attr("id")
+		.substring(13);
+
+	History.setActiveSection(alias);
 }
 
-HistoryTab.init = function()
+History.init = function()
 {
-	$("#history-menu div")
-		.click(HistoryTab.onMenuClick);
-
-	$("#history-track-edits").data("type", HistoryTab.TYPE_TRACK_EDITS);
-	$("#history-content-links").data("type", HistoryTab.TYPE_CONTENT_LINKS);
+	$("#history-menu div").click(History.onSectionMenuClick);
 }
 
-module.exports = HistoryTab;
+module.exports = History;

@@ -142,6 +142,9 @@ ItemList.setActiveItem = function($item)
 	Item.active.artist = $("#meta-artist").html();
 	Item.active.title = $("#meta-title").html();
 
+	var History = require("./History.js");
+	History.onItemChange($item);
+
 	var Tab = require("./Tab.js");
 	Tab.onItemChange($item);
 }

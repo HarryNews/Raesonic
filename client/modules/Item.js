@@ -96,18 +96,22 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				Item.active.artist = artist;
 				Item.active.title = title;
 
+				var History = require("./History.js");
+				History.clearStorage();
+
+				var Tab = require("./Tab.js");
+
+				// Show history tab with updated entries
+				Tab.isActive(Tab.History)
+					? History.updateItemActions($item)
+					: Tab.setActive(Tab.History);
+				
 				setTimeout(function()
 				{
+					// Allow tab interaction if a track is attached
 					var Tab = require("./Tab.js");
-					Tab.History.clearStorage();
-					Tab.setActive(Tab.History);
-					
-					setTimeout(function()
-					{
-						var Tab = require("./Tab.js");
-						Tab.onItemChange($item);
-					}, 1000);
-				}, 3000);
+					Tab.onItemChange($item);
+				}, 1000);
 			}
 
 			$item.data("trackId", trackId);
