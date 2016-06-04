@@ -25,6 +25,7 @@ $(document).ready(function()
 	SoundCloud.init();
 
 	Content.init();
+	Playlist.init();
 	Relation.init();
 	History.init();
 	Search.init();

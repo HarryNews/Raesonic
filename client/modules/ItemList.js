@@ -29,8 +29,9 @@ ItemList.setItems = function(items, useStorage)
 	{
 		$(".item").each(function()
 		{
-			storage.push($(this).detach());
+			storage.push( $(this).detach() );
 		});
+		
 		$("#items").data("storage", storage);
 	}
 

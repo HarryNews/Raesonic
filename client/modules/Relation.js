@@ -217,7 +217,9 @@ Relation.onAddIconClick = function()
 		return;
 
 	// Line up the dropdown with the related tab
-	$("#add-list").css("top", $("#items").scrollTop() +
+	$("#add-list")
+		.addClass("aligned")
+		.css("top", $("#items").scrollTop() +
 		$("#tab-related").offset().top - $("#items").offset().top);
 }
 
