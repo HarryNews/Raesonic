@@ -218,11 +218,7 @@ Content.switchContent = function(forward, skipTrack, missingContent)
 			? content[0]
 			: content[content.length - 1];
 
-	var initialContent = $item.data("initial");
-	var isInitialContent = (newContent[0] == initialContent[0] &&
-		newContent[1] == initialContent[1]);
-
-	$("#content-replace").toggleClass("active", !isInitialContent);
+	var isInitialContent = Content.updateReplaceIconState($item, newContent);
 
 	$item
 		.data
@@ -262,15 +258,15 @@ Content.saveItemContent = function($item)
 			// Look for index of the newly selected content
 			for(var index = 0; index < content.length; index++)
 			{
-				if($item.data("sourceId") == content[index][0] &&
-					$item.data("externalId") == content[index][1])
+				if( $item.data("sourceId") == content[index][0] &&
+					$item.data("externalId") == content[index][1] )
 				{
 					// Look for index of the initial content
 					var initialContent = $item.data("initial");
 					for(var secondIndex = 0; secondIndex < content.length; secondIndex++)
 					{
-						if(initialContent[0] == content[secondIndex][0] &&
-							initialContent[1] == content[secondIndex][1])
+						if( initialContent[0] == content[secondIndex][0] &&
+							initialContent[1] == content[secondIndex][1] )
 						{
 							// Update initial content values
 							$item.data("initial", content[index]);
@@ -301,6 +297,38 @@ Content.setSwitchEnabled = function(enabled)
 		.toggleClass("inactive", !enabled);
 }
 
+// Update state of the content replace icon for the item specified
+Content.updateReplaceIconState = function($item, overrideContent)
+{
+	var initialContent = $item.data("initial");
+
+	// No content or itemId, hide icon and return false
+	if(initialContent == null || $item.data("itemId") == null)
+	{
+		$("#content-replace").addClass("hidden");
+		return false;
+	}
+
+	$("#content-replace.hidden").removeClass("hidden");
+
+	var sourceId = $item.data("sourceId");
+	var externalId = $item.data("externalId");
+
+	if(overrideContent)
+	{
+		sourceId = overrideContent[0];
+		externalId = overrideContent[1];
+	}
+
+	var isInitialContent =
+		( sourceId == initialContent[0] &&
+			externalId == initialContent[1] );
+
+	$("#content-replace").toggleClass("active", !isInitialContent);
+
+	return isInitialContent;
+}
+
 // Called when an item is selected, and when it is made active
 Content.onItemChange = function($item)
 {
@@ -315,12 +343,7 @@ Content.onItemChange = function($item)
 	});
 
 	Content.setSwitchEnabled(true);
-
-	var initialContent = $item.data("initial");
-	var isInitialContent = ($item.data("sourceId") == initialContent[0] &&
-		$item.data("externalId") == initialContent[1]);
-
-	$("#content-replace").toggleClass("active", !isInitialContent);
+	Content.updateReplaceIconState($item);
 }
 
 // Called upon clicking the previous content icon
