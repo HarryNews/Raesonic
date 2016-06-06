@@ -120,7 +120,7 @@ module.exports = function(core)
 		Playlist.findOne
 		({
 			where: { userId: req.user.userId },
-			order: "playlistId DESC"
+			order: "playlistId ASC",
 		})
 		.then(function(playlist)
 		{
