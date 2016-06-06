@@ -1,3 +1,5 @@
+var Overlay = require("./Overlay.js");
+
 Playlist =
 {
 	SECTION:
@@ -8,16 +10,23 @@ Playlist =
 		FAVORITES: 4,
 		RECENT: 5,
 	},
+	ACCESS:
+	{
+		PRIVATE: 1,
+		SHARED: 2,
+		PUBLIC: 3,
+	},
+	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 }
 
 // Create a new playlist with the name provided
-Playlist.create = function(name)
+Playlist.create = function(name, access)
 {
 	$.ajax
 	({
 		url: "/playlists/",
 		type: "POST",
-		data: JSON.stringify({ name: name }),
+		data: JSON.stringify({ name: name, access: access }),
 		contentType: "application/json",
 		success: function(response)
 		{
@@ -25,19 +34,14 @@ Playlist.create = function(name)
 				return;
 
 			var playlistId = response;
+			var items = [];
 
-			Playlist.active =
-			{
-				playlistId: playlist[0],
-				name: name,
-				access: 1
-			}
+			// todo: add playlist to the section if it's cached
+			// request the section otherwise
 
-			$("#playlist-name").text(name);
-			Playlist.setTrackCounter(0);
+			Playlist.setActive(playlistId, name, access, items);
 
-			var ItemList = require("./ItemList.js");
-			ItemList.setItems( [] );
+			Overlay.destroy();
 		}
 	});
 }
@@ -49,7 +53,7 @@ Playlist.load = function(playlistId)
 	({
 		url: "/playlists/" + playlistId + "/",
 		type: "GET",
-		success: Playlist.onLoadResponse
+		success: Playlist.onLoadResponse,
 	});
 }
 
@@ -60,8 +64,25 @@ Playlist.loadMain = function()
 	({
 		url: "/own/playlists/main/",
 		type: "GET",
-		success: Playlist.onLoadResponse
+		success: Playlist.onLoadResponse,
 	});
+}
+
+// Set the playlist as active
+Playlist.setActive = function(playlistId, name, access, items)
+{
+	Playlist.active =
+	{
+		playlistId: playlistId,
+		name: name,
+		access: access,
+	}
+
+	$("#playlist-name").text(name);
+	Playlist.setTrackCounter(items.length);
+
+	var ItemList = require("./ItemList.js");
+	ItemList.setItems(items);
 }
 
 // Retrieve the list of all playlists in a section
@@ -117,18 +138,11 @@ Playlist.onLoadResponse = function(response)
 	var playlist = response[0];
 	var items = response[1];
 
-	Playlist.active =
-	{
-		playlistId: playlist[0],
-		name: playlist[1],
-		access: playlist[2]
-	};
+	var playlistId = playlist[0];
+	var name = playlist[1];
+	var access = playlist[2];
 
-	$("#playlist-name").text(Playlist.active.name);
-	Playlist.setTrackCounter(items.length);
-
-	var ItemList = require("./ItemList.js");
-	ItemList.setItems(items);
+	Playlist.setActive(playlistId, name, access, items);
 }
 
 // Fill the playlists section with data from server or the local storage
@@ -191,6 +205,133 @@ Playlist.setTrackCounter = function(count)
 	$("#playlist-details").text(count + " tracks");
 }
 
+// Called once upon creating a playlist overlay
+Playlist.initPlaylistOverlay = function()
+{
+	var accessLabels =
+	{
+		[Playlist.ACCESS.PRIVATE]: "Private (only me)",
+		[Playlist.ACCESS.SHARED]: "Shared (anyone with the link)",
+		[Playlist.ACCESS.PUBLIC]: "Public",
+	};
+
+	for(var access in Playlist.ACCESS)
+	{
+		var radioId = "access-" + access.toLowerCase();
+		var accessId = Playlist.ACCESS[access];
+
+		var $radio = Overlay.createElement
+		({
+			tag: "<input>",
+			attributes:
+			{
+				id: radioId,
+				type: "radio",
+				name: "playlist-access",
+			},
+			data: { "accessId": accessId },
+		});
+
+		var $label = Overlay.createElement
+		({
+			tag: "<label>",
+			attributes:
+			{
+				for: radioId,
+			},
+			text: accessLabels[accessId],
+		});
+
+		( (accessId == 1)
+			? $("#playlist-edit-access")
+			: $("#window label:last") )
+				.after($label)
+				.after($radio);
+	}
+}
+
+// Show playlist creation/playlist edit overlay
+Playlist.showPlaylistOverlay = function(playlistId, name)
+{
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
+	if(Overlay.isActive())
+		return;
+
+	var elements =
+	[{
+		tag: "<input>",
+		attributes:
+		{
+			id: "playlist-edit-name",
+			type: "text",
+			maxlength: 50,
+			placeholder: "Name",
+		},
+		val: (name || ""),
+		keyup: Playlist.updatePlaylistOverlay,
+	},
+	{
+		tag: "<p>",
+		attributes:
+		{
+			id: "playlist-edit-access",
+		},
+		text: "Access:",
+	}];
+
+	if(!playlistId)
+	{
+		elements.push
+		({
+			tag: "<div>",
+			attributes:
+			{
+				id: "playlist-create",
+				class: "inner window-link",
+			},
+			text: "Create Playlist",
+			click: Playlist.onCreatePlaylistClick,
+		},
+		{
+			tag: "<div>",
+			attributes:
+			{
+				id: "playlist-cancel",
+				class: "window-link",
+			},
+			text: "Cancel",
+			click: Overlay.destroy,
+		});
+	}
+
+	var header = (playlistId)
+		? "Edit playlist"
+		: "Create new playlist";
+
+	Overlay.create
+	(header,
+	elements,
+	{ noSpacer: true },
+	function onOverlayCreate()
+	{
+		Playlist.initPlaylistOverlay();
+	});
+}
+
+// Update playlist overlay
+Playlist.updatePlaylistOverlay = function()
+{
+	Overlay.clearErrors();
+	
+	if($("#playlist-edit-name").val().length > 0 &&
+		!Playlist.NAME_REGEX.test( $("#playlist-edit-name").val() ))
+		Overlay.setError("#playlist-edit-name", "contains prohibited characters");
+}
+
 // Called upon clicking the playlist header
 Playlist.onHeaderClick = function()
 {
@@ -216,6 +357,36 @@ Playlist.onMenuClick = function()
 	Playlist.setActiveSection(alias);
 }
 
+// Called upon pressing the new playlist button
+Playlist.onNewPlaylistClick = function()
+{
+	Playlist.showPlaylistOverlay();
+}
+
+// Called when the create playlist button is pressed
+Playlist.onCreatePlaylistClick = function()
+{
+	if( $("#playlist-edit-name").val().length < 3 )
+		Overlay.setError("#playlist-edit-name", "min. 3 characters");
+
+	if($("#playlist-edit-name").val().length > 0 &&
+		!Playlist.NAME_REGEX.test( $("#playlist-edit-name").val() ))
+		Overlay.setError("#playlist-edit-name", "contains prohibited characters");
+
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+		return Overlay.shakeRadioButtonLabels();
+
+	if( Overlay.hasErrors() )
+		return;
+
+	var name = $("#playlist-edit-name").val();
+	var access = $radio.data("accessId");
+
+	Playlist.create(name, access);
+}
+
 Playlist.init = function()
 {
 	$("#playlists-menu div")
@@ -223,6 +394,7 @@ Playlist.init = function()
 		.click(Playlist.onMenuClick);
 
 	$("#header-left").click(Playlist.onHeaderClick);
+	$("#playlist-new").click(Playlist.onNewPlaylistClick)
 }
 
 module.exports = Playlist;

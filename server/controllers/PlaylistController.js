@@ -4,15 +4,18 @@ module.exports = function(core)
 
 	var PlaylistController =
 	{
+		ACCESS:
+		{
+			PRIVATE: 1,
+			SHARED: 2,
+			PUBLIC: 3,
+		},
 		DEFAULT_ALIAS_LENGTH: 12,
+		NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 		// Access methods
 		BY_PLAYLISTID: 1,
 		BY_ITEMID: 2,
 		BY_ALIAS: 3,
-		// Access values
-		PRIVATE_ACCESS: 1,
-		SHARED_ACCESS: 2,
-		PUBLIC_ACCESS: 3,
 	};
 
 	var app = core.app;
@@ -35,6 +38,7 @@ module.exports = function(core)
 		({
 			name: req.body.name,
 			userId: req.user.userId,
+			access: req.body.access,
 			alias: RandomString.generate(PlaylistController.DEFAULT_ALIAS_LENGTH),
 		})
 		.then(function(playlist)
@@ -280,26 +284,35 @@ module.exports = function(core)
 
 			// Shared playlists can only be reached by their alias
 			if(!condition.alias &&
-				playlist.access == PlaylistController.SHARED_ACCESS)
+				playlist.access == PlaylistController.ACCESS.SHARED)
 				return res.status(403).json({ errors: ["no access"] });
 
 			// Playlist owners don't reach this line, deny access
-			if(playlist.access == PlaylistController.PRIVATE_ACCESS)
+			if(playlist.access == PlaylistController.ACCESS.PRIVATE)
 				return res.status(403).json({ errors: ["no access"] });
 
 			confirm();
 		});
 	}
 
-	// Returns true if playlist name is valid
+	// Returns true if the playlist name is valid
 	PlaylistController.validateName = function(name)
 	{
 		if(name.length < 3 || name.length > 50)
 			return false;
 
-		// todo: restrict to a-zA-Z0-9!@#$%^&*();:_-= (estimate)
+		if(!PlaylistController.NAME_REGEX.test(name))
+			return false;
 
 		return true;
+	}
+
+	// Returns true if the playlist access is valid
+	PlaylistController.validateAccess = function(access)
+	{
+		return ( access == PlaylistController.ACCESS.PRIVATE ||
+			access == PlaylistController.ACCESS.SHARED ||
+			access == PlaylistController.ACCESS.PUBLIC );
 	}
 	
 	PlaylistController.init = function()
@@ -310,6 +323,7 @@ module.exports = function(core)
 			paperwork.accept
 			({
 				name: paperwork.all(String, PlaylistController.validateName),
+				access: paperwork.all(Number, PlaylistController.validateAccess),
 			}),
 			PlaylistController.createPlaylist);
 

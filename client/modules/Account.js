@@ -142,6 +142,7 @@ Account.sync = function(done)
 	});
 }
 
+// Set authentication state and update affected elements
 Account.setAuthenticated = function(isAuthenticated, done)
 {
 	if(!isAuthenticated)
@@ -167,7 +168,7 @@ Account.setAuthenticated = function(isAuthenticated, done)
 		done();
 }
 
-// Creates and shows an overlay for authentication
+// Create and show an overlay for authentication
 Account.showLoginOverlay = function()
 {
 	if(Overlay.isActive())
@@ -222,7 +223,7 @@ Account.showLoginOverlay = function()
 	});
 }
 
-// Creates and shows an overlay for account actions
+// Create and show an overlay for account actions
 Account.showAccountOverlay = function()
 {
 	if(Overlay.isActive())
@@ -239,7 +240,7 @@ Account.showAccountOverlay = function()
 	});
 }
 
-// Updates the login overlay
+// Update the login overlay
 Account.updateLoginOverlay = function()
 {
 	var restoreAllowed =
@@ -252,7 +253,7 @@ Account.updateLoginOverlay = function()
 	Overlay.clearErrors();
 }
 
-// Updates the sign up overlay
+// Update the sign up overlay
 Account.updateSignUpOverlay = function()
 {
 	Overlay.clearErrors();
@@ -262,7 +263,7 @@ Account.updateSignUpOverlay = function()
 		Overlay.setError("#signup-username", "contains prohibited characters");
 }
 
-// Updates the account overlay
+// Update the account overlay
 Account.updateAccountOverlay = function()
 {
 	Overlay.setAction("Logout", Account.onLogoutClick)

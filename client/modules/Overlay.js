@@ -1,8 +1,14 @@
 var Overlay = {};
 
 // Create and show an overlay
-Overlay.create = function(name, elements, done)
+Overlay.create = function(name, elements, options, done)
 {
+	if(typeof done == "undefined")
+	{
+		done = options;
+		options = {};
+	}
+
 	var $elements =
 	[
 		$("<button>")
@@ -26,9 +32,12 @@ Overlay.create = function(name, elements, done)
 		.append($elements);
 
 	// Add spacer element
-	$("#window input:last-of-type").after(
-		$("<div>").attr("id", "window-separator")
-	);
+	if(!options.noSpacer)
+	{
+		$("#window input:last-of-type").after(
+			$("<div>").attr("id", "window-separator")
+		);
+	}
 
 	// Call the callback function
 	done();
