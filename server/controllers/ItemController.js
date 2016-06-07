@@ -18,20 +18,32 @@ module.exports = function(core)
 
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_ITEMID, req.params.itemId, res,
-		function onConfirm()
+		function onConfirm(playlist)
 		{
 			// User is the playlist owner, delete the item
-			Item.destroy
-			({
-				where: { itemId: req.params.itemId }
-			})
-			.then(function(amount)
+			sequelize.transaction(function(tr)
 			{
-				// Haven't deleted any rows
-				if(amount < 1)
-					return res.status(500).json({ errors: ["internal error"] });
+				return Item.destroy
+				({
+					where: { itemId: req.params.itemId },
+					transaction: tr,
+				})
+				.then(function(amount)
+				{
+					// Haven't deleted any rows
+					if(amount < 1)
+						throw new Error("no rows deleted");
 
+					return playlist.decrement("count", { transaction: tr });
+				});
+			})
+			.then(function()
+			{
 				res.json( [] );
+			})
+			.catch(function(err)
+			{
+				return res.status(500).json({ errors: ["internal error"] });
 			});
 		});
 	}

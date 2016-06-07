@@ -144,10 +144,10 @@ module.exports = function(core)
 
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
-		function onConfirm()
+		function onConfirm(playlist)
 		{
-			// User is the playlist owner, proceed to adding item
-			// First we need to find the content or create one if it doesn't exist
+			// User is the playlist owner, proceed to adding the item
+			// Content is obtained and created if it doesn't exist
 			Content.findOrCreate
 			({
 				where:
@@ -164,37 +164,48 @@ module.exports = function(core)
 			})
 			.spread(function(content, created)
 			{
-				// Now we have the contentId so the item can be created
-				Item.create
-				({
-					playlistId: req.params.playlistId,
-					contentId: content.contentId
-				})
-				.then(function(item)
+				sequelize.transaction(function(tr)
 				{
-					if(created)
+					// Create new item linked with the obtained content
+					return Item.create
+					({
+						playlistId: req.params.playlistId,
+						contentId: content.contentId
+					},
+					{ transaction: tr })
+					.then(function(item)
 					{
-						// Content is not yet linked to a track, pass default values
-						var response =
-						[
-							-1,
-							"Unknown Artist",
-							"Unknown Track",
-							item.itemId,
-						];
-
-						return res.json(response);
-					}
-
-					var response =
-					[
-						content.Track.trackId,
-						content.Track.artist,
-						content.Track.title,
-						item.itemId,
-					];
-
+						return playlist
+						.increment("count",
+						{ transaction: tr })
+						.then(function()
+						{
+							// Default values if no track is attached
+							return (!created)
+								?
+								[
+									content.Track.trackId,
+									content.Track.artist,
+									content.Track.title,
+									item.itemId,
+								]
+								:
+								[
+									-1,
+									"Unknown Artist",
+									"Unknown Track",
+									item.itemId,
+								];
+						})
+					});
+				})
+				.then(function(response)
+				{
 					res.json(response);
+				})
+				.catch(function(err)
+				{
+					return res.status(500).json({ errors: ["internal error"] });
 				});
 			});
 		});
@@ -227,7 +238,7 @@ module.exports = function(core)
 			{
 				params =
 				{
-					attributes: ["userId"],
+					attributes: ["playlistId", "userId"],
 					where: { playlistId: entityId }
 				};
 				break;
@@ -236,7 +247,7 @@ module.exports = function(core)
 			{
 				params =
 				{
-					attributes: ["userId"],
+					attributes: ["playlistId", "userId"],
 					include:
 					[{
 						model: Item,
@@ -291,7 +302,7 @@ module.exports = function(core)
 			if(playlist.access == PlaylistController.ACCESS.PRIVATE)
 				return res.status(403).json({ errors: ["no access"] });
 
-			confirm();
+			confirm(playlist);
 		});
 	}
 

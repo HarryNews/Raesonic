@@ -9,6 +9,7 @@ module.exports = function(sequelize)
 		name: Sequelize.STRING(50),
 		access: { type: Sequelize.INTEGER(1), defaultValue: 1 },
 		alias: Sequelize.STRING(50),
+		count: { type: Sequelize.INTEGER, defaultValue: 0 },
 	});
 	
 	var User = sequelize.models.User;
