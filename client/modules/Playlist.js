@@ -322,6 +322,13 @@ Playlist.initPlaylistOverlay = function()
 				.after($label)
 				.after($radio);
 	}
+
+	// Default access according to active sidebar section
+	var activeAlias = $("#playlists-menu div.active").data("alias");
+
+	$("#window input[type=\"radio\"]")
+		.filterByData("sectionAlias", activeAlias)
+		.prop("checked", true);
 }
 
 // Show playlist creation/playlist edit overlay
