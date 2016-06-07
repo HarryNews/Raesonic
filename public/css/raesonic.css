@@ -127,6 +127,25 @@ body
 	display: inline;
 }
 
+#playlist-access
+{
+	font-size: 12px;
+	margin-left: 4px;
+	color: #7A738C;
+}
+#playlist-access.private
+{
+	font-size: 13px;
+}
+#playlist-access.shared
+{
+	margin-left: 3px;
+}
+#playlist-access.public, #playlist-access.shared
+{
+	vertical-align: 1px;
+}
+
 #user-avatar
 {
 	width: 43px;

@@ -98,6 +98,13 @@ Playlist.loadMain = function()
 // Set the playlist as active
 Playlist.setActive = function(playlistId, name, access, items)
 {
+	var accessIcons =
+	{
+		[Playlist.ACCESS.PRIVATE]: "private icon fa fa-lock",
+		[Playlist.ACCESS.SHARED]: "shared icon fa fa-link",
+		[Playlist.ACCESS.PUBLIC]: "public icon fa fa-globe",
+	};
+
 	Playlist.active =
 	{
 		playlistId: playlistId,
@@ -105,7 +112,17 @@ Playlist.setActive = function(playlistId, name, access, items)
 		access: access,
 	}
 
-	$("#playlist-name").text(name);
+	var $access = $("<span>")
+		.attr
+		({
+			id: "playlist-access",
+			class: accessIcons[access],
+		});
+
+	$("#playlist-name")
+		.text(name)
+		.append($access);
+
 	Playlist.setTrackCounter(items.length);
 
 	var ItemList = require("./ItemList.js");
