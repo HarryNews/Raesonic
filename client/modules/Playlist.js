@@ -20,7 +20,7 @@ Playlist =
 }
 
 // Create a new playlist with the name provided
-Playlist.create = function(name, access)
+Playlist.create = function(name, access, sectionAlias)
 {
 	$.ajax
 	({
@@ -33,11 +33,38 @@ Playlist.create = function(name, access)
 			if(response.errors)
 				return;
 
-			var playlistId = response;
+			var playlistId = response[0];
+			var alias = response[1];
 			var items = [];
 
-			// todo: add playlist to the section if it's cached
-			// request the section otherwise
+			var storage =
+				$("#playlists").data(sectionAlias.toLowerCase());
+
+			// Add playlist to the section whether it's cached or not
+			if(storage != null)
+			{
+				var playlist =
+				[
+					playlistId,
+					name,
+					access,
+					alias,
+					0, // items count
+				];
+
+				var $playlist = Playlist.addSectionPlaylist(playlist);
+				storage.push($playlist);
+
+				$("#playlists")
+					.data(sectionAlias.toLowerCase(), storage)
+					.animate({
+						scrollTop: $("#playlists").prop("scrollHeight"),
+					}, 0);
+			}
+			else
+			{
+				Playlist.setActiveSection(sectionAlias);
+			}
 
 			Playlist.setActive(playlistId, name, access, items);
 
@@ -86,48 +113,74 @@ Playlist.setActive = function(playlistId, name, access, items)
 }
 
 // Retrieve the list of all playlists in a section
-Playlist.loadSection = function(sectionId, alias)
+Playlist.loadSection = function(sectionId, sectionAlias)
 {
-	// todo: request playlists from the server
+	// todo: retrieve from cookies
+	if(sectionId == Playlist.SECTION.RECENT)
+		return;
 
-	var previewCount = sectionId * 3 + 1;
+	$.ajax
+	({
+		url: "/own/playlists/" + sectionAlias.toLowerCase() + "/",
+		type: "GET",
+		success: function(playlists)
+		{
+			if(playlists)
+			{
+				playlists.forEach(Playlist.addSectionPlaylist);
+			}
 
-	for(var i = 1; i < previewCount; i++)
-	{
-		var $info =
-			$("<div>")
-				.addClass("info")
-				.append(
-					$("<div>")
-						.addClass("name")
-						.text("Playlist " + i),
-					$("<div>")
-						.addClass("details")
-						.text("10 tracks")
-				);
+			var storage = [];
 
-		var $icon =
-			$("<div>")
-				.addClass("edit icon fa fa-pencil");
+			$(".playlist").each(function()
+			{
+				storage.push( $(this) );
+			});
 
-		var $playlist = 
-			$("<div>")
-				.addClass("playlist")
-				.append($info, $icon);
-
-		$("#playlists").append($playlist);
-	}
-
-	var storage = [];
-
-	$(".playlist").each(function()
-	{
-		storage.push( $(this) );
+			$("#playlists")
+				.data(sectionAlias.toLowerCase(), storage)
+				.animate({ scrollTop: 0, }, 0);
+		}
 	});
+}
 
-	$("#playlists")
-		.data(alias.toLowerCase(), storage)
-		.animate({ scrollTop: 0, }, 0);
+Playlist.addSectionPlaylist = function(playlist)
+{
+	var playlistId = playlist[0];
+	var name = playlist[1];
+	var access = playlist[2];
+	var alias = playlist[3];
+	var count = playlist[4];
+
+	var $info =
+		$("<div>")
+			.addClass("info")
+			.append(
+				$("<div>")
+					.addClass("name")
+					.text(name),
+				$("<div>")
+					.addClass("details")
+					.text(count + " tracks")
+			);
+
+	var $icon =
+		$("<div>")
+			.addClass("edit icon fa fa-pencil");
+
+	var $playlist = 
+		$("<div>")
+			.addClass("playlist")
+			.append($info, $icon)
+			.data
+			({
+				playlistId: playlistId,
+				access: access,
+			});
+
+	$("#playlists").append($playlist);
+
+	return $playlist;
 }
 
 Playlist.onLoadResponse = function(response)
@@ -148,11 +201,11 @@ Playlist.onLoadResponse = function(response)
 // Fill the playlists section with data from server or the local storage
 Playlist.updateSection = function()
 {
-	var alias = $("#playlists-menu .active").data("alias");
+	var sectionAlias = $("#playlists-menu .active").data("alias");
 
 	$("#playlists").empty();
 
-	var storage = $("#playlists").data( alias.toLowerCase() );
+	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
 
 	// Already have the playlists stored, retrieve them and bail out
 	if(storage != null)
@@ -167,7 +220,7 @@ Playlist.updateSection = function()
 		return;
 	}
 
-	Playlist.loadSection( Playlist.SECTION[alias], alias );
+	Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
 }
 
 // Store alias as a data value of the menu button
@@ -229,7 +282,11 @@ Playlist.initPlaylistOverlay = function()
 				type: "radio",
 				name: "playlist-access",
 			},
-			data: { "accessId": accessId },
+			data:
+			{
+				accessId: accessId,
+				sectionAlias: access,
+			},
 		});
 
 		var $label = Overlay.createElement
@@ -383,8 +440,9 @@ Playlist.onCreatePlaylistClick = function()
 
 	var name = $("#playlist-edit-name").val();
 	var access = $radio.data("accessId");
+	var sectionAlias = $radio.data("sectionAlias");
 
-	Playlist.create(name, access);
+	Playlist.create(name, access, sectionAlias);
 }
 
 Playlist.init = function()

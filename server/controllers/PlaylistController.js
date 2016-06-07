@@ -4,6 +4,14 @@ module.exports = function(core)
 
 	var PlaylistController =
 	{
+		SECTION:
+		{
+			PRIVATE: 1,
+			SHARED: 2,
+			PUBLIC: 3,
+			FAVORITES: 4,
+			RECENT: 5,
+		},
 		ACCESS:
 		{
 			PRIVATE: 1,
@@ -43,7 +51,11 @@ module.exports = function(core)
 		})
 		.then(function(playlist)
 		{
-			res.json(playlist.playlistId);
+			res.json
+			([
+				playlist.playlistId,
+				playlist.alias,
+			]);
 		});
 	}
 
@@ -59,7 +71,7 @@ module.exports = function(core)
 		{
 			Playlist.findOne
 			({
-				attributes: ["playlistId", "name", "access"],
+				attributes: ["playlistId", "name", "access", "alias"],
 				where: condition,
 				order: "itemId DESC",
 				include:
@@ -133,6 +145,72 @@ module.exports = function(core)
 
 			req.params.alias = playlist.playlistId.toString();
 			PlaylistController.getPlaylist(req, res);
+		});
+	}
+
+	// Retrieve a list of own private playlists
+	PlaylistController.getPrivateSection = function(req, res)
+	{
+		req.params.access = PlaylistController.SECTION.PRIVATE;
+		return PlaylistController.getSection(req, res);
+	}
+
+	// Retrieve a list of own shared playlists
+	PlaylistController.getSharedSection = function(req, res)
+	{
+		req.params.access = PlaylistController.SECTION.SHARED;
+		return PlaylistController.getSection(req, res);
+	}
+
+	// Retrieve a list of own shared playlists
+	PlaylistController.getPublicSection = function(req, res)
+	{
+		req.params.access = PlaylistController.SECTION.PUBLIC;
+		return PlaylistController.getSection(req, res);
+	}
+
+	// Retrieve a list of favorite playlists
+	PlaylistController.getFavoritesSection = function(req, res)
+	{
+		// return PlaylistController.getFavorites(req, res);
+	}
+
+	// Retrieve a list of own playlists from the section
+	PlaylistController.getSection = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		Playlist.all
+		({
+			attributes: ["playlistId", "name", "access", "alias", "count", "userId"],
+			where:
+			{
+				userId: req.user.userId,
+				access: req.params.access,
+			},
+			order: "playlistId ASC",
+		})
+		.then(function(playlists)
+		{
+			if(!playlists)
+				return res.json( [] );
+
+			var response = [];
+
+			for(var index in playlists)
+			{
+				response.push
+				([
+					playlists[index].playlistId,
+					playlists[index].name,
+					playlists[index].access,
+					playlists[index].alias,
+					playlists[index].count,
+				]);
+			}
+
+			res.json(response);
 		});
 	}
 
@@ -272,7 +350,7 @@ module.exports = function(core)
 			if(user.userId != playlist.userId)
 				return res.status(403).json({ errors: ["no access"] });
 
-			confirm();
+			confirm(playlist);
 		});
 	}
 
@@ -282,7 +360,7 @@ module.exports = function(core)
 		Playlist.findOne
 		({
 			attributes: ["userId", "access"],
-			where: condition
+			where: condition,
 		})
 		.then(function(playlist)
 		{
@@ -302,7 +380,7 @@ module.exports = function(core)
 			if(playlist.access == PlaylistController.ACCESS.PRIVATE)
 				return res.status(403).json({ errors: ["no access"] });
 
-			confirm(playlist);
+			confirm();
 		});
 	}
 
@@ -343,6 +421,18 @@ module.exports = function(core)
 
 		app.get("/own/playlists/main",
 			PlaylistController.getMainPlaylist);
+
+		app.get("/own/playlists/private",
+			PlaylistController.getPrivateSection);
+
+		app.get("/own/playlists/shared",
+			PlaylistController.getSharedSection);
+
+		app.get("/own/playlists/public",
+			PlaylistController.getPublicSection);
+
+		app.get("/own/playlists/favorites",
+			PlaylistController.getFavoritesSection);
 		
 		app.post("/playlists/:playlistId(\\d+)",
 			paperwork.accept
