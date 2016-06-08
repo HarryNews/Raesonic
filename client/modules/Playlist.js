@@ -53,7 +53,7 @@ Playlist.create = function(name, access, sectionAlias)
 				];
 
 				var $playlist = Playlist.addSectionPlaylist(playlist);
-				storage.push($playlist);
+				storage.push( $playlist.clone(true) );
 
 				$("#playlists")
 					.data(sectionAlias.toLowerCase(), storage)
@@ -124,6 +124,7 @@ Playlist.setActive = function(playlistId, name, access, items)
 		.append($access);
 
 	Playlist.setTrackCounter(items.length);
+	Playlist.highlightActivePlaylist();
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems(items);
@@ -151,8 +152,10 @@ Playlist.loadSection = function(sectionId, sectionAlias)
 
 			$(".playlist").each(function()
 			{
-				storage.push( $(this) );
+				storage.push( $(this).clone(true) );
 			});
+
+			Playlist.highlightActivePlaylist();
 
 			$("#playlists")
 				.data(sectionAlias.toLowerCase(), storage)
@@ -193,11 +196,25 @@ Playlist.addSectionPlaylist = function(playlist)
 			({
 				playlistId: playlistId,
 				access: access,
-			});
+			})
+			.click(Playlist.onPlaylistClick);
 
 	$("#playlists").append($playlist);
 
 	return $playlist;
+}
+
+// Remove active class from all playlists but the active one
+Playlist.highlightActivePlaylist = function()
+{
+	$(".playlist.active").removeClass("active");
+
+	if(!Playlist.active)
+		return;
+	
+	$(".playlist")
+		.filterByData("playlistId", Playlist.active.playlistId)
+		.addClass("active");
 }
 
 Playlist.onLoadResponse = function(response)
@@ -216,15 +233,35 @@ Playlist.onLoadResponse = function(response)
 }
 
 // Fill the playlists section with data from server or the local storage
-Playlist.updateSection = function()
+Playlist.updateSection = function(previousAlias)
 {
+	// Obtain storage of the currently active section
 	var sectionAlias = $("#playlists-menu .active").data("alias");
-
-	$("#playlists").empty();
-
 	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
 
-	// Already have the playlists stored, retrieve them and bail out
+	// If the active section has not changed
+	if(previousAlias == null)
+	{
+		// Active section is already up-to-date, bail out
+		if(storage != null)
+			return;
+
+		// Load active section from the server and bail out
+		Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
+		return;
+	}
+
+	// Store the previously active section
+	var previousStorage = [];
+
+	$(".playlist").each(function()
+	{
+		previousStorage.push( $(this).detach() );
+	});
+
+	$("#playlists").data(previousAlias.toLowerCase(), previousStorage);
+
+	// Section storage contains the playlists, retrieve them and bail out
 	if(storage != null)
 	{
 		storage.forEach(function($playlist)
@@ -232,11 +269,13 @@ Playlist.updateSection = function()
 			$("#playlists").append($playlist);
 		});
 
+		Playlist.highlightActivePlaylist();
 		$("#playlists").animate({ scrollTop: 0, }, 0);
 
 		return;
 	}
 
+	// No storage found, load active section from the server
 	Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
 }
 
@@ -253,6 +292,32 @@ Playlist.setMenuAlias = function()
 	$(this).data("alias", alias);
 }
 
+// Hide/show the playlists management sidebar
+Playlist.toggleSidebar = function()
+{
+	var Account = require("./Account.js");
+	var hidingSidebar = $("#sidebar").is(".visible");
+
+	if( !Account.authenticated && !hidingSidebar)
+		return Account.showLoginOverlay();
+
+	$("#header-left").toggleClass("active");
+	$("#sidebar").toggleClass("visible");
+
+	if(hidingSidebar)
+	{
+		$("body").unbind("mousedown",
+			Playlist.onDocumentMouseDown);
+
+		return;
+	}
+
+	Playlist.updateSection();
+
+	$("body").bind("mousedown",
+		Playlist.onDocumentMouseDown);
+}
+
 // Set active section by alias
 Playlist.setActiveSection = function(alias)
 {
@@ -263,10 +328,13 @@ Playlist.setActiveSection = function(alias)
 	if($section.is(".active"))
 		return;
 
-	$("#playlists-menu div").removeClass("active");
+	var $previous = $("#playlists-menu div.active");
+	var previousAlias = $previous.data("alias");
+
+	$previous.removeClass("active");
 	$section.addClass("active");
 	
-	Playlist.updateSection();
+	Playlist.updateSection(previousAlias);
 }
 
 // Set track counter to specified value
@@ -413,38 +481,43 @@ Playlist.updatePlaylistOverlay = function()
 		Overlay.setError("#playlist-edit-name", "contains prohibited characters");
 }
 
+// Called when the mouse is pressed somewhere
+Playlist.onDocumentMouseDown = function(event)
+{
+	var $target = $(event.target);
+
+	// Ignore clicks on specific elements
+	if( $target.is("#header-left") ||
+		$target.is("#overlay") ||
+		$target.parents("#header-left").length ||
+		$target.parents("#sidebar").length ||
+		$target.parents("#controls").length ||
+		$target.parents("#overlay").length )
+		return;
+
+	Playlist.toggleSidebar();
+}
+
 // Called upon clicking the playlist header
 Playlist.onHeaderClick = function()
 {
-	var Account = require("./Account.js");
-	var hiding = $("#sidebar").is(".visible");
-
-	if( !Account.authenticated && !hiding)
-		return Account.showLoginOverlay();
-
-	$("#header-left").toggleClass("active");
-	$("#sidebar").toggleClass("visible");
-
-	if(hiding)
-		return;
-
-	Playlist.updateSection();
+	Playlist.toggleSidebar();
 }
 
-// Called upon clicking the menu button
+// Called upon clicking on the section menu button
 Playlist.onMenuClick = function()
 {
 	var alias = $(this).data("alias");
 	Playlist.setActiveSection(alias);
 }
 
-// Called upon pressing the new playlist button
+// Called upon clicking on the new playlist button
 Playlist.onNewPlaylistClick = function()
 {
 	Playlist.showPlaylistOverlay();
 }
 
-// Called when the create playlist button is pressed
+// Called when the create playlist button is clicked upon
 Playlist.onCreatePlaylistClick = function()
 {
 	if( $("#playlist-edit-name").val().length < 3 )
@@ -467,6 +540,18 @@ Playlist.onCreatePlaylistClick = function()
 	var sectionAlias = $radio.data("sectionAlias");
 
 	Playlist.create(name, access, sectionAlias);
+}
+
+// Called when the playlist item is clicked upon
+Playlist.onPlaylistClick = function()
+{
+	var $playlist = $(this);
+
+	// Do nothing if the playlist is already active
+	if( $playlist.is(".active") )
+		return;
+
+	Playlist.load( $playlist.data("playlistId") );
 }
 
 Playlist.init = function()

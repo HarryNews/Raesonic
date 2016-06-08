@@ -423,7 +423,7 @@ Item.onRelationCreateClick = function()
 Item.onDocumentMouseDown = function(event)
 {
 	// Ignore clicks on the dropdown
-	if($(event.target).parents("#add-list").length)
+	if( $(event.target).parents("#add-list").length )
 		return;
 
 	Item.fadeRemoveDropdown();
