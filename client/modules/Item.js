@@ -187,7 +187,10 @@ Item.fadeRemoveDropdown = function()
 		.removeClass("adding");
 
 	$("body").unbind("mousedown", Item.onDocumentMouseDown);
-	$("#items").unbind("scroll", Item.onItemListScroll);
+	$("body").unbind("keydown", Item.onDocumentKeyDown);
+
+	$("#items").unbind("scroll touchmove mousewheel",
+		Item.onItemListScroll);
 }
 
 // Returns vertical offset of the item
@@ -347,7 +350,10 @@ Item.onAddIconClick = function()
 		.append( $dropdown.fadeIn(200) );
 
 	$("body").bind("mousedown", Item.onDocumentMouseDown);
-	$("#items").bind("scroll", Item.onItemListScroll);
+	$("body").bind("keydown", Item.onDocumentKeyDown);
+
+	$("#items").bind("scroll touchmove mousewheel",
+		Item.onItemListScroll);
 }
 
 // Called upon clicking the save button in the overlay
@@ -465,10 +471,48 @@ Item.onDocumentMouseDown = function(event)
 	Item.fadeRemoveDropdown();
 }
 
-// Called when the item list is scrolled
-Item.onItemListScroll = function()
+// Called when the key is pressed somewhere
+Item.onDocumentKeyDown = function(event)
 {
+	// Ignore keys that do not change the scroll
+	if([32, 33, 34, 35, 36, 37, 38, 39, 40]
+		.indexOf(event.keyCode) == -1)
+			return;
+
 	Item.fadeRemoveDropdown();
+}
+
+// Called when the item list is scrolled
+Item.onItemListScroll = function(event)
+{
+	// Not scrolling the dropdown list
+	if( !$("#add-list:hover").length )
+		return Item.fadeRemoveDropdown();
+
+	if(event.type == "mousewheel")
+	{
+		var $dropdown = $("#add-list");
+
+		var scrollHeight = $dropdown[0].scrollHeight;
+		var scrollTop = $dropdown.scrollTop();
+		var height = $dropdown.height();
+		var delta = event.originalEvent.wheelDelta;
+		var up = (delta > 0);
+
+		// Allow scrolling within the dropdown list
+		if( ( !up && ( -delta <= (scrollHeight - height - scrollTop) ) ) ||
+			(up && (delta <= scrollTop) ) )
+			return;
+
+		// Past the limit, use the edge values
+		(up)
+			? $dropdown.scrollTop(0)
+			: $dropdown.scrollTop(scrollHeight);
+	}
+
+	event.preventDefault();
+	event.stopPropagation();
+	return false;
 }
 
 module.exports = Item;
