@@ -182,7 +182,8 @@ Playlist.addSectionPlaylist = function(playlist)
 				$("<div>")
 					.addClass("details")
 					.text(count + " tracks")
-			);
+			)
+			.click(Playlist.onPlaylistClick);
 
 	var $icon =
 		$("<div>")
@@ -196,8 +197,7 @@ Playlist.addSectionPlaylist = function(playlist)
 			({
 				playlistId: playlistId,
 				access: access,
-			})
-			.click(Playlist.onPlaylistClick);
+			});
 
 	$("#playlists").append($playlist);
 
@@ -545,7 +545,7 @@ Playlist.onCreatePlaylistClick = function()
 // Called when the playlist item is clicked upon
 Playlist.onPlaylistClick = function()
 {
-	var $playlist = $(this);
+	var $playlist = $(this).parent();
 
 	// Do nothing if the playlist is already active
 	if( $playlist.is(".active") )
