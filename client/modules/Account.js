@@ -133,7 +133,9 @@ Account.sync = function(done)
 			};
 
 			Account.setAuthenticated(true, done);
+
 			Playlist.loadMain();
+			Playlist.updateSection();
 		},
 		error: function()
 		{

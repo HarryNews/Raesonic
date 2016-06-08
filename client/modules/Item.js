@@ -278,14 +278,7 @@ Item.onAddIconClick = function()
 
 	Item.fadeRemoveDropdown();
 
-	// Below item or above item if it doesn't fit on screen
-	var topOffset = Item.getScrollOffset($item, 1);
-	if( $item.offset().top > ( $(document).height() - 280 ) )
-		topOffset = Item.getScrollOffset($item, -5) + 15;
-
-	var $dropdown = $("<div>")
-		.attr("id", "add-list")
-		.css("top", topOffset);
+	var $dropdown = $("<div>").attr("id", "add-list");
 	
 	// Active item exists and differs from selected, both have tracks attached
 	if(Item.active && Item.active.trackId != $item.data("trackId") &&
@@ -300,14 +293,54 @@ Item.onAddIconClick = function()
 		);
 	}
 
-	for(var i = 1; i < 10; i++)
+	var Playlist = require("./Playlist.js");
+
+	var sections = ["private", "shared", "public"]
+	var sectionIcons =
+	[
+		"private corner icon fa fa-lock",
+		"shared corner icon fa fa-link",
+		"public corner icon fa fa-globe",
+	];
+
+	sections.forEach(function(sectionAlias, sectionIndex)
 	{
-		$dropdown.append(
-			$("<div>")
-				.addClass("list-element")
-				.html("<div class=\"icon fa fa-list\"></div>Playlist " + i)
-		);
-	}
+		var $playlists = $("#playlists").data(sectionAlias);
+
+		if($playlists != null)
+		{
+			$playlists.forEach(function($playlist)
+			{
+				var playlistId = $playlist.data("playlistId");
+
+				// Skip active playlist
+				if(playlistId == Playlist.active.playlistId)
+					return;
+
+				$dropdown.append(
+					$("<div>")
+						.addClass("list-element")
+						.html( "<div class=\"icon fa fa-list\"></div>" +
+							"<div class=\"" +
+							sectionIcons[sectionIndex] + "\"></div>" +
+							$playlist.find(".name").text() )
+						.data("playlistId", playlistId)
+				);
+			});
+		}
+	});
+
+	// Below item or above item if it doesn't fit on screen
+	var itemsVisible = Math.min($dropdown.children().length, 5);
+
+	var isFittingBelow =
+		( $item.offset().top <
+			( $(document).height() - itemsVisible * 40 - 80 ) );
+
+	$dropdown.css("top", (isFittingBelow)
+		? Item.getScrollOffset($item, 1)
+		: Item.getScrollOffset($item, -itemsVisible) + itemsVisible * 3
+	);
 
 	$item
 		.addClass("adding")
@@ -422,8 +455,11 @@ Item.onRelationCreateClick = function()
 // Called when the mouse is pressed somewhere
 Item.onDocumentMouseDown = function(event)
 {
+	var $target = $(event.target);
+
 	// Ignore clicks on the dropdown
-	if( $(event.target).parents("#add-list").length )
+	if( $target.is("#add-list") ||
+		$target.parents("#add-list").length )
 		return;
 
 	Item.fadeRemoveDropdown();

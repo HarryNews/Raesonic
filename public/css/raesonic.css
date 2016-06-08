@@ -591,12 +591,6 @@ body
 	border-left: 1px solid #797979;
 	border-right: none;
 }
-#add-list .icon
-{
-	padding: 1px 8px 0 0;
-	font-size: 14px;
-	vertical-align: -1px;
-}
 .item.active #add-list
 {
 	border-top: 1px solid #797979;
@@ -608,6 +602,7 @@ body
 #add-list .list-element
 {
 	padding: 10px 13px;
+	position: relative;
 	background-color: #E4D6FF;
 	cursor: pointer;
 	white-space: nowrap;
@@ -633,6 +628,24 @@ body
 #add-list .list-element span.padded
 {
 	margin-left: 4px;
+}
+#add-list .list-element .icon
+{
+	padding: 1px 8px 0 0;
+	font-size: 14px;
+	vertical-align: -1px;
+}
+#add-list .list-element .icon.corner
+{
+	position: absolute;
+	top: 15px;
+	left: 10px;
+	font-size: 14px;
+	text-shadow: 1px -1px #E4D6FF, -1px 2px #E4D6FF;
+}
+#add-list .list-element:nth-child(even) .icon.corner
+{
+	text-shadow: 1px -1px #F2EBFF, -1px 2px #F2EBFF;
 }
 
 #overlay
