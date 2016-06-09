@@ -66,6 +66,31 @@ Content.create = function(sourceId, externalId)
 	});
 }
 
+// Add specified content to a playlist
+Content.copy = function(playlistId, playlistName, sourceId, externalId)
+{
+	$.ajax
+	({
+		url: "/playlists/" + playlistId + "/",
+		type: "POST",
+		data: JSON.stringify({ sourceId: sourceId, externalId: externalId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var artist = response[1];
+			var title = response[2];
+
+			// todo: update track counter in the sidebar
+
+			// todo: show a toast message:
+			// artist – title has been added to playlistName
+		}
+	});
+}
+
 // Request content of the specified track
 // If the assignToItem boolean is true, the content data is saved in the item list
 // If the skipTrack boolean is true, the track is skipped when there's no other content

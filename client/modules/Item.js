@@ -320,14 +320,21 @@ Item.onAddIconClick = function()
 				if(playlistId == Playlist.active.playlistId)
 					return;
 
+				var name = $playlist.find(".name").text();
+
 				$dropdown.append(
 					$("<div>")
 						.addClass("list-element")
-						.html( "<div class=\"icon fa fa-list\"></div>" +
+						.html("<div class=\"icon fa fa-list\"></div>" +
 							"<div class=\"" +
 							sectionIcons[sectionIndex] + "\"></div>" +
-							$playlist.find(".name").text() )
-						.data("playlistId", playlistId)
+							name)
+						.data
+						({
+							playlistId: playlistId,
+							name: name,
+						})
+						.click(Item.onPlaylistElementClick)
 				);
 			});
 		}
@@ -447,6 +454,22 @@ Item.onRelationElementClick = function()
 	{
 		
 	});
+}
+
+// Called upon clicking a playlist item in the dropdown list
+Item.onPlaylistElementClick = function()
+{
+	var $item = $(".item.adding");
+
+	var playlistId = $(this).data("playlistId");
+	var playlistName = $(this).data("name");
+	var data = $item.data();
+
+	var Content = require("./Content.js")
+	Content.copy(playlistId, playlistName,
+		data.sourceId, data.externalId);
+
+	Item.fadeRemoveDropdown();
 }
 
 // Called upon clicking the create relation button
