@@ -682,7 +682,7 @@ body
 }
 #window p
 {
-	padding: 15px 20px 0 20px;
+	padding: 20px 20px 0 20px;
 	line-height: 15px;
 	font-size: 14px;
 }
@@ -720,14 +720,13 @@ body
 }
 #window .content-thumbnail
 {
-	width: 46px;
-	height: 46px;
+	width: 47px;
+	height: 47px;
 	position: absolute;
 	left: 20px;
 	margin-top: -47px;
 	object-fit: contain;
 	background-color: #000;
-	border: 1px solid #B2AFB6;
 }
 #window input
 {
@@ -749,6 +748,15 @@ body
 {
 	border-bottom: 1px solid #75698C;
 	box-shadow: 0px -1px 0 0 #75698C inset;
+}
+#window input:read-only
+{
+	opacity: 0.6;
+}
+#window input:read-only:focus
+{
+	border-bottom: 1px solid rgba(59, 55, 74, 0.2);
+	box-shadow: none;
 }
 #window input[type="radio"]
 {
@@ -798,6 +806,24 @@ body
 {
 	background-color: #75698C;
 }
+#window input[type="radio"]:disabled
+{
+	opacity: 0.6;
+	cursor: default;
+}
+#window input[type="radio"]:disabled + #window label
+{
+	opacity: 0.6;
+	cursor: default;
+}
+#window input[type="radio"]:disabled:hover::after
+{
+	background-color: rgba(117, 105, 140, 0);
+}
+#window input[type="radio"]:disabled:checked::after
+{
+	background-color: #75698C;
+}
 #window input.error
 {
 	border-bottom: 1px solid #C10000;
@@ -822,9 +848,13 @@ body
 	padding: 4px 0 4px 12px;
 	cursor: pointer;
 }
+#window label.disabled
+{
+	cursor: default;
+}
 #window label:last-of-type
 {
-	margin-bottom: 16px;
+	margin-bottom: 20px;
 }
 #window button
 {

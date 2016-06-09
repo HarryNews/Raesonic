@@ -73,6 +73,77 @@ Playlist.create = function(name, access, sectionAlias)
 	});
 }
 
+// Edit name and access of the specified playlist
+Playlist.edit = function(playlistId, name, access, sectionAlias)
+{
+	$.ajax
+	({
+		url: "/playlists/" + playlistId + "/",
+		type: "PUT",
+		data: JSON.stringify({ name: name, access: access }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var accessChanged = (access != Playlist.editing.access);
+
+			if(accessChanged)
+			{
+				// Remove playlist from the current section
+				$(".playlist")
+					.filterByData("playlistId", playlistId)
+					.remove();
+
+				// Clear storage and update the new section
+				$("#playlists").removeData( sectionAlias.toLowerCase() )
+				Playlist.setActiveSection(sectionAlias);
+			}
+			else
+			{
+				// Update name and access of the sidebar item
+				$(".playlist")
+					.filterByData("playlistId", playlistId)
+					.find(".name")
+					.text(name)
+					.data("access", access);
+			}
+
+			// If the changed playlist is active, update the values
+			if(Playlist.active && playlistId == Playlist.active.playlistId)
+				Playlist.setActive(playlistId, name, access);
+
+			Overlay.destroy();
+
+			// todo: show toast message about successful save
+		}
+	});
+}
+
+// Delete the specified playlist
+Playlist.delete = function(playlistId)
+{
+	$.ajax
+	({
+		url: "/playlists/" + playlistId + "/",
+		type: "DELETE",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			$(".playlist")
+				.filterByData("playlistId", Playlist.deleting.playlistId)
+				.remove();
+
+			Overlay.destroy();
+
+			// todo: show toast message about successful deletion
+		},
+	});
+}
+
 // Retrieve playlist tracks and metadata
 Playlist.load = function(playlistId)
 {
@@ -123,8 +194,13 @@ Playlist.setActive = function(playlistId, name, access, items)
 		.text(name)
 		.append($access);
 
-	Playlist.setTrackCounter(items.length);
 	Playlist.highlightActivePlaylist();
+
+	// Keep current items and the track count
+	if(items == null)
+		return;
+
+	Playlist.setTrackCounter(items.length);
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems(items);
@@ -187,7 +263,8 @@ Playlist.addSectionPlaylist = function(playlist)
 
 	var $icon =
 		$("<div>")
-			.addClass("edit icon fa fa-pencil");
+			.addClass("edit icon fa fa-pencil")
+			.click(Playlist.onEditIconClick);
 
 	var $playlist = 
 		$("<div>")
@@ -344,7 +421,7 @@ Playlist.setTrackCounter = function(count)
 }
 
 // Called once upon creating a playlist overlay
-Playlist.initPlaylistOverlay = function()
+Playlist.initPlaylistOverlay = function(currentAccess)
 {
 	var accessLabels =
 	{
@@ -372,6 +449,7 @@ Playlist.initPlaylistOverlay = function()
 				accessId: accessId,
 				sectionAlias: access,
 			},
+			change: Playlist.updatePlaylistOverlay,
 		});
 
 		var $label = Overlay.createElement
@@ -391,7 +469,17 @@ Playlist.initPlaylistOverlay = function()
 				.after($radio);
 	}
 
-	// Default access according to active sidebar section
+	// Use current playlist access
+	if(currentAccess != null)
+	{
+		$("#window input[type=\"radio\"]")
+			.eq(currentAccess - 1)
+			.prop("checked", true);
+
+		return;
+	}
+
+	// Use active sidebar section
 	var activeAlias = $("#playlists-menu div.active").data("alias");
 
 	$("#window input[type=\"radio\"]")
@@ -400,7 +488,7 @@ Playlist.initPlaylistOverlay = function()
 }
 
 // Show playlist creation/playlist edit overlay
-Playlist.showPlaylistOverlay = function(playlistId, name)
+Playlist.showPlaylistOverlay = function(playlistId, name, access)
 {
 	var Account = require("./Account.js");
 
@@ -443,7 +531,7 @@ Playlist.showPlaylistOverlay = function(playlistId, name)
 				class: "inner window-link",
 			},
 			text: "Create Playlist",
-			click: Playlist.onCreatePlaylistClick,
+			click: Playlist.onPlaylistCreateClick,
 		},
 		{
 			tag: "<div>",
@@ -467,7 +555,8 @@ Playlist.showPlaylistOverlay = function(playlistId, name)
 	{ noSpacer: true },
 	function onOverlayCreate()
 	{
-		Playlist.initPlaylistOverlay();
+		Playlist.initPlaylistOverlay(access);
+		Playlist.updatePlaylistOverlay();
 	});
 }
 
@@ -478,7 +567,40 @@ Playlist.updatePlaylistOverlay = function()
 	
 	if($("#playlist-edit-name").val().length > 0 &&
 		!Playlist.NAME_REGEX.test( $("#playlist-edit-name").val() ))
-		Overlay.setError("#playlist-edit-name", "contains prohibited characters");
+		Overlay.setError("#playlist-edit-name",
+			"contains prohibited characters");
+
+	// Creating a new playlist, bail out
+	if(!Playlist.editing)
+		return;
+
+	var nameChanged =
+		( $("#playlist-edit-name").val() != Playlist.editing.name );
+
+	var $radio = Overlay.getActiveRadioButton();
+
+	var selectedAccess =
+		$radio.parent().children("input[type=\"radio\"]").index($radio) + 1;
+
+	var accessChanged =
+		( selectedAccess != Playlist.editing.access );
+
+	// At least one option needs to be different to confirm changes
+	var saveAllowed = (nameChanged || accessChanged);
+
+	var deletingPlaylist = (Playlist.deleting != null);
+
+	deletingPlaylist
+		? ( $("#playlist-edit-code").val() == Playlist.deleting.code )
+			? Playlist.onPlaylistCodeInput()
+			: Overlay.setAction("Cancel", Playlist.onPlaylistCancelClick)
+		: saveAllowed
+			? Overlay.setAction("Save", Playlist.onPlaylistSaveClick)
+			: Overlay.setAction("Remove", Playlist.onPlaylistRemoveClick);
+
+	$("#playlist-edit-name").prop("readOnly", deletingPlaylist);
+	$("#overlay input[type=\"radio\"]").prop("disabled", deletingPlaylist);
+	$("#overlay label").toggleClass("disabled", deletingPlaylist);
 }
 
 // Called when the mouse is pressed somewhere
@@ -514,18 +636,22 @@ Playlist.onMenuClick = function()
 // Called upon clicking on the new playlist button
 Playlist.onNewPlaylistClick = function()
 {
+	Playlist.editing = null;
+	Playlist.deleting = null;
+
 	Playlist.showPlaylistOverlay();
 }
 
-// Called when the create playlist button is clicked upon
-Playlist.onCreatePlaylistClick = function()
+// Called when the create playlist button is clicked
+Playlist.onPlaylistCreateClick = function()
 {
 	if( $("#playlist-edit-name").val().length < 3 )
 		Overlay.setError("#playlist-edit-name", "min. 3 characters");
 
 	if($("#playlist-edit-name").val().length > 0 &&
 		!Playlist.NAME_REGEX.test( $("#playlist-edit-name").val() ))
-		Overlay.setError("#playlist-edit-name", "contains prohibited characters");
+		Overlay.setError("#playlist-edit-name",
+			"contains prohibited characters");
 
 	var $radio = Overlay.getActiveRadioButton();
 
@@ -542,7 +668,80 @@ Playlist.onCreatePlaylistClick = function()
 	Playlist.create(name, access, sectionAlias);
 }
 
-// Called when the playlist item is clicked upon
+// Called when the save playlist button is clicked
+Playlist.onPlaylistSaveClick = function()
+{
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+		return Overlay.shakeRadioButtonLabels();
+
+	if( Overlay.hasErrors() )
+		return;
+
+	var name = $("#playlist-edit-name").val();
+
+	var access =
+		$radio.parent().children("input[type=\"radio\"]").index($radio) + 1;
+
+	var sectionAlias = $radio.data("sectionAlias");
+
+	Playlist.edit(Playlist.editing.playlistId, name, access, sectionAlias);
+}
+
+// Called when the remove playlist button is clicked
+Playlist.onPlaylistRemoveClick = function()
+{
+	Playlist.deleting =
+	{
+		playlistId: Playlist.editing.playlistId,
+		code: Math.floor( (Math.random() * 888) + 111 ),
+	};
+
+	$("#window-header").text("Delete playlist");
+
+	var $code = Overlay.createElement
+	({
+		tag: "<input>",
+		attributes:
+		{
+			id: "playlist-edit-code",
+			type: "text",
+			maxlength: 3,
+			placeholder: "Type " + Playlist.deleting.code +
+				" to confirm. This cannot be undone.",
+		},
+		keyup: Playlist.updatePlaylistOverlay,
+	});
+
+	$("#playlist-edit-name").after( $code.hide() );
+	$("#playlist-edit-code").slideDown(200);
+
+	Playlist.updatePlaylistOverlay();
+}
+
+// Called when the cancel playlist deletion button is clicked
+Playlist.onPlaylistCancelClick = function()
+{
+	Playlist.deleting = null;
+
+	$("#window-header").text("Edit playlist");
+
+	$("#playlist-edit-code").slideUp(200, function()
+	{
+		$(this).remove();
+	});
+
+	Playlist.updatePlaylistOverlay();
+}
+
+// Called when the confirmation code has been entered
+Playlist.onPlaylistCodeInput = function()
+{
+	Playlist.delete(Playlist.deleting.playlistId);
+}
+
+// Called when the playlist item is clicked
 Playlist.onPlaylistClick = function()
 {
 	var $playlist = $(this).parent();
@@ -552,6 +751,26 @@ Playlist.onPlaylistClick = function()
 		return;
 
 	Playlist.load( $playlist.data("playlistId") );
+}
+
+// Called when the pencil icon is clicked
+Playlist.onEditIconClick = function()
+{
+	var $playlist = $(this).parent();
+
+	var data = $playlist.data();
+	var name = $playlist.find(".name").text();
+
+	Playlist.editing =
+	{
+		playlistId: data.playlistId,
+		name: name,
+		access: data.access,
+	}
+
+	Playlist.deleting = null;
+
+	Playlist.showPlaylistOverlay(data.playlistId, name, data.access);
 }
 
 Playlist.init = function()

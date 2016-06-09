@@ -214,6 +214,53 @@ module.exports = function(core)
 		});
 	}
 
+	// Edit the name and access of the playlist
+	PlaylistController.editPlaylist = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		PlaylistController.verifyOwnership(req.user,
+			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
+		function onConfirm(playlist)
+		{
+			// User is the playlist owner, update the playlist
+			playlist.update
+			({
+				name: req.body.name,
+				access: req.body.access,
+			})
+			.then(function()
+			{
+				res.json( [] );
+			});
+		});
+	}
+
+	// Delete the playlist
+	PlaylistController.deletePlaylist = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		PlaylistController.verifyOwnership(req.user,
+			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
+		function onConfirm(playlist)
+		{
+			// User is the playlist owner, delete the playlist
+			playlist
+			.destroy()
+			.then(function(amount)
+			{
+				// Haven't deleted any rows
+				if(amount < 1)
+					return res.status(500).json({ errors: ["internal error"] });
+
+				res.json( [] );
+			});
+		});
+	}
+
 	// Add content as a new playlist item
 	PlaylistController.addItem = function(req, res)
 	{
@@ -433,6 +480,17 @@ module.exports = function(core)
 
 		app.get("/own/playlists/favorites",
 			PlaylistController.getFavoritesSection);
+
+		app.put("/playlists/:playlistId(\\d+)",
+			paperwork.accept
+			({
+				name: paperwork.all(String, PlaylistController.validateName),
+				access: paperwork.all(Number, PlaylistController.validateAccess),
+			}),
+			PlaylistController.editPlaylist);
+		
+		app.delete("/playlists/:playlistId(\\d+)",
+			PlaylistController.deletePlaylist);
 		
 		app.post("/playlists/:playlistId(\\d+)",
 			paperwork.accept
