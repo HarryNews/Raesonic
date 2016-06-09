@@ -38,9 +38,11 @@ Playlist.create = function(name, access, sectionAlias)
 			var items = [];
 
 			var storage =
-				$("#playlists").data(sectionAlias.toLowerCase());
+				$("#playlists").data( sectionAlias.toLowerCase() );
 
-			// Add playlist to the section whether it's cached or not
+			Playlist.setActiveSection(sectionAlias);
+
+			// Add playlist to the section if it's already cached
 			if(storage != null)
 			{
 				var playlist =
@@ -60,10 +62,6 @@ Playlist.create = function(name, access, sectionAlias)
 					.animate({
 						scrollTop: $("#playlists").prop("scrollHeight"),
 					}, 0);
-			}
-			else
-			{
-				Playlist.setActiveSection(sectionAlias);
 			}
 
 			Playlist.setActive(playlistId, name, access, alias, null, items);
