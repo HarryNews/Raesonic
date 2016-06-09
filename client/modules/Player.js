@@ -1,4 +1,4 @@
-var Cookie = require("./Cookie.js");
+var Local = require("./Local.js");
 
 var YouTube = require("../api/YouTube.js");
 var SoundCloud = require("../api/SoundCloud.js");
@@ -6,13 +6,13 @@ var SoundCloud = require("../api/SoundCloud.js");
 var Player =
 {
 	playing: false, // Player state is set to playing
-	volume: Cookie.get("volume", 80), // Playback volume
+	volume: Local.get("volume", 80), // Playback volume
 	lastVolume: 0, // Playback volume before muting
 	muted: false, // Sound is muted by the user
 	draggingSeekbar: false, // Seekbar is being dragged
 	freezeSeekbar: false, // Disable seekbar animation
 	draggingVolume: false, // Volume bar is being dragged
-	mouseX: 0 // Horizontal position of the mouse cursor
+	mouseX: 0, // Horizontal position of the mouse cursor
 }
 
 // Start track playback
@@ -426,7 +426,7 @@ Player.onDocumentMouseUp = function()
 
 	if(Player.draggingVolume)
 	{
-		Cookie.set("volume", Math.round(Player.volume).toString());
+		Local.set( "volume", Math.round(Player.volume).toString() );
 		Player.draggingVolume = false;
 		return;
 	}

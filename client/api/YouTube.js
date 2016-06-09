@@ -1,11 +1,11 @@
-var Cookie = require("../modules/Cookie.js");
+var Local = require("../modules/Local.js");
 
 $.getScript("https://www.youtube.com/iframe_api");
 
 var YouTube =
 {
 	loaded: false,
-	hd: Cookie.get("hd", true)
+	hd: Local.get("hd", true)
 }
 
 // Called when the player is ready for use
@@ -77,7 +77,7 @@ window.onYouTubeIframeAPIReady = function()
 YouTube.togglePlaybackQuality = function()
 {
 	YouTube.hd = !YouTube.hd;
-	Cookie.set("hd", YouTube.hd.toString());
+	Local.set( "hd", YouTube.hd.toString() );
 	YouTube.updatePlaybackQuality();
 }
 
