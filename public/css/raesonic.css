@@ -127,6 +127,23 @@ body
 	display: inline;
 }
 
+#playlist-details-user
+{
+	font-size: 11px;
+	margin-left: 5px;
+	color: #C4BECF;
+}
+
+#playlist-details-avatar
+{
+	width: 13px;
+	height: 13px;
+	float: none;
+	margin: 0 4px -2px 2px;
+	border-radius: 100%;
+	box-shadow: 0 1px 0 0 #222;
+}
+
 #playlist-access
 {
 	font-size: 12px;

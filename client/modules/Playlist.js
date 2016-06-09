@@ -66,7 +66,7 @@ Playlist.create = function(name, access, sectionAlias)
 				Playlist.setActiveSection(sectionAlias);
 			}
 
-			Playlist.setActive(playlistId, name, access, items);
+			Playlist.setActive(playlistId, name, access, alias, null, items);
 
 			Overlay.destroy();
 		}
@@ -74,7 +74,7 @@ Playlist.create = function(name, access, sectionAlias)
 }
 
 // Edit name and access of the specified playlist
-Playlist.edit = function(playlistId, name, access, sectionAlias)
+Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 {
 	$.ajax
 	({
@@ -112,7 +112,7 @@ Playlist.edit = function(playlistId, name, access, sectionAlias)
 
 			// If the changed playlist is active, update the values
 			if(Playlist.active && playlistId == Playlist.active.playlistId)
-				Playlist.setActive(playlistId, name, access);
+				Playlist.setActive(playlistId, name, access, alias);
 
 			Overlay.destroy();
 
@@ -167,7 +167,7 @@ Playlist.loadMain = function()
 }
 
 // Set the playlist as active
-Playlist.setActive = function(playlistId, name, access, items)
+Playlist.setActive = function(playlistId, name, access, alias, user, items)
 {
 	var accessIcons =
 	{
@@ -196,11 +196,34 @@ Playlist.setActive = function(playlistId, name, access, items)
 
 	Playlist.highlightActivePlaylist();
 
+	history.pushState(null, null, "/playlist/" + alias + "/");
+
 	// Keep current items and the track count
 	if(items == null)
 		return;
 
 	Playlist.setTrackCounter(items.length);
+
+	// Show user data for playlists made by other users
+	if(user != null)
+	{
+		var username = user[0];
+		var avatar = user[1];
+
+		var $avatar = $("<img>")
+			.attr
+			({
+				id: "playlist-details-avatar",
+				src: avatar,
+			});
+
+		var $user = $("<span>")
+			.attr("id", "playlist-details-user")
+			.text(username)
+			.prepend($avatar);
+
+		$("#playlist-details").append($user);
+	}
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems(items);
@@ -274,6 +297,7 @@ Playlist.addSectionPlaylist = function(playlist)
 			({
 				playlistId: playlistId,
 				access: access,
+				alias: alias,
 			});
 
 	$("#playlists").append($playlist);
@@ -305,8 +329,10 @@ Playlist.onLoadResponse = function(response)
 	var playlistId = playlist[0];
 	var name = playlist[1];
 	var access = playlist[2];
+	var alias = playlist[3];
+	var user = playlist[4];
 
-	Playlist.setActive(playlistId, name, access, items);
+	Playlist.setActive(playlistId, name, access, alias, user, items);
 }
 
 // Fill the playlists section with data from server or the local storage
@@ -686,7 +712,8 @@ Playlist.onPlaylistSaveClick = function()
 
 	var sectionAlias = $radio.data("sectionAlias");
 
-	Playlist.edit(Playlist.editing.playlistId, name, access, sectionAlias);
+	Playlist.edit(Playlist.editing.playlistId, name,
+		access, Playlist.editing.alias, sectionAlias);
 }
 
 // Called when the remove playlist button is clicked
@@ -766,6 +793,7 @@ Playlist.onEditIconClick = function()
 		playlistId: data.playlistId,
 		name: name,
 		access: data.access,
+		alias: data.alias,
 	}
 
 	Playlist.deleting = null;

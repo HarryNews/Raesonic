@@ -1,5 +1,6 @@
 module.exports = function(core)
 {
+	var Gravatar = require("gravatar");
 	var RandomString = require("randomstring");
 
 	var PlaylistController =
@@ -30,6 +31,7 @@ module.exports = function(core)
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
 
+	var User = sequelize.models.User;
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
 	var Playlist = sequelize.models.Playlist;
@@ -71,11 +73,15 @@ module.exports = function(core)
 		{
 			Playlist.findOne
 			({
-				attributes: ["playlistId", "name", "access", "alias"],
+				attributes: ["playlistId", "name", "access", "alias", "userId"],
 				where: condition,
 				order: "itemId DESC",
 				include:
 				[{
+					model: User,
+					attributes: ["userId", "username", "email"],
+				},
+				{
 					model: Item,
 					attributes: ["itemId"],
 					include:
@@ -95,6 +101,27 @@ module.exports = function(core)
 				if(!playlist)
 					return res.json( [] );
 
+				var playlistData =
+				[
+					playlist.playlistId,
+					playlist.name,
+					playlist.access,
+					playlist.alias,
+				];
+
+				// Include playlist creator data unless it's the same user
+				if(req.user.userId != playlist.User.userId)
+				{
+					playlistData.push
+					([
+						playlist.User.username,
+						Gravatar.url(
+							playlist.User.email || playlist.User.username,
+							{ s: "13", r: "pg", d: "retro" }
+						),
+					]);
+				}
+
 				var items = playlist.Items;
 				var responseItems = [];
 
@@ -113,13 +140,8 @@ module.exports = function(core)
 
 				var response =
 				[
-					[
-						playlist.playlistId,
-						playlist.name,
-						playlist.access,
-						playlist.alias,
-					],
-					responseItems
+					playlistData,
+					responseItems,
 				];
 
 				res.json(response);
