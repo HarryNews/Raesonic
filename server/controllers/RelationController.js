@@ -193,10 +193,12 @@ module.exports = function(core)
 					track.artist,
 					track.title,
 					(relations[index].trust - relations[index].doubt),
-					relations[index].RelationVotes[0]
-						? relations[index].RelationVotes[0].value
-						: 0,
-					(relations[index].RelationFlags[0] != null),
+					(relations[index].RelationVotes != null)
+						&& (relations[index].RelationVotes[0] != null)
+							? relations[index].RelationVotes[0].value
+							: 0,
+					(relations[index].RelationFlags != null)
+						&& (relations[index].RelationFlags[0] != null),
 				]);
 			}
 
