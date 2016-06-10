@@ -9,15 +9,13 @@ $(document).ready(function()
 	var Playlist = require("./modules/Playlist.js");
 	var Relation = require("./modules/Relation.js");
 	var History = require("./modules/History.js");
+	var Flag = require("./modules/Flag.js");
 	var Search = require("./modules/Search.js");
 	var Tab = require("./modules/Tab.js");
 	var Overlay = require("./modules/Overlay.js");
 	var Preloader = require("./modules/Preloader.js");
 
-	Account.init(function onAccountSync()
-	{
-		setTimeout(Preloader.onLoad, 2000);
-	});
+	Account.init(onAccountSync);
 
 	Player.init();
 	
@@ -31,6 +29,19 @@ $(document).ready(function()
 	Search.init();
 	Overlay.init();
 	Tab.init();
+
+	function onAccountSync()
+	{
+		Playlist.onAccountSync();
+		Flag.onAccountSync();
+
+		Overlay.destroy();
+
+		if(!Preloader.visible)
+			return;
+
+		setTimeout(Preloader.onLoad, 2000);
+	}
 });
 
 $.fn.filterByData = function(key, value)

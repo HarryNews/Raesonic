@@ -1,4 +1,7 @@
-var Preloader = {};
+var Preloader =
+{
+	visible: true,
+};
 
 // Called when the application has loaded
 Preloader.onLoad = function()
@@ -9,6 +12,8 @@ Preloader.onLoad = function()
 	$("#header .button")
 		.fadeIn(500)
 		.css("display", "inline-block");
+
+	Preloader.visible = false;
 }
 
 module.exports = Preloader;

@@ -109,8 +109,8 @@ Account.logout = function()
 	});
 }
 
-// Update everything that depends on the account
-Account.sync = function(done)
+// Update elements and values that depend on account status
+Account.sync = function()
 {
 	// Obtain account details for current user
 	$.ajax
@@ -120,7 +120,7 @@ Account.sync = function(done)
 		success: function(response)
 		{
 			if(response.errors)
-				return Account.setAuthenticated(false, done);
+				return Account.setAuthenticated(false);
 
 			var account = response;
 
@@ -132,17 +132,17 @@ Account.sync = function(done)
 				reputation: account[3]
 			};
 
-			Account.setAuthenticated(true, done);
+			Account.setAuthenticated(true);
 		},
 		error: function()
 		{
-			Account.setAuthenticated(false, done);
+			Account.setAuthenticated(false);
 		}
 	});
 }
 
 // Set authentication state and update affected elements
-Account.setAuthenticated = function(isAuthenticated, done)
+Account.setAuthenticated = function(isAuthenticated)
 {
 	if(!isAuthenticated)
 	{
@@ -160,14 +160,7 @@ Account.setAuthenticated = function(isAuthenticated, done)
 	}
 
 	Account.authenticated = isAuthenticated;
-
-	var Playlist = require("./Playlist.js");
-	Playlist.onAccountSync();
-
-	Overlay.destroy();
-
-	if(typeof done == "function")
-		done();
+	Account.onSync();
 }
 
 // Create and show an overlay for authentication
@@ -443,9 +436,10 @@ Account.onLogoutClick = function()
 	Account.logout();
 }
 
-Account.init = function(done)
+Account.init = function(onSync)
 {
-	Account.sync(done);
+	Account.onSync = onSync;
+	Account.sync();
 
 	$("#header-right").click(Account.onHeaderClick);
 }

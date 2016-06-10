@@ -121,22 +121,13 @@ Flag.initOverlay = function(entityType)
 	});
 }
 
-// Called upon clicking the flag icon
-Flag.onIconClick = function()
+// Show flag creation overlay
+Flag.showFlagOverlay = function(data)
 {
-	var Account = require("./Account.js");
-
-	if(!Account.authenticated)
-		return Account.showLoginOverlay();
-
-	if(Overlay.isActive())
-		return;
-
 	var summary;
 	var subject;
 	var extraSubject;
 
-	var data = $(this).data();
 	var entityType = data.entityType;
 
 	switch(entityType)
@@ -265,6 +256,33 @@ Flag.onIconClick = function()
 	{
 		Flag.initOverlay(entityType);
 	});
+}
+
+// Called when the user authentication is done
+Flag.onAccountSync = function()
+{
+	var Account = require("./Account.js");
+
+	if(Account.authenticated)
+		return;
+
+	// Remove active state from all flags
+	$(".flag.icon.active").removeClass("active");
+}
+
+// Called upon clicking the flag icon
+Flag.onIconClick = function()
+{
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
+	if(Overlay.isActive())
+		return;
+
+	var $flag = $(this);
+	Flag.showFlagOverlay( $flag.data() );
 }
 
 // Called when the submit report button is pressed
