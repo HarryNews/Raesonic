@@ -153,7 +153,7 @@ Account.setAuthenticated = function(isAuthenticated, done)
 
 		$("#user-name").text("Guest");
 		$("#user-details").text("log in");
-		$("#user-avatar").attr("src", "");
+		$("#user-avatar").attr("src", "/img/avatar.png");
 	}
 	else
 	{
