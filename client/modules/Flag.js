@@ -206,13 +206,17 @@ Flag.onIconClick = function()
 	{
 		if(entityType == Flag.ENTITY.CONTENT_LINK)
 		{
+			var $image = $("#content-image img");
+
 			elements.push
 			({
-				tag: "<img>",
+				tag: ($image.length)
+					? "<img>"
+					: "<div>",
 				attributes:
 				{
 					class: "content-thumbnail",
-					src: $("#content-image img").attr("src"),
+					src: $image.attr("src"),
 				},
 			});
 		}
