@@ -75,7 +75,7 @@ Player.toggle = function()
 }
 
 // Play specified item
-Player.setItem = function($item)
+Player.setItem = function($item, isManualSwitch)
 {
 	// Item doesn't exist, bail out
 	if(!$item.length)
@@ -85,6 +85,7 @@ Player.setItem = function($item)
 	if($item.is(".active"))
 		return;
 
+	var data = $item.data();
 	var artist = $(":nth-child(1)", $item).html();
 	var title = $(":nth-child(2)", $item).html();
 
@@ -115,31 +116,31 @@ Player.setItem = function($item)
 	Content.onItemChange($item);
 
 	// Update the related tab if viewing recommendations
-	if($item.data("rating") != null)
+	if(data.rating != null)
 	{
 		var Relation = require("./Relation.js");
 		Relation.onRelationItemChange($item, artist, title);
 	}
 
 	// Search for content if none is assigned to the item
-	if(!$item.data("sourceId"))
+	if(!data.sourceId)
 	{
-		ItemList.setActiveItem($item);
-		Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
+		ItemList.setActiveItem($item, isManualSwitch);
+		Content.request(data.trackId, Content.ASSIGN_TO_ITEM);
 		return;
 	}
 
-	if($item.data("sourceId") == Content.SOURCE.YOUTUBE)
+	if(data.sourceId == Content.SOURCE.YOUTUBE)
 	{
 		if(!YouTube.loaded)
 			return;
 
-		ItemList.setActiveItem($item);
+		ItemList.setActiveItem($item, isManualSwitch);
 
 		$("#cover").empty().hide();
 		$("#video").show();
 
-		var externalId = $item.data("externalId");
+		var externalId = data.externalId;
 		YouTube.player.loadVideoById(externalId);
 
 		var imageUrl =
@@ -153,7 +154,7 @@ Player.setItem = function($item)
 			);
 
 		// Update the related tab if viewing recommendations
-		if($item.data("rating") != null)
+		if(data.rating != null)
 			$("#related-first-image").html( $("#content-image").html() );
 
 		$("#content-name").text("#" + externalId);
@@ -162,9 +163,9 @@ Player.setItem = function($item)
 		return;
 	}
 
-	if($item.data("sourceId") == Content.SOURCE.SOUNDCLOUD)
+	if(data.sourceId == Content.SOURCE.SOUNDCLOUD)
 	{
-		ItemList.setActiveItem($item);
+		ItemList.setActiveItem($item, isManualSwitch);
 
 		if(YouTube.loaded)
 		{
@@ -175,7 +176,7 @@ Player.setItem = function($item)
 		$("#video").hide();
 		$("#cover").empty();
 
-		var trackString = "/tracks/" + $item.data("externalId");
+		var trackString = "/tracks/" + data.externalId;
 
 		if(typeof SC == "undefined")
 			return SoundCloud.onPlayerError();
@@ -208,7 +209,7 @@ Player.setItem = function($item)
 					);
 
 				// Update the related tab if viewing recommendations
-				if($item.data("rating") != null)
+				if(data.rating != null)
 					$("#related-first-image")
 						.html( $("#content-image").html() );
 			}
@@ -291,17 +292,17 @@ Player.clearContent = function()
 }
 
 // Play next/previous item
-Player.switchItem = function(forward, manual)
+Player.switchItem = function(forward, isManualSwitch)
 {
 	var ItemList = require("./ItemList.js");
-	var $item = ItemList.getSwitchItem(forward, manual);
+	var $item = ItemList.getSwitchItem(forward, isManualSwitch);
 
 	// No switch possible or required
 	if(!$item)
 		return;
 
 	var Item = require("./Item.js");
-	Item.play($item);
+	Item.play($item, isManualSwitch);
 }
 
 // Enable seekbar animation
@@ -427,9 +428,15 @@ Player.onTick = function()
 // Called upon a playback error
 Player.onPlaybackError = function()
 {
+	$("#content-name").text("Failed to load content");
+	$("#content-author").text("–");
+
 	var Content = require("./Content.js");
 	var ItemList = require("./ItemList.js");
-	Content.switchContent(ItemList.NEXT_ITEM, ItemList.SKIP_TRACK);
+	var Item = require("./Item.js");
+
+	Content.switchContent(ItemList.NEXT_ITEM,
+		!Item.active.isManualSwitch && ItemList.SKIP_TRACK);
 }
 
 // Called upon movement of the mouse cursor

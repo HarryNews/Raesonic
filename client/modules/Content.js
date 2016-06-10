@@ -150,7 +150,14 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
-				return Content.switchContent(switchDirection, skipTrack, !nearest);
+			{
+				var missingContent = (nearest == null);
+
+				Content
+					.switchContent(switchDirection, skipTrack, missingContent);
+
+				return;
+			}
 
 			// No content available, clear content and bail out
 			if(!nearest)
@@ -174,7 +181,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 				.removeClass("active");
 
 			var Item = require("./Item.js");
-			Item.play($item);
+			Item.play($item, Item.active.isManualSwitch);
 		}
 	});
 }
@@ -255,7 +262,7 @@ Content.switchContent = function(forward, skipTrack, missingContent)
 		.removeClass("active");
 
 	var Item = require("./Item.js");
-	Item.play($item);
+	Item.play($item, Item.active.isManualSwitch);
 
 	Content.setSwitchEnabled(true);
 }

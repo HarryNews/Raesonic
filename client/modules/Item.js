@@ -3,10 +3,10 @@ var Overlay = require("./Overlay.js");
 var Item = {};
 
 // Play the specified item
-Item.play = function($item)
+Item.play = function($item, isManualSwitch)
 {
 	var Player = require("./Player.js");
-	Player.setItem($item);
+	Player.setItem($item, isManualSwitch);
 }
 
 // Remove specified item from the playlist
@@ -210,7 +210,9 @@ Item.getScrollOffset = function($item, offset)
 Item.onClick = function()
 {
 	var $item = $(this).parent();
-	Item.play($item);
+	var ItemList = require("./ItemList.js");
+
+	Item.play($item, ItemList.MANUAL_SWITCH);
 }
 
 // Called upon clicking the pencil icon

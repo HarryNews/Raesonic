@@ -135,13 +135,14 @@ ItemList.getSwitchItem = function(forward, manual)
 }
 
 // Set specified item as active
-ItemList.setActiveItem = function($item)
+ItemList.setActiveItem = function($item, isManualSwitch)
 {
 	$item.addClass("active");
 	
 	Item.active = $item.data();
 	Item.active.artist = $("#meta-artist").html();
 	Item.active.title = $("#meta-title").html();
+	Item.active.isManualSwitch = isManualSwitch;
 
 	var History = require("./History.js");
 	History.onItemChange($item);
