@@ -31,7 +31,8 @@ Item.remove = function(itemId)
 			}
 
 			$item.remove();
-			Playlist.setTrackCounter($(".item").length);
+
+			Playlist.setTrackCounter( $(".item").length );
 
 			Overlay.destroy();
 		}
@@ -312,7 +313,7 @@ Item.onAddIconClick = function()
 
 	var Playlist = require("./Playlist.js");
 
-	var sections = ["private", "shared", "public"]
+	var sections = ["private", "shared", "public"];
 	var sectionIcons =
 	[
 		"private corner icon fa fa-lock",

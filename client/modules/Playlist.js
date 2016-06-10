@@ -473,6 +473,37 @@ Playlist.setActiveSection = function(alias)
 Playlist.setTrackCounter = function(count)
 {
 	$("#playlist-details").text(count + " tracks");
+
+	// Update the track count in the section
+	var sections = ["private", "shared", "public"];
+	var playlistSection = Playlist.active.access - 1;
+
+	sections.forEach(function(sectionAlias, sectionIndex)
+	{
+		if(sectionIndex != playlistSection)
+			return;
+
+		var $playlists = $("#playlists").data(sectionAlias);
+
+		if($playlists != null)
+		{
+			$playlists.forEach(function($playlist, playlistIndex)
+			{
+				var playlistId = $playlist.data("playlistId");
+
+				if(playlistId == Playlist.active.playlistId)
+				{
+					$playlists[playlistIndex]
+						.find(".details")
+						.text(count + " tracks");
+
+					return;
+				}
+			});
+
+			$("#playlists").data(sectionAlias, $playlists);
+		}
+	});
 }
 
 // Cleat the track counter text
