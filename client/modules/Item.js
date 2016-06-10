@@ -120,7 +120,7 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 	});
 }
 
-// Updates the item editing overlay
+// Update the item editing overlay
 Item.updateEditOverlay = function()
 {
 	// Without itemId no changes are possible
@@ -143,45 +143,49 @@ Item.updateEditOverlay = function()
 		: Overlay.setAction("Remove", Item.onItemRemoveClick);
 }
 
-// Replaces &+ with <span>&amp;</span>
+// Replace &+ with <span>&amp;</span>
 Item.formatArtist = function(artist)
 {
-	return artist.replace(/&\+/g, "<span>&amp;</span>")
+	return artist.replace(/&\+/g, "<span>&</span>");
 }
 
-// Replaces  (...) with <span>(...)</span>
+// Replace  (...) with <span>(...)</span>
 Item.formatTitle = function(title)
 {
 	return title.replace(/\((.+)\)/g, "<span>$1</span>");
 }
 
-// Replaces <span>&amp;</span> with &+ / &
+// Replace <span>&amp;</span> with &+ / &, &amp; with &
 Item.restoreArtist = function(artist, clean)
 {
-	return artist.replace(/<span>&amp;<\/span>/g, clean
-		? "&"
-		: "&+");
+	artist = artist
+		.replace(/<span>&amp;<\/span>/g,
+			clean
+				? "&"
+				: "&+")
+		.replace(/&amp;/g, "&");
+
+	return artist;
 }
 
-// Replaces <span>(...)</span> with (...)
+// Replace <span>(...)</span> with (...), &amp; with &
 Item.restoreTitle = function(title)
 {
-	return title.replace(/<span>(.+)<\/span>/g, "($1)");
+	title = title
+		.replace(/<span>(.+)<\/span>/g, "($1)")
+		.replace(/&amp;/g, "&");
+
+	return title;
 }
 
-// Replaces &amp; with &
-Item.getPlainName = function(name)
-{
-	return name.replace(/&amp;/g, "&");
-}
-
-// Replaces <span> with <span class="padded">
+// Replace <span> with <span class="padded">
 Item.padSpans = function(field)
 {
-	return field.replace(/<span>/g, "<span class=\"padded\">");
+	return field.replace(/<span>/g,
+		"<span class=\"padded\">");
 }
 
-// Fades out and removes the dropdown
+// Fade out and remove the dropdown
 Item.fadeRemoveDropdown = function()
 {
 	$("#add-list")
@@ -199,7 +203,7 @@ Item.fadeRemoveDropdown = function()
 		Item.onItemListScroll);
 }
 
-// Returns vertical offset of the item
+// Return vertical offset of the item
 Item.getScrollOffset = function($item, offset)
 {
 	return $item.height() *
@@ -243,8 +247,10 @@ Item.onEditIconClick = function()
 
 	if(trackExists)
 	{
-		Item.editing.artist = Item.restoreArtist( $(":nth-child(1)", $item).html() );
-		Item.editing.title = Item.restoreTitle( $(":nth-child(2)", $item).html() );
+		Item.editing.artist =
+			Item.restoreArtist( $(":nth-child(1)", $item).html() );
+		Item.editing.title =
+			Item.restoreTitle( $(":nth-child(2)", $item).html() );
 	}
 	
 	Overlay.create("Edit track",

@@ -81,10 +81,8 @@ Relation.request = function(trackId)
 			$("#related-second-title").html(Item.active.title);
 			$("#related-second-artist").html(Item.active.artist);
 
-			var name = Item.getPlainName(
-				Item.restoreArtist(Item.active.artist, true) + " – " + 
-				Item.restoreTitle(Item.active.title)
-			);
+			var name = Item.restoreArtist(Item.active.artist, true) + " – " + 
+				Item.restoreTitle(Item.active.title);
 
 			Relation.active =
 			{
