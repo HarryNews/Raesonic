@@ -117,13 +117,18 @@ Search.createContent = function(query)
 	match = Search.REGEX.SOUNDCLOUD.exec(query);
 	if(match && match[2])
 	{
+		if(typeof SC == "undefined")
+			return true;
+
 		SC
-			.resolve(query)
-			.then(function onSoundCloudResolve(response)
-			{
-				var externalId = response.id.toString();
-				Content.create(Content.SOURCE.SOUNDCLOUD, externalId);
-			});
+		.resolve(query)
+		.then(function onSoundCloudResolve(response)
+		{
+			var externalId = response.id.toString();
+
+			Content
+				.create(Content.SOURCE.SOUNDCLOUD, externalId);
+		});
 
 		return true;
 	}

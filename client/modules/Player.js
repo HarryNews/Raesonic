@@ -19,8 +19,11 @@ var Player =
 Player.play = function()
 {
 	// Play the first item if none are active
-	if(!$(".item.active").length)
-		return Player.setItem($(".item:first"));
+	if( !$(".item.active").length )
+	{
+		Player.setItem( $(".item:first") );
+		return;
+	}
 
 	if(SoundCloud.player)
 	{
@@ -122,7 +125,8 @@ Player.setItem = function($item)
 	if(!$item.data("sourceId"))
 	{
 		ItemList.setActiveItem($item);
-		return Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
+		Content.request($item.data("trackId"), Content.ASSIGN_TO_ITEM);
+		return;
 	}
 
 	if($item.data("sourceId") == Content.SOURCE.YOUTUBE)
@@ -138,10 +142,13 @@ Player.setItem = function($item)
 		var externalId = $item.data("externalId");
 		YouTube.player.loadVideoById(externalId);
 
+		var imageUrl =
+			"http://img.youtube.com/vi/" + externalId + "/0.jpg";
+
 		$("#content-image")
 			.append(
 				$("<img>")
-					.attr("src", "http://img.youtube.com/vi/" + externalId + "/0.jpg")
+					.attr("src", imageUrl)
 					.addClass("wide")
 			);
 
@@ -170,50 +177,62 @@ Player.setItem = function($item)
 
 		var trackString = "/tracks/" + $item.data("externalId");
 
+		if(typeof SC == "undefined")
+			return SoundCloud.onPlayerError();
+
 		SC
 		.get(trackString)
 		.then(function onSoundCloudResponse(response, error)
 		{
-			var imageUrl = response.artwork_url || response.user.avatar_url;
+			var imageUrl =
+				response.artwork_url || response.user.avatar_url;
 
 			if(imageUrl)
 			{
 				$("#cover")
 					.append(
 						$("<img>")
-							.attr("src", imageUrl.replace("large", "t500x500"))
+							.attr( "src", imageUrl.replace("large", "t500x500") )
 							.addClass("back")
 							.click(Player.toggle),
 						$("<img>")
-							.attr("src", imageUrl.replace("large", "t300x300"))
+							.attr( "src", imageUrl.replace("large", "t300x300") )
 							.addClass("front")
 							.click(Player.toggle)
 					);
 
 				$("#content-image")
 					.append(
-						$("<img>").attr("src", imageUrl.replace("large", "t300x300"))
+						$("<img>")
+							.attr( "src", imageUrl.replace("large", "t300x300") )
 					);
 
 				// Update the related tab if viewing recommendations
 				if($item.data("rating") != null)
-					$("#related-first-image").html( $("#content-image").html() );
+					$("#related-first-image")
+						.html( $("#content-image").html() );
 			}
 
 			$("#cover")
 				.append(
 					$("<a>")
-						.attr({ "href": response.permalink_url, "target": "_blank" })
+						.attr({ href: response.permalink_url, target: "_blank" })
 						.click(Player.pause)
 						.append(
-							$("<img>").attr({ "src": "/img/soundcloud.png", "id": "soundcloud" })
+							$("<img>")
+								.attr({ src: "/img/soundcloud.png", id: "soundcloud" })
 						)
 				);
 
 			$("#cover")
 				.append(
 					$("<a>")
-						.attr({ "href": response.user.permalink_url, "target": "_blank", "id": "creator" })
+						.attr
+						({
+							href: response.user.permalink_url,
+							target: "_blank",
+							id: "creator",
+						})
 						.text(response.user.username)
 						.delay(5000)
 						.fadeOut(2000)
@@ -222,7 +241,8 @@ Player.setItem = function($item)
 
 			$("#cover")
 				.unbind()
-				.hover(SoundCloud.onCoverHoverIn, SoundCloud.onCoverHoverOut);
+				.hover(SoundCloud.onCoverHoverIn,
+					SoundCloud.onCoverHoverOut);
 
 			$("#content-name").text(response.title);
 			$("#content-author").text(response.user.username);
@@ -237,7 +257,9 @@ Player.setItem = function($item)
 			SoundCloud.player = trackPlayer;
 			SoundCloud.player.play();
 			SoundCloud.player.setVolume(Player.volume / 100);
-			SoundCloud.player.on("state-change", SoundCloud.onPlayerStateChange);
+
+			SoundCloud.player
+				.on("state-change", SoundCloud.onPlayerStateChange);
 		});
 
 		return;

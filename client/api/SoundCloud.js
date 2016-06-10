@@ -45,6 +45,9 @@ SoundCloud.onCoverHoverOut = function()
 
 SoundCloud.init = function()
 {
+	if(typeof SC == "undefined")
+		return;
+
 	SC.initialize
 	({
 		client_id: "2f8f0d3feaba4ed1c596902b225aad55"
