@@ -35,7 +35,8 @@ Relation.create = function(trackId, linkedId)
 }
 
 // Request relations of the specified track and switch to the list view
-Relation.request = function(trackId)
+// Play the item with provided trackId if resuming previous view
+Relation.request = function(trackId, resumeTrackId)
 {
 	$.ajax
 	({
@@ -90,6 +91,7 @@ Relation.request = function(trackId)
 				artist: Item.active.artist,
 				title: Item.active.title,
 				name: name,
+				resumeTrackId: resumeTrackId,
 			};
 
 			var Search = require("./Search.js");
@@ -97,7 +99,16 @@ Relation.request = function(trackId)
 
 			var ItemList = require("./ItemList.js");
 			ItemList.setItems(items, ItemList.USE_STORAGE);
-			Item.play( $(".item:first") );
+
+			// Switch to the last viewed track if specified
+			var $item = (resumeTrackId != null)
+				? $(".item").filterByData("trackId", resumeTrackId)
+				: $(".item:first");
+
+			if(!$item.length)
+				$item = $(".item:first");
+
+			Item.play($item);
 
 			Search.updatePlaceholder();
 
@@ -171,7 +182,7 @@ Relation.clearView = function()
 
 	var Search = require("./Search.js");
 	Search.clear();
-	
+
 	var ItemList = require("./ItemList.js");
 	ItemList.clearFilter();
 
@@ -200,7 +211,10 @@ Relation.onRelationItemChange = function($item, artist, title)
 	$("#related-first-title").html(title);
 	$("#related-first-artist").html(artist);
 
-	Relation.updateActiveRating( $item.data("rating"), $item.data("vote") );
+	var data = $item.data();
+
+	Relation.active.resumeTrackId = data.trackId;
+	Relation.updateActiveRating(data.rating, data.vote);
 
 	var Flag = require("./Flag.js");
 	$("#related-flag")

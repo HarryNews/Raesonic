@@ -201,11 +201,14 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 
 	Playlist.highlightActivePlaylist();
 
-	history.pushState(null, null, "/playlist/" + alias + "/");
-
-	// Keep current items and the track count
+	// Updating values of active playlist that changed, bail out
 	if(items == null)
 		return;
+
+	var playlistUrl = "/playlist/" + alias + "/";
+
+	if(playlistUrl != window.location.pathname)
+		history.pushState(null, null, playlistUrl);
 
 	Playlist.setTrackCounter(items.length);
 
@@ -232,6 +235,21 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems(items);
+
+	var Relation = require("./Relation.js");
+
+	if(!Relation.active)
+		return;
+
+	var Item = require("./Item.js");
+
+	// Resume viewing recommendations
+	Item.active.trackId = Relation.active.trackId;
+	Item.active.artist = Relation.active.artist;
+	Item.active.title = Relation.active.title;
+
+	Relation.request(Relation.active.trackId,
+		Relation.active.resumeTrackId);
 }
 
 // Clear active playlist
