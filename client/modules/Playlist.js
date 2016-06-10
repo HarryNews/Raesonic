@@ -482,9 +482,12 @@ Playlist.clearTrackCounter = function()
 }
 
 // Load playlist according to URL
-Playlist.processUrl = function()
+Playlist.processUrl = function(onLoadStart)
 {
 	var url = window.location.pathname.split("/");
+
+	if(typeof onLoadStart == "function")
+		onLoadStart();
 
 	if(url[1] != "playlist")
 		return Playlist.loadMain();
@@ -755,6 +758,18 @@ Playlist.onDocumentMouseDown = function(event)
 	Playlist.toggleSidebar();
 }
 
+// Called when the active history entry changes
+Playlist.onWindowPopState = function()
+{
+	Playlist.processUrl(function onPlaylistLoadStart()
+	{
+		var Relation = require("./Relation.js");
+
+		if(Relation.active)
+			Relation.clearView();
+	});
+}
+
 // Called upon clicking the playlist header
 Playlist.onHeaderClick = function()
 {
@@ -917,6 +932,8 @@ Playlist.onEditIconClick = function()
 
 Playlist.init = function()
 {
+	$(window).on("popstate", Playlist.onWindowPopState);
+
 	$("#playlists-menu div")
 		.each(Playlist.setMenuAlias)
 		.click(Playlist.onMenuClick);
