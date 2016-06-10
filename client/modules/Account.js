@@ -133,9 +133,6 @@ Account.sync = function(done)
 			};
 
 			Account.setAuthenticated(true, done);
-
-			var Playlist = require("./Playlist.js");
-			Playlist.updateSection();
 		},
 		error: function()
 		{

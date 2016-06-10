@@ -144,6 +144,11 @@ Relation.vote = function(trackId, linkedId, vote)
 // Set vote on the active relation
 Relation.setActiveVote = function(vote, $icon)
 {
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
 	var Item = require("./Item.js");
 
 	if(!Item.active)
@@ -208,6 +213,11 @@ Relation.onViewRelationsClick = function()
 // Called upon pressing the plus icon on the related tab
 Relation.onAddIconClick = function()
 {
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
 	var $item = $(".item.active");
 
 	if(!$item.length)

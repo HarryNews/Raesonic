@@ -385,6 +385,14 @@ Playlist.updateSection = function(previousAlias)
 	Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
 }
 
+// Clear the active section and remove all playlist data
+Playlist.clearAllSections = function()
+{
+	$("#playlists")
+		.empty()
+		.removeData();
+}
+
 // Store alias as a data value of the menu button
 Playlist.setMenuAlias = function()
 {
@@ -654,6 +662,11 @@ Playlist.updatePlaylistOverlay = function()
 Playlist.onAccountSync = function()
 {
 	var Account = require("./Account.js");
+
+	// Request or clear the playlists storage
+	Account.authenticated
+		? Playlist.updateSection()
+		: Playlist.clearAllSections();
 
 	// Load playlist from the current url
 	if(!Playlist.active || !Account.authenticated)
