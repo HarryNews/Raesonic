@@ -297,7 +297,7 @@ module.exports = function(core)
 		if(name.length < 3 || name.length > 50)
 			return false;
 
-		// todo: restrict to a-zA-Z0-9!&()_+- (estimate)
+		// todo: restrict to a-zA-Z0-9!&()_+-' (estimate)
 
 		return true;
 	}

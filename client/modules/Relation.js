@@ -72,7 +72,7 @@ Relation.request = function(trackId)
 
 			items.sort(function(a, b)
 			{
-				// Sort by rating, desc
+				// Sort by rating, descending
 				return b[6] - a[6];
 			});
 
@@ -81,13 +81,17 @@ Relation.request = function(trackId)
 			$("#related-second-title").html(Item.active.title);
 			$("#related-second-artist").html(Item.active.artist);
 
+			var name = Item.getPlainName(
+				Item.restoreArtist(Item.active.artist, true) + " – " + 
+				Item.restoreTitle(Item.active.title)
+			);
+
 			Relation.active =
 			{
 				trackId: Item.active.trackId,
 				artist: Item.active.artist,
 				title: Item.active.title,
-				name: Item.restoreArtist(Item.active.artist, true) + " – " + 
-					Item.restoreTitle(Item.active.title)
+				name: name,
 			};
 
 			var Search = require("./Search.js");

@@ -143,10 +143,10 @@ Item.updateEditOverlay = function()
 		: Overlay.setAction("Remove", Item.onItemRemoveClick);
 }
 
-// Replaces &+ with <span>&</span>
+// Replaces &+ with <span>&amp;</span>
 Item.formatArtist = function(artist)
 {
-	return artist.replace(/&\+/g, "<span>&</span>")
+	return artist.replace(/&\+/g, "<span>&amp;</span>")
 }
 
 // Replaces  (...) with <span>(...)</span>
@@ -155,7 +155,7 @@ Item.formatTitle = function(title)
 	return title.replace(/\((.+)\)/g, "<span>$1</span>");
 }
 
-// Replaces <span>&</span> with &+ / &
+// Replaces <span>&amp;</span> with &+ / &
 Item.restoreArtist = function(artist, clean)
 {
 	return artist.replace(/<span>&amp;<\/span>/g, clean
@@ -167,6 +167,12 @@ Item.restoreArtist = function(artist, clean)
 Item.restoreTitle = function(title)
 {
 	return title.replace(/<span>(.+)<\/span>/g, "($1)");
+}
+
+// Replaces &amp; with &
+Item.getPlainName = function(name)
+{
+	return name.replace(/&amp;/g, "&");
 }
 
 // Replaces <span> with <span class="padded">
