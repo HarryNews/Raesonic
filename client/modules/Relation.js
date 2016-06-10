@@ -133,7 +133,12 @@ Relation.vote = function(trackId, linkedId, vote)
 			var rating = response[0];
 			var voteValue = response[1];
 
-			$item.data("vote", voteValue);
+			$item.data
+			({
+				rating: rating,
+				vote: voteValue,
+			});
+
 			Relation.updateActiveRating(rating, vote);
 		}
 	});
