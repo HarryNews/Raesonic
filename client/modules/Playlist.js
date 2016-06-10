@@ -868,6 +868,11 @@ Playlist.onPlaylistClick = function()
 	if( $playlist.is(".active") )
 		return;
 
+	var Relation = require("./Relation.js");
+
+	if(Relation.active)
+		Relation.clearView();
+
 	Playlist.load( $playlist.data("playlistId") );
 }
 

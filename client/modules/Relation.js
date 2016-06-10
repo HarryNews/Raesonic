@@ -163,6 +163,21 @@ Relation.setActiveVote = function(vote, $icon)
 	Relation.vote(Item.active.trackId, Relation.active.trackId, vote);
 }
 
+// Return to normal view after viewing recommendations
+Relation.clearView = function()
+{
+	Relation.active = false;
+	$("#related-overlay").fadeIn(200);
+
+	var Search = require("./Search.js");
+	Search.clear();
+	
+	var ItemList = require("./ItemList.js");
+	ItemList.clearFilter();
+
+	Search.updatePlaceholder();
+}
+
 // Update rating and rating elements state on related tab
 Relation.updateActiveRating = function(rating, vote)
 {

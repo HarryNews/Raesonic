@@ -176,10 +176,7 @@ Search.onClearClick = function()
 	var Relation = require("./Relation.js");
 
 	if(Relation.active)
-	{
-		Relation.active = false;
-		$("#related-overlay").fadeIn(200);
-	}
+		return Relation.clearView();
 
 	Search.clear();
 	ItemList.clearFilter();
