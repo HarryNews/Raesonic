@@ -11,8 +11,10 @@ var Content =
 		"YouTube Video",
 		"SoundCloud Track",
 	],
+	// Content switch mode
+	AUTO_SWITCH: false,
+	MANUAL_SWITCH: true,
 	// Action on content lookup
-	AUTOMATIC_SWITCH: false,
 	ASSIGN_TO_ITEM: true,
 };
 
@@ -104,7 +106,8 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 		// Skip track if the automatic content switch failed
 		if(!assignToItem && skipTrack)
-			Content.switchContent(switchDirection, skipTrack);
+			Content.switchContent(Content.AUTO_SWITCH,
+				switchDirection, skipTrack);
 
 		return;
 	}
@@ -132,7 +135,8 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 				// Skip track if the automatic content switch failed
 				if(!assignToItem && skipTrack)
-					Content.switchContent(switchDirection, skipTrack);
+					Content.switchContent(Content.AUTO_SWITCH,
+						switchDirection, skipTrack);
 
 				return;
 			}
@@ -153,8 +157,8 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 			{
 				var missingContent = (nearest == null);
 
-				Content
-					.switchContent(switchDirection, skipTrack, missingContent);
+				Content.switchContent(Content.AUTO_SWITCH,
+					switchDirection, skipTrack, missingContent);
 
 				return;
 			}
@@ -188,8 +192,12 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 
 // Select next or previous content
 // If the skipTrack is true, track will be skipped if there's no alternative content
-Content.switchContent = function(forward, skipTrack, missingContent)
+Content.switchContent = function(isManualSwitch, forward, skipTrack, missingContent)
 {
+	// If a playback error occurs after a manual switch, the content
+	// will not be skipped to allow issue reporting
+	Content.preventSwitch = isManualSwitch;
+
 	var $item = $(".item.active");
 
 	// No active item, disable content switch
@@ -208,7 +216,7 @@ Content.switchContent = function(forward, skipTrack, missingContent)
 		];
 
 		Content.setSwitchEnabled(false);
-		Content.request($item.data("trackId"), Content.AUTOMATIC_SWITCH,
+		Content.request($item.data("trackId"), Content.AUTO_SWITCH,
 			forward, skipTrack, current);
 
 		return;
@@ -382,14 +390,18 @@ Content.onItemChange = function($item)
 Content.onPreviousIconClick = function()
 {
 	var ItemList = require("./ItemList.js");
-	Content.switchContent(ItemList.PREVIOUS_ITEM);
+
+	Content.switchContent(Content.MANUAL_SWITCH,
+		ItemList.PREVIOUS_ITEM);
 }
 
 // Called upon clicking the next content icon
 Content.onNextIconClick = function()
 {
 	var ItemList = require("./ItemList.js");
-	Content.switchContent(ItemList.NEXT_ITEM);
+
+	Content.switchContent(Content.MANUAL_SWITCH,
+		ItemList.NEXT_ITEM);
 }
 
 // Called upon clicking the replace content icon

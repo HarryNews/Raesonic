@@ -435,8 +435,13 @@ Player.onPlaybackError = function()
 	var ItemList = require("./ItemList.js");
 	var Item = require("./Item.js");
 
-	Content.switchContent(ItemList.NEXT_ITEM,
-		!Item.active.isManualSwitch && ItemList.SKIP_TRACK);
+	if(Content.preventSwitch)
+		return;
+
+	var skipTrack = !Item.active.isManualSwitch;
+
+	Content.switchContent(Content.AUTO_SWITCH,
+		ItemList.NEXT_ITEM, skipTrack);
 }
 
 // Called upon movement of the mouse cursor
