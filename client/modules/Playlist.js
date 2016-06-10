@@ -150,17 +150,24 @@ Playlist.load = function(playlistId)
 		url: "/playlists/" + playlistId + "/",
 		type: "GET",
 		success: Playlist.onLoadResponse,
+		error: Playlist.onLoadError,
 	});
 }
 
 // Retrieve main playlist of the user
 Playlist.loadMain = function()
 {
+	var Account = require("./Account.js")
+
+	if(!Account.authenticated)
+		return;
+
 	$.ajax
 	({
 		url: "/own/playlists/main/",
 		type: "GET",
 		success: Playlist.onLoadResponse,
+		error: Playlist.onLoadError,
 	});
 }
 
@@ -179,7 +186,7 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 		playlistId: playlistId,
 		name: name,
 		access: access,
-	}
+	};
 
 	var $access = $("<span>")
 		.attr
@@ -225,6 +232,21 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems(items);
+}
+
+// Clear active playlist
+Playlist.clearActive = function()
+{
+	Playlist.active = null;
+
+	$("#playlist-name").empty();
+
+	Playlist.highlightActivePlaylist();
+
+	Playlist.clearTrackCounter();
+
+	var ItemList = require("./ItemList.js");
+	ItemList.setItems( [] );
 }
 
 // Retrieve the list of all playlists in a section
@@ -314,23 +336,6 @@ Playlist.highlightActivePlaylist = function()
 	$(".playlist")
 		.filterByData("playlistId", Playlist.active.playlistId)
 		.addClass("active");
-}
-
-Playlist.onLoadResponse = function(response)
-{
-	if(response.errors)
-		return;
-
-	var playlist = response[0];
-	var items = response[1];
-
-	var playlistId = playlist[0];
-	var name = playlist[1];
-	var access = playlist[2];
-	var alias = playlist[3];
-	var user = playlist[4];
-
-	Playlist.setActive(playlistId, name, access, alias, user, items);
 }
 
 // Fill the playlists section with data from server or the local storage
@@ -444,6 +449,24 @@ Playlist.setTrackCounter = function(count)
 	$("#playlist-details").text(count + " tracks");
 }
 
+// Cleat the track counter text
+Playlist.clearTrackCounter = function()
+{
+	$("#playlist-details").text("");
+}
+
+// Load playlist according to URL
+Playlist.processUrl = function()
+{
+	var url = window.location.pathname.split("/");
+
+	if(url[1] != "playlist")
+		return Playlist.loadMain();
+
+	var alias = url[2];
+	Playlist.load(alias);
+}
+
 // Called once upon creating a playlist overlay
 Playlist.initPlaylistOverlay = function(currentAccess)
 {
@@ -541,7 +564,7 @@ Playlist.showPlaylistOverlay = function(playlistId, name, access)
 		{
 			id: "playlist-edit-access",
 		},
-		text: "Access:",
+		text: "Access to view:",
 	}];
 
 	if(!playlistId)
@@ -625,6 +648,63 @@ Playlist.updatePlaylistOverlay = function()
 	$("#playlist-edit-name").prop("readOnly", deletingPlaylist);
 	$("#overlay input[type=\"radio\"]").prop("disabled", deletingPlaylist);
 	$("#overlay label").toggleClass("disabled", deletingPlaylist);
+}
+
+// Called when the user authentication is done
+Playlist.onAccountSync = function()
+{
+	var Account = require("./Account.js");
+
+	// Load playlist from the current url
+	if(!Playlist.active || !Account.authenticated)
+		return Playlist.processUrl();
+
+	// Remove playlist creator data if it's the same user
+	var $user = $("#playlist-details-user");
+
+	if( $user.length &&
+		$user.text() == Account.own.username )
+			$user.remove();
+}
+
+// Called when the playlist is loaded
+Playlist.onLoadResponse = function(response)
+{
+	if(response.errors)
+		return;
+
+	var playlist = response[0];
+	var items = response[1];
+
+	var playlistId = playlist[0];
+	var name = playlist[1];
+	var access = playlist[2];
+	var alias = playlist[3];
+	var user = playlist[4];
+
+	Playlist.setActive(playlistId, name, access, alias, user, items);
+}
+
+// Called when the playlist failed to load
+Playlist.onLoadError = function(response)
+{
+	Playlist.clearActive();
+
+	var json = response.responseJSON;
+
+	if(!json || !json.errors)
+		return;
+
+	var error = json.errors[0];
+
+	// if(error == "playlist not found")
+	// todo: show toast about the error
+
+	// if(error == "no access")
+	// todo: show toast about the error
+
+	// if(error == "internal error")
+	// todo: show toast about the error, suggesting to try again later
 }
 
 // Called when the mouse is pressed somewhere

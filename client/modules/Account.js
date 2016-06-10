@@ -134,7 +134,7 @@ Account.sync = function(done)
 
 			Account.setAuthenticated(true, done);
 
-			Playlist.loadMain();
+			var Playlist = require("./Playlist.js");
 			Playlist.updateSection();
 		},
 		error: function()
@@ -163,6 +163,9 @@ Account.setAuthenticated = function(isAuthenticated, done)
 	}
 
 	Account.authenticated = isAuthenticated;
+
+	var Playlist = require("./Playlist.js");
+	Playlist.onAccountSync();
 
 	Overlay.destroy();
 

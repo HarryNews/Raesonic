@@ -110,7 +110,7 @@ module.exports = function(core)
 				];
 
 				// Include playlist creator data unless it's the same user
-				if(req.user.userId != playlist.User.userId)
+				if(!req.user || req.user.userId != playlist.User.userId)
 				{
 					playlistData.push
 					([
