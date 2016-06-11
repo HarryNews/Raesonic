@@ -2,11 +2,79 @@ var Overlay = require("./Overlay.js");
 
 var Item = {};
 
-// Play the specified item
-Item.play = function($item, isManualSwitch)
+// Add item with the specified content to the active playlist
+Item.create = function(sourceId, externalId)
 {
-	var Player = require("./Player.js");
-	Player.setItem($item, isManualSwitch);
+	var Playlist = require("./Playlist.js");
+
+	// No active playlist, bail out
+	if(!Playlist.active)
+		return;
+
+	$.ajax
+	({
+		url: "/playlists/" + Playlist.active.playlistId + "/",
+		type: "POST",
+		data: JSON.stringify({ sourceId: sourceId, externalId: externalId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var trackId = response[0];
+			var artist = response[1];
+			var title = response[2];
+			var itemId = response[3];
+
+			var ItemList = require("./ItemList.js");
+			ItemList.clearFilter();
+
+			var item =
+			[
+				trackId,
+				artist,
+				title,
+				itemId,
+				sourceId,
+				externalId,
+			];
+
+			ItemList.addItem(item, ItemList.PREPEND);
+
+			$("#items").scrollTop(0);
+			Playlist.setTrackCounter( $(".item").length );
+
+			var Search = require("./Search.js");
+			Search.clear();
+		}
+	});
+}
+
+// Add item with the specified content to the specified playlist
+Item.copy = function(playlistId, name, access, sourceId, externalId)
+{
+	$.ajax
+	({
+		url: "/playlists/" + playlistId + "/",
+		type: "POST",
+		data: JSON.stringify({ sourceId: sourceId, externalId: externalId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			var artist = response[1];
+			var title = response[2];
+
+			var Playlist = require("./Playlist.js");
+			Playlist.updateSectionCounter(playlistId, access, null, 1);
+
+			// todo: show a toast message:
+			// artist – title has been added to name
+		}
+	});
 }
 
 // Remove specified item from the playlist
@@ -32,6 +100,7 @@ Item.remove = function(itemId)
 
 			$item.remove();
 
+			var Playlist = require("./Playlist.js");
 			Playlist.setTrackCounter( $(".item").length );
 
 			Overlay.destroy();
@@ -119,6 +188,13 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			Overlay.destroy();
 		}
 	});
+}
+
+// Play the specified item
+Item.play = function($item, isManualSwitch)
+{
+	var Player = require("./Player.js");
+	Player.setItem($item, isManualSwitch);
 }
 
 // Update the item editing overlay
@@ -477,8 +553,7 @@ Item.onPlaylistElementClick = function()
 	var playlistData = $playlist.data();
 	var itemData = $item.data();
 
-	var Content = require("./Content.js")
-	Content.copy(playlistData.playlistId, playlistData.name,
+	Item.copy(playlistData.playlistId, playlistData.name,
 		playlistData.access, itemData.sourceId, itemData.externalId);
 
 	Item.fadeRemoveDropdown();

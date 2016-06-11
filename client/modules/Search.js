@@ -102,20 +102,21 @@ Search.globally = function(query)
 // Returns true if the query looks like a content URL
 Search.createContent = function(query)
 {
+	var Item = require("./Item.js");
 	var Content = require("./Content.js");
 
 	// Find and create YouTube content
 	var match = Search.REGEX.YOUTUBE.exec(query);
-	if(match && match[5])
+	if( match && match[5] )
 	{
 		var externalId = match[5];
-		Content.create(Content.SOURCE.YOUTUBE, externalId);
+		Item.create(Content.SOURCE.YOUTUBE, externalId);
 		return true;
 	}
 
 	// Find and create SoundCloud content
 	match = Search.REGEX.SOUNDCLOUD.exec(query);
-	if(match && match[2])
+	if( match && match[2] )
 	{
 		if(typeof SC == "undefined")
 			return true;
@@ -125,9 +126,7 @@ Search.createContent = function(query)
 		.then(function onSoundCloudResolve(response)
 		{
 			var externalId = response.id.toString();
-
-			Content
-				.create(Content.SOURCE.SOUNDCLOUD, externalId);
+			Item.create(Content.SOURCE.SOUNDCLOUD, externalId);
 		});
 
 		return true;

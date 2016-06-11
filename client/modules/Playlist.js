@@ -1,6 +1,6 @@
 var Overlay = require("./Overlay.js");
 
-Playlist =
+var Playlist =
 {
 	SECTION:
 	{
