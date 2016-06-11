@@ -290,8 +290,8 @@ Item.onAddIconClick = function()
 {
 	var $item = $(this).parent();
 
-	// Dropdown is shown on the same item, just remove it
-	if($item.find("#add-list").length)
+	// Dropdown is already shown for this item, remove it and bail
+	if( $item.find("#add-list").length )
 		return Item.fadeRemoveDropdown();
 
 	Item.fadeRemoveDropdown();
@@ -313,15 +313,8 @@ Item.onAddIconClick = function()
 
 	var Playlist = require("./Playlist.js");
 
-	var sections = ["private", "shared", "public"];
-	var sectionIcons =
-	[
-		"private corner icon fa fa-lock",
-		"shared corner icon fa fa-link",
-		"public corner icon fa fa-globe",
-	];
-
-	sections.forEach(function(sectionAlias, sectionIndex)
+	Playlist.PERSONAL_SECTIONS
+	.forEach(function(sectionAlias, sectionIndex)
 	{
 		var $playlists = $("#playlists").data(sectionAlias);
 
@@ -336,18 +329,22 @@ Item.onAddIconClick = function()
 					return;
 
 				var name = $playlist.find(".name").text();
+				var access = $playlist.data("access");
+
+				var accessIcon =
+					Playlist.PERSONAL_SECTION_ICONS[sectionIndex];
 
 				$dropdown.append(
 					$("<div>")
 						.addClass("list-element")
 						.html("<div class=\"icon fa fa-list\"></div>" +
-							"<div class=\"" +
-							sectionIcons[sectionIndex] + "\"></div>" +
+							"<div class=\"" + accessIcon + "\"></div>" +
 							name)
 						.data
 						({
 							playlistId: playlistId,
 							name: name,
+							access: access,
 						})
 						.click(Item.onPlaylistElementClick)
 				);
@@ -474,15 +471,15 @@ Item.onRelationElementClick = function()
 // Called upon clicking a playlist item in the dropdown list
 Item.onPlaylistElementClick = function()
 {
+	var $playlist = $(this);
 	var $item = $(".item.adding");
 
-	var playlistId = $(this).data("playlistId");
-	var playlistName = $(this).data("name");
-	var data = $item.data();
+	var playlistData = $playlist.data();
+	var itemData = $item.data();
 
 	var Content = require("./Content.js")
-	Content.copy(playlistId, playlistName,
-		data.sourceId, data.externalId);
+	Content.copy(playlistData.playlistId, playlistData.name,
+		playlistData.access, itemData.sourceId, itemData.externalId);
 
 	Item.fadeRemoveDropdown();
 }

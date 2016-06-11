@@ -60,7 +60,7 @@ Content.create = function(sourceId, externalId)
 			ItemList.addItem(item, ItemList.PREPEND);
 
 			$("#items").scrollTop(0);
-			Playlist.setTrackCounter($(".item").length);
+			Playlist.setTrackCounter( $(".item").length );
 
 			var Search = require("./Search.js");
 			Search.clear();
@@ -69,7 +69,7 @@ Content.create = function(sourceId, externalId)
 }
 
 // Add specified content to a playlist
-Content.copy = function(playlistId, playlistName, sourceId, externalId)
+Content.copy = function(playlistId, name, access, sourceId, externalId)
 {
 	$.ajax
 	({
@@ -85,10 +85,10 @@ Content.copy = function(playlistId, playlistName, sourceId, externalId)
 			var artist = response[1];
 			var title = response[2];
 
-			// todo: update track counter in the sidebar
+			Playlist.updateSectionCounter(playlistId, access, null, 1);
 
 			// todo: show a toast message:
-			// artist – title has been added to playlistName
+			// artist – title has been added to name
 		}
 	});
 }

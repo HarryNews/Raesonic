@@ -16,6 +16,13 @@ Playlist =
 		SHARED: 2,
 		PUBLIC: 3,
 	},
+	PERSONAL_SECTIONS: ["private", "shared", "public"],
+	PERSONAL_SECTION_ICONS:
+	[
+		"private corner icon fa fa-lock",
+		"shared corner icon fa fa-link",
+		"public corner icon fa fa-globe",
+	],
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 }
 
@@ -336,6 +343,7 @@ Playlist.addSectionPlaylist = function(playlist)
 				playlistId: playlistId,
 				access: access,
 				alias: alias,
+				count: count,
 			});
 
 	$("#playlists").append($playlist);
@@ -474,34 +482,57 @@ Playlist.setTrackCounter = function(count)
 {
 	$("#playlist-details").text(count + " tracks");
 
-	// Update the track count in the section
-	var sections = ["private", "shared", "public"];
-	var playlistSection = Playlist.active.access - 1;
+	Playlist.updateSectionCounter(Playlist.active.playlistId,
+		Playlist.active.access, count);
+}
 
-	sections.forEach(function(sectionAlias, sectionIndex)
+// Update the track count in the section
+Playlist.updateSectionCounter = function(playlistId, access, count, relative)
+{
+	var playlistSection = access - 1;
+
+	Playlist.PERSONAL_SECTIONS
+	.forEach(function(sectionAlias, sectionIndex)
 	{
 		if(sectionIndex != playlistSection)
 			return;
 
-		var $playlists = $("#playlists").data(sectionAlias);
+		var $playlist = $(".playlist").filterByData("playlistId", playlistId);
 
-		if($playlists != null)
+		// Playlist is in the active section, update it in place
+		if($playlist.length)
 		{
-			$playlists.forEach(function($playlist, playlistIndex)
-			{
-				var playlistId = $playlist.data("playlistId");
+			if(count == null)
+				count = $playlist.data("count") + relative;
 
-				if(playlistId == Playlist.active.playlistId)
+			$playlist
+				.data("count", count)
+				.find(".details")
+				.text(count + " tracks");
+		}
+
+		// Search the playlist within the section storage
+		var $sectionPlaylists = $("#playlists").data(sectionAlias);
+
+		if($sectionPlaylists != null)
+		{
+			$sectionPlaylists.forEach(function($sectionPlaylist, playlistIndex)
+			{
+				var sectionPlaylistId = $sectionPlaylist.data("playlistId");
+
+				if(sectionPlaylistId == playlistId)
 				{
-					$playlists[playlistIndex]
+					if(count == null)
+						count = $sectionPlaylist.data("count") + relative;
+
+					$sectionPlaylists[playlistIndex]
+						.data("count", count)
 						.find(".details")
 						.text(count + " tracks");
-
-					return;
 				}
 			});
 
-			$("#playlists").data(sectionAlias, $playlists);
+			$("#playlists").data(sectionAlias, $sectionPlaylists);
 		}
 	});
 }
