@@ -138,8 +138,14 @@ Playlist.delete = function(playlistId)
 			if(response.errors)
 				return;
 
+			// If removed playlist is currently active, clear the view
+			if(Playlist.active &&
+				Playlist.active.playlistId == playlistId)
+					Playlist.clearActive();
+
+			// Remove playlist from the sidebar
 			$(".playlist")
-				.filterByData("playlistId", Playlist.deleting.playlistId)
+				.filterByData("playlistId", playlistId)
 				.remove();
 
 			Overlay.destroy();
@@ -499,7 +505,7 @@ Playlist.updateSectionCounter = function(playlistId, access, count, relative)
 
 		var $playlist = $(".playlist").filterByData("playlistId", playlistId);
 
-		// Playlist is in the active section, update it in place
+		// Playlist is in the active section, update it in place and bail out
 		if($playlist.length)
 		{
 			if(count == null)
@@ -509,6 +515,8 @@ Playlist.updateSectionCounter = function(playlistId, access, count, relative)
 				.data("count", count)
 				.find(".details")
 				.text(count + " tracks");
+
+			return;
 		}
 
 		// Search the playlist within the section storage
