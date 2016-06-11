@@ -246,10 +246,21 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 		$("#playlist-details").append($user);
 	}
 
-	var ItemList = require("./ItemList.js");
-	ItemList.setItems(items);
-
 	var Relation = require("./Relation.js");
+	var ItemList = require("./ItemList.js");
+
+	// Clear all item list filters
+	if(!Relation.active)
+	{
+		var Search = require("./Search.js");
+
+		Search.clear();
+		ItemList.clearFilter();
+
+		Search.updatePlaceholder();
+	}
+
+	ItemList.setItems(items);
 
 	if(!Relation.active)
 		return;
