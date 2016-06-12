@@ -107,7 +107,9 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 						nearest[1],
 					],
 				})
-				.removeClass("active");
+				.removeClass("active")
+				.find(".add.icon")
+					.removeClass("hidden");
 
 			var Item = require("./Item.js");
 			Item.play($item, Item.active.isManualSwitch);

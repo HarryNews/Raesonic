@@ -51,10 +51,14 @@ Search.locally = function(query)
 	// Adding a content by URL, update and bail
 	if(query.indexOf("http") == 0)
 	{
-		$("#search-clear").is(":visible")
-			? ItemList.clearFilter()
-			: $("#search-clear").fadeIn(200);
+		if( $("#search-clear").is(":visible") )
+		{
+			ItemList.clearFilter();
+			ItemList.restoreStorage();
+			return;
+		}
 
+		$("#search-clear").fadeIn(200);
 		return;
 	}
 
@@ -168,7 +172,7 @@ Search.onClearClick = function()
 	if(Search.restricted && $("#search").val().length)
 	{
 		Search.clear();
-		ItemList.clearFilter(ItemList.IGNORE_STORAGE);
+		ItemList.clearFilter();
 		return;
 	}
 
@@ -179,6 +183,7 @@ Search.onClearClick = function()
 
 	Search.clear();
 	ItemList.clearFilter();
+	ItemList.restoreStorage();
 
 	Search.updatePlaceholder();
 }

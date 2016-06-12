@@ -29,6 +29,7 @@ Item.create = function(sourceId, externalId)
 
 			var ItemList = require("./ItemList.js");
 			ItemList.clearFilter();
+			ItemList.restoreStorage();
 
 			var item =
 			[
@@ -41,9 +42,9 @@ Item.create = function(sourceId, externalId)
 			];
 
 			ItemList.addItem(item, ItemList.PREPEND);
-
 			$("#items").scrollTop(0);
-			Playlist.setTrackCounter( $(".item").length );
+
+			Playlist.setTrackCounter(null, 1);
 
 			var Search = require("./Search.js");
 			Search.clear();
@@ -69,7 +70,34 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 			var title = response[2];
 
 			var Playlist = require("./Playlist.js");
-			Playlist.updateSectionCounter(playlistId, access, null, 1);
+
+			// Prepend the item if added to active hidden playlist
+			if(Playlist.active && Playlist.active.hidden &&
+				Playlist.active.playlistId == playlistId)
+			{
+				var trackId = response[0];
+				var itemId = response[3];
+
+				var item =
+				[
+					trackId,
+					artist,
+					title,
+					itemId,
+					sourceId,
+					externalId,
+				];
+
+				var ItemList = require("./ItemList.js");
+				ItemList.addItem(item, ItemList.PREPEND,
+					ItemList.USE_STORAGE);
+
+				Playlist.setTrackCounter(null, 1);
+			}
+			else
+			{
+				Playlist.updateSectionCounter(playlistId, access, null, 1);
+			}
 
 			// todo: show a toast message:
 			// artist – title has been added to name
@@ -148,7 +176,8 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				.filterByData("itemId", itemId)
 				.data("externalId");
 
-			var $item = $(".item").filterByData("externalId", externalId)
+			var $item = $(".item")
+				.filterByData("externalId", externalId);
 
 			artist = Item.formatArtist(artist);
 			title = Item.formatTitle(title);
@@ -400,9 +429,10 @@ Item.onAddIconClick = function()
 			{
 				var playlistId = $playlist.data("playlistId");
 
-				// Skip active playlist
-				if(playlistId == Playlist.active.playlistId)
-					return;
+				// Skip active playlist unless in another view
+				if(playlistId == Playlist.active.playlistId &&
+					!Playlist.active.hidden)
+						return;
 
 				var name = $playlist.find(".name").text();
 				var access = $playlist.data("access");
@@ -427,6 +457,13 @@ Item.onAddIconClick = function()
 			});
 		}
 	});
+
+	if( !$dropdown.children().length )
+	{
+		// show toast "No cached playlists found."
+
+		return;
+	}
 
 	// Below item or above item if it doesn't fit on screen
 	var itemsVisible = Math.min($dropdown.children().length, 5);

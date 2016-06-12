@@ -249,13 +249,14 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 	var Relation = require("./Relation.js");
 	var ItemList = require("./ItemList.js");
 
-	// Clear all item list filters
+	// Clear item list filter and restore storage
 	if(!Relation.active)
 	{
 		var Search = require("./Search.js");
 
 		Search.clear();
 		ItemList.clearFilter();
+		ItemList.restoreStorage();
 
 		Search.updatePlaceholder();
 	}
@@ -495,9 +496,14 @@ Playlist.setActiveSection = function(alias)
 }
 
 // Set track counter to specified value
-Playlist.setTrackCounter = function(count)
+Playlist.setTrackCounter = function(count, relative)
 {
-	$("#playlist-details").text(count + " tracks");
+	if(count == null)
+		count = $("#playlist-details").data("count") + relative;
+
+	$("#playlist-details")
+		.data("count", count)
+		.text(count + " tracks");
 
 	Playlist.updateSectionCounter(Playlist.active.playlistId,
 		Playlist.active.access, count);

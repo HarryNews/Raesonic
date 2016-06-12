@@ -185,6 +185,7 @@ Relation.clearView = function()
 
 	var ItemList = require("./ItemList.js");
 	ItemList.clearFilter();
+	ItemList.restoreStorage();
 
 	Search.updatePlaceholder();
 }

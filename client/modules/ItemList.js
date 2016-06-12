@@ -15,8 +15,6 @@ var ItemList =
 	MANUAL_SWITCH: true,
 	// Action on content error
 	SKIP_TRACK: true,
-	// For clearing filter
-	IGNORE_STORAGE: true,
 };
 
 // Set items of the item list
@@ -33,6 +31,11 @@ ItemList.setItems = function(items, useStorage)
 		});
 		
 		$("#items").data("storage", storage);
+
+		var Playlist = require("./Playlist.js");
+
+		if(Playlist.active != null)
+			Playlist.active.hidden = true;
 	}
 
 	$("#items").empty();
@@ -46,9 +49,11 @@ ItemList.setItems = function(items, useStorage)
 
 // Add item to the item list
 // If the boolean is true, item is added to the beginning
-ItemList.addItem = function(item, prepend)
+ItemList.addItem = function(item, prepend, useStorage)
 {
 	var Player = require("./Player.js");
+
+	var isContentAttached = ( item[4] != null );
 
 	var $item =
 		$("<div>")
@@ -62,6 +67,7 @@ ItemList.addItem = function(item, prepend)
 					.html( Item.formatTitle( item[2] ) ),
 				$("<div>")
 					.addClass("add icon fa fa-plus")
+					.toggleClass("hidden", !isContentAttached)
 					.click(Item.onAddIconClick)
 			)
 			.data("trackId", item[0]);
@@ -88,7 +94,7 @@ ItemList.addItem = function(item, prepend)
 			);
 	}
 
-	// If the relation rating is known, store it on the item
+	// If the relation rating is known, store relation values
 	if(item[6] != null)
 	{
 		$item.data
@@ -103,6 +109,18 @@ ItemList.addItem = function(item, prepend)
 		.children()
 		.slice(0, 2)
 		.click(Item.onClick);
+
+	if(useStorage)
+	{
+		// Add item to the storage
+		var storage = $("#items").data("storage") || [];
+
+		prepend
+			? storage.unshift( $item.clone(true) )
+			: storage.push( $item.clone(true) );
+
+		return;
+	}
 
 	prepend
 		? $("#items").prepend($item)
@@ -209,22 +227,30 @@ ItemList.setFilter = function(query)
 	$("#items").scrollTop(0);
 }
 
-// Clear item filtering and restore previous items
-ItemList.clearFilter = function(ignoreStorage)
+// Show all items previously hidden by the filter
+ItemList.clearFilter = function()
 {
 	var hiddenCount = $(".item.hidden").length;
-	$(".item").removeClass("hidden odd even");
 
-	var storage = $("#items").data("storage");
-	var storageInUse = (storage && storage.length);
-
-	if(!storageInUse || ignoreStorage)
-	{
-		if(hiddenCount > 0)
-			ItemList.scrollTo( $(".item.active") );
-
+	if(hiddenCount < 1)
 		return;
-	}
+
+	$(".item").removeClass("hidden odd even");
+	ItemList.scrollTo( $(".item.active") );
+}
+
+// Restore previous items from the storage
+ItemList.restoreStorage = function()
+{
+	var Playlist = require("./Playlist.js");
+
+	if(Playlist.active != null)
+		Playlist.active.hidden = false;
+
+	var storage = $("#items").data("storage") || [];
+
+	if(!storage.length)
+		return;
 
 	$("#items").empty();
 
