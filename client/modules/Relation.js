@@ -29,7 +29,13 @@ Relation.create = function(trackId, linkedId)
 			var Overlay = require("./Overlay.js");
 			Overlay.destroy();
 			
-			// todo: show message according to status
+			var Toast = require("./Toast.js");
+
+			var message = (status == Relation.STATUS_CREATED)
+				? "Recommendation created successfully"
+				: "Recommendation has been upvoted";
+
+			Toast.show(message, Toast.INFO);
 		}
 	});
 }
@@ -49,9 +55,14 @@ Relation.request = function(trackId, resumeTrackId)
 
 			var relations = response;
 
-			// todo: show toast, that no recommendations were found
 			if(!relations.length)
+			{
+				var Toast = require("./Toast.js");
+				Toast.show("There are no recommendations for " +
+					"this track yet, sorry!", Toast.ERROR);
+
 				return;
+			}
 
 			var items = [];
 

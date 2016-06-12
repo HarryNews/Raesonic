@@ -84,6 +84,10 @@ Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
 			$flag.addClass("active");
 
 			Overlay.destroy();
+
+			var Toast = require("./Toast.js");
+			Toast.show("Report has been submitted, thank you for " +
+				"keeping Raesonic clean!", Toast.INFO);
 		}
 	});
 }

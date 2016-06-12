@@ -99,8 +99,9 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 				Playlist.updateSectionCounter(playlistId, access, null, 1);
 			}
 
-			// todo: show a toast message:
-			// artist – title has been added to name
+			var Toast = require("./Toast.js");
+			Toast.show("\"" + artist + " – " + title + "\"" +
+				" has been added to " + name, Toast.INFO);
 		}
 	});
 }
@@ -132,6 +133,10 @@ Item.remove = function(itemId)
 			Playlist.setTrackCounter( $(".item").length );
 
 			Overlay.destroy();
+
+			var Toast = require("./Toast.js");
+			Toast.show("Item has been removed from the playlist",
+				Toast.INFO);
 		}
 	});
 }
@@ -215,6 +220,10 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 
 			$item.data("trackId", trackId);
 			Overlay.destroy();
+
+			var Toast = require("./Toast.js");
+			Toast.show("Track information saved successfully",
+				Toast.INFO);
 		}
 	});
 }
@@ -460,7 +469,8 @@ Item.onAddIconClick = function()
 
 	if( !$dropdown.children().length )
 	{
-		// show toast "No cached playlists found."
+		var Toast = require("./Toast.js");
+		Toast.show("No cached playlists found", Toast.ERROR);
 
 		return;
 	}

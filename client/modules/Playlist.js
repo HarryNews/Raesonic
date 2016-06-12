@@ -74,6 +74,9 @@ Playlist.create = function(name, access, sectionAlias)
 			Playlist.setActive(playlistId, name, access, alias, null, items);
 
 			Overlay.destroy();
+
+			var Toast = require("./Toast.js");
+			Toast.show("Playlist created successfully", Toast.INFO);
 		}
 	});
 }
@@ -121,7 +124,8 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 
 			Overlay.destroy();
 
-			// todo: show toast message about successful save
+			var Toast = require("./Toast.js");
+			Toast.show("Playlist saved successfully", Toast.INFO);
 		}
 	});
 }
@@ -150,7 +154,8 @@ Playlist.delete = function(playlistId)
 
 			Overlay.destroy();
 
-			// todo: show toast message about successful deletion
+			var Toast = require("./Toast.js");
+			Toast.show("Playlist has been deleted", Toast.INFO);
 		},
 	});
 }
@@ -833,14 +838,31 @@ Playlist.onLoadError = function(response)
 
 	var error = json.errors[0];
 
-	// if(error == "playlist not found")
-	// todo: show toast about the error
+	var Toast = require("./Toast.js");
 
-	// if(error == "no access")
-	// todo: show toast about the error
+	if(error == "playlist not found")
+	{
+		Toast.show("Playlist is no longer available",
+			Toast.ERROR);
 
-	// if(error == "internal error")
-	// todo: show toast about the error, suggesting to try again later
+		return;
+	}
+
+	if(error == "no access")
+	{
+		Toast.show("Playlist access has been restricted by the owner",
+			Toast.ERROR);
+
+		return;
+	}
+
+	if(error == "internal error")
+	{
+		Toast.show("Error has occurred, please try again later",
+			Toast.ERROR);
+		
+		return;
+	}
 }
 
 // Called when the mouse is pressed somewhere

@@ -253,6 +253,10 @@ Content.saveItemContent = function($item)
 			}
 
 			$("#content-replace").removeClass("active");
+
+			var Toast = require("./Toast.js");
+			Toast.show("Selected content has been set as default",
+				Toast.INFO);
 		}
 	});
 }
