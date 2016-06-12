@@ -225,9 +225,9 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 
 	Playlist.setTrackCounter(items.length);
 
-	// Show user data for playlists made by other users
 	if(user != null)
 	{
+		// Show user data for playlists made by other users
 		var username = user[0];
 		var avatar = user[1];
 
@@ -244,6 +244,14 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 			.prepend($avatar);
 
 		$("#playlist-details").append($user);
+	}
+	else
+	{
+		// Own playlist, switch the section to match it
+		var sectionAlias =
+			Playlist.PERSONAL_SECTIONS[access - 1];
+
+		Playlist.setActiveSection(sectionAlias);
 	}
 
 	var Relation = require("./Relation.js");
@@ -385,6 +393,10 @@ Playlist.highlightActivePlaylist = function()
 // Fill the playlists section with data from server or the local storage
 Playlist.updateSection = function(previousAlias)
 {
+	// Make the first tab active if none of them are
+	if( !$("#playlists-menu .active").length )
+		$("#playlists-menu-private").addClass("active");
+
 	// Obtain storage of the currently active section
 	var sectionAlias = $("#playlists-menu .active").data("alias");
 	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
@@ -771,10 +783,9 @@ Playlist.onAccountSync = function()
 {
 	var Account = require("./Account.js");
 
-	// Request or clear the playlists storage
-	Account.authenticated
-		? Playlist.updateSection()
-		: Playlist.clearAllSections();
+	// Clear the playlists storage if not authenticated
+	if(!Account.authenticated)
+		Playlist.clearAllSections();
 
 	// Load playlist from the current url
 	if(!Playlist.active || !Account.authenticated)
@@ -792,7 +803,10 @@ Playlist.onAccountSync = function()
 Playlist.onLoadResponse = function(response)
 {
 	if(response.errors)
+	{
+		Playlist.updateSection();
 		return;
+	}
 
 	var playlist = response[0];
 	var items = response[1];
@@ -810,6 +824,7 @@ Playlist.onLoadResponse = function(response)
 Playlist.onLoadError = function(response)
 {
 	Playlist.clearActive();
+	Playlist.updateSection();
 
 	var json = response.responseJSON;
 
