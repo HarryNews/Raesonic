@@ -402,6 +402,11 @@ Item.onEditIconClick = function()
 // Called upon clicking the plus icon
 Item.onAddIconClick = function()
 {
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
 	var $item = $(this).parent();
 
 	// Dropdown is already shown for this item, remove it and bail
