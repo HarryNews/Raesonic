@@ -62,11 +62,12 @@ Search.locally = function(query)
 		return;
 	}
 
-	// Empty query, clear filter and bail
+	// The query is empty, restore view and bail
 	if(!query.length)
 	{
 		Search.clear();
 		ItemList.clearFilter();
+		ItemList.restoreStorage();
 
 		return;
 	}
