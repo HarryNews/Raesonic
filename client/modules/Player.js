@@ -132,10 +132,11 @@ Player.setItem = function($item, isManualSwitch)
 
 	if(data.sourceId == Content.SOURCE.YOUTUBE)
 	{
+		ItemList.setActiveItem($item, isManualSwitch);
+
+		// todo: call YouTube.onPlayerError
 		if(!YouTube.loaded)
 			return;
-
-		ItemList.setActiveItem($item, isManualSwitch);
 
 		$("#cover").empty().hide();
 		$("#video").show();
