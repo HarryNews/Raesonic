@@ -126,7 +126,7 @@ Flag.initOverlay = function(entityType)
 }
 
 // Show flag creation overlay
-Flag.showFlagOverlay = function(data)
+Flag.showFlagOverlay = function(data, $flag)
 {
 	var summary;
 	var subject;
@@ -193,7 +193,7 @@ Flag.showFlagOverlay = function(data)
 			entityType: entityType,
 			entityId: data.entityId,
 			secondId: data.secondId,
-			flag: $(this),
+			flag: $flag,
 		}
 	});
 
@@ -286,7 +286,7 @@ Flag.onIconClick = function()
 		return;
 
 	var $flag = $(this);
-	Flag.showFlagOverlay( $flag.data() );
+	Flag.showFlagOverlay($flag.data(), $flag);
 }
 
 // Called when the submit report button is pressed
