@@ -43,7 +43,7 @@ module.exports = function(core)
 			attributes: ["editId", "artist", "title", "date", "userId"],
 			limit: 20,
 			where: { trackId: req.params.trackId },
-			order: "editId ASC",
+			order: [ ["editId", "ASC"] ],
 			include: include,
 		})
 		.then(function(trackEdits)
@@ -116,7 +116,7 @@ module.exports = function(core)
 				attributes: ["linkId", "date", "trackId", "userId"],
 				limit: 20,
 				where: { contentId: content.contentId },
-				order: "linkId ASC",
+				order: [ ["linkId", "ASC"] ],
 				include: include,
 			})
 			.then(function(contentLinks)

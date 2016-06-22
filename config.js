@@ -14,7 +14,7 @@ module.exports =
 	},
 	database:
 	{
-		// "sqlite" for light development, otherwise use "mysql"
+		// "sqlite" for light development, otherwise use "postgres"
 		dialect: "sqlite",
 		host: "localhost",
 		name: "raesonic",

@@ -23,10 +23,11 @@
     "express": "4.13.1",
     "express-session": "1.13.0",
     "gravatar": "1.5.2",
-    "mysql": "2.9.0",
     "paperwork": "2.1.1",
     "passport": "0.3.2",
     "passport-local": "1.0.0",
+    "pg": "6.0.0",
+    "pg-hstore": "2.3.2",
     "randomstring": "1.1.4",
     "sequelize": "3.19.3",
     "sqlite3": "3.1.1"

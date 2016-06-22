@@ -5,13 +5,21 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var config = core.config;
 
 	var Track = sequelize.models.Track;
+
+	var like = (config.database.dialect == "postgres")
+		? "$iLike"
+		: "$like";
 
 	// Search for tracks matching the query
 	SearchController.getResults = function(req, res)
 	{
 		var query = "%" + req.body.query.replace(/%/g, "/%") + "%";
+
+		var params = {};
+		params[like] = query;
 
 		Track.all
 		({
@@ -23,8 +31,8 @@ module.exports = function(core)
 				$or:
 				[
 					// todo: add combined search
-					{ artist: { $like: query } },
-					{ title: { $like: query } }
+					{ artist: params },
+					{ title: params },
 				]
 			}
 		})

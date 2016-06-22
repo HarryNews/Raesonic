@@ -75,7 +75,7 @@ module.exports = function(core)
 			({
 				attributes: ["playlistId", "name", "access", "alias", "userId"],
 				where: condition,
-				order: "itemId DESC",
+				order: [ [Item, "itemId", "DESC"] ],
 				include:
 				[{
 					model: User,
@@ -158,7 +158,7 @@ module.exports = function(core)
 		Playlist.findOne
 		({
 			where: { userId: req.user.userId },
-			order: "playlistId ASC",
+			order: [ ["playlistId", "ASC"] ],
 		})
 		.then(function(playlist)
 		{
@@ -211,7 +211,7 @@ module.exports = function(core)
 				userId: req.user.userId,
 				access: req.params.access,
 			},
-			order: "playlistId ASC",
+			order: [ ["playlistId", "ASC"] ],
 		})
 		.then(function(playlists)
 		{
@@ -272,12 +272,8 @@ module.exports = function(core)
 			// User is the playlist owner, delete the playlist
 			playlist
 			.destroy()
-			.then(function(amount)
+			.then(function()
 			{
-				// Haven't deleted any rows
-				if(amount < 1)
-					return res.status(500).json({ errors: ["internal error"] });
-
 				res.json( [] );
 			});
 		});
