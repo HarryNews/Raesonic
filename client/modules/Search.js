@@ -132,6 +132,28 @@ Search.createContent = function(query)
 		{
 			var externalId = response.id.toString();
 			Item.create(Content.SOURCE.SOUNDCLOUD, externalId);
+		})
+		.catch(function(error)
+		{
+			var Toast = require("./Toast.js");
+
+			if(error.status == 404)
+			{
+				Toast.show("The content does not exist, check the URL",
+					Toast.ERROR);
+
+				return;
+			}
+
+			if(error.status == 403)
+			{
+				Toast.show("The content is restricted and cannot be added",
+					Toast.ERROR);
+
+				return;
+			}
+
+			Toast.show("Failed to retrieve the content", Toast.ERROR);
 		});
 
 		return true;
