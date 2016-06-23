@@ -55,8 +55,8 @@ window.onYouTubeIframeAPIReady = function()
 {
 	YouTube.player = new YT.Player("video-iframe",
 	{
-		width: "480",
-		height: "270",
+		width: "100%",
+		height: "100%",
 		playerVars:
 		{
 			"controls": 0, // Player controls do not display in the player

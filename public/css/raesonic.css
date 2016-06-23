@@ -2,8 +2,8 @@ html
 {
 	height: 100%;
 	overflow: hidden;
-	min-width: 900px;
-	min-height: 660px;
+	min-width: 750px;
+	min-height: 427px;
 }
 
 body
@@ -405,7 +405,7 @@ body
 
 #content-left
 {
-	width: calc(100% - 480px);
+	width: 65%;
 	height: 100%;
 	margin-bottom: 0px;
 }
@@ -965,21 +965,31 @@ body
 
 #content-right
 {
-	width: 480px;
+	width: 35%;
+	min-width: 480px;
+	min-height: 270px;
 	background-color: #EBEBEB;
 }
 
 #media
 {
 	background-color: #000;
-	width: 480px;
-	height: 270px;
+	width: 100%;
+	height: 19.68vw;
+	min-width: 480px;
+	min-height: 270px;
 }
 
 #video
 {
 	display: none;
 	position: relative;
+}
+#video-iframe
+{
+	height: 19.68vw;
+	min-width: 480px;
+	min-height: 270px;
 }
 
 #hd
@@ -1004,7 +1014,7 @@ body
 
 #cover
 {
-	height: 270px;
+	height: 100%;
 	position: relative;
 }
 #cover:empty
@@ -1097,7 +1107,7 @@ body
 
 #tabs
 {
-	height: calc(100% - 327px);
+	height: calc(100vh - 19.68vw - 158px);
 }
 
 #tabs-menu, #tabs .section-menu
@@ -1136,7 +1146,7 @@ body
 	position: absolute;
 	background-color: #565062;
 	width: 100%;
-	height: calc(100% - 327px);
+	height: calc(100vh - 19.68vw - 158px);
 	bottom: 0;
 	opacity: 0;
 	pointer-events: none;
@@ -1157,6 +1167,7 @@ body
 	align-items: center;
 	height: calc(100% - 38px);
 	position: relative;
+	overflow: hidden;
 }
 #tabs .tab-contents.active
 {
@@ -1185,12 +1196,12 @@ body
 	justify-content: center;
 	flex-wrap: wrap;
 	width: 100%;
-	height: 180px;
+	height: 13.1vw;
 	position: relative;
 }
 #tabs .column-item
 {
-	height: 120px;
+	height: 8.8vw;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1234,8 +1245,8 @@ body
 }
 #tabs .column .image-wrapper
 {
-	width: 120px !important;
-	height: 120px;
+	width: 8.8vw !important;
+	height: 8.8vw;
 	background: #000;
 	position: relative;
 	overflow: hidden;
@@ -1243,7 +1254,7 @@ body
 }
 #tabs .column .image-wrapper img
 {
-	width: 120px;
+	width: 8.8vw;
 }
 #tabs .column .image-wrapper img.wide
 {
@@ -1285,7 +1296,7 @@ body
 {
 	background-color: #E2E2E2;
 	width: 100%;
-	height: 80%;
+	height: calc(100% - 42px);
 	overflow-y: scroll;
 	display: none;
 	border-bottom: 1px solid #3A3A3A;
@@ -1374,7 +1385,7 @@ body
 #tabs .section-menu
 {
 	width: 100%;
-	height: 20%;
+	height: 41px;
 	overflow: hidden;
 }
 #tabs .section-menu div
@@ -1422,14 +1433,14 @@ body
 #tab-related .column-item.icon
 {
 	height: 30px;
-	margin-top: 50%;
+	margin-top: calc(4.4vw - 20px);
 	padding: 5px;
 }
 #related-rating
 {
 	padding-right: 1px;
 	font-size: 21px;
-	margin: 7px 0 2px 0;
+	margin: 5px 0 1px 0;
 	width: 100%;
 	display: flex;
 	justify-content: center;
@@ -1438,21 +1449,20 @@ body
 #tab-content .column-item.icon
 {
 	height: 30px;
-	margin-top: 25%;
+	margin-top: calc(4.4vw - 20px);
 	padding: 5px;
 }
 #tab-content .content-info
 {
 	position: absolute;
-	top: 131px;
-	left: calc(50% - 220px);
-	width: 440px;
+	bottom: calc(7vw - 81px);
+	left: 0;
+	width: 90%;
+	padding: 0 5%;
 	text-align: center;
-	overflow: hidden;
 }
 #tab-content .content-info div
 {
-	width: 440px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
