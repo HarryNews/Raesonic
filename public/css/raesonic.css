@@ -2,7 +2,7 @@ html
 {
 	height: 100%;
 	overflow: hidden;
-	min-width: 750px;
+	min-width: 850px;
 	min-height: 427px;
 }
 
@@ -969,6 +969,8 @@ body
 	min-width: 480px;
 	min-height: 270px;
 	background-color: #EBEBEB;
+	display: flex !important;
+	flex-direction: column;
 }
 
 #media
@@ -978,6 +980,7 @@ body
 	height: 19.68vw;
 	min-width: 480px;
 	min-height: 270px;
+	flex-shrink: 0;
 }
 
 #video
@@ -1084,6 +1087,7 @@ body
 {
 	background-color: #383243;
 	padding-left: 8px;
+	flex-shrink: 0;
 	color: #FFF;
 }
 #meta-artist
@@ -1113,7 +1117,8 @@ body
 
 #tabs
 {
-	height: calc(100vh - 19.68vw - 158px);
+	flex: 1;
+	position: relative;
 }
 
 #tabs-menu, #tabs .section-menu
@@ -1152,7 +1157,7 @@ body
 	position: absolute;
 	background-color: #565062;
 	width: 100%;
-	height: calc(100vh - 19.68vw - 158px);
+	height: 100%;
 	bottom: 0;
 	opacity: 0;
 	pointer-events: none;
@@ -1171,7 +1176,7 @@ body
 {
 	display: none;
 	align-items: center;
-	height: calc(100% - 38px);
+	height: calc(100% - 37px);
 	position: relative;
 	overflow: hidden;
 }
@@ -1461,7 +1466,7 @@ body
 #tab-content .content-info
 {
 	position: absolute;
-	bottom: calc(7vw - 81px);
+	bottom: calc(7vw - 82px);
 	left: 0;
 	width: 90%;
 	padding: 0 5%;
@@ -1481,6 +1486,8 @@ body
 #tab-history
 {
 	flex-direction: column;
+	position: absolute !important;
+	width: 100%;
 }
 
 
