@@ -191,14 +191,17 @@ Player.setItem = function($item, isManualSwitch)
 
 			if(imageUrl)
 			{
+				var largeImageUrl = imageUrl.replace("large", "t500x500");
+				var smallImageUrl = imageUrl.replace("large", "t300x300");
+
 				$("#cover")
 					.append(
 						$("<img>")
-							.attr( "src", imageUrl.replace("large", "t500x500") )
+							.attr("src", largeImageUrl)
 							.addClass("back")
 							.click(Player.toggle),
 						$("<img>")
-							.attr( "src", imageUrl.replace("large", "t300x300") )
+							.attr("src", largeImageUrl)
 							.addClass("front")
 							.click(Player.toggle)
 					);
@@ -206,7 +209,7 @@ Player.setItem = function($item, isManualSwitch)
 				$("#content-image")
 					.append(
 						$("<img>")
-							.attr( "src", imageUrl.replace("large", "t300x300") )
+							.attr("src", smallImageUrl)
 					);
 
 				// Update the related tab if viewing recommendations

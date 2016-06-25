@@ -1030,21 +1030,21 @@ body
 }
 #cover .back
 {
-	width: 480px;
+	width: 34.98vw;
 	height: auto;
-	top: -95px;
+	top: -6.92vw;
 	left: 0;
 	margin: 0;
 	position: absolute;
-	clip: rect(95px, 480px, 365px, 0px);
+	clip: rect(6.92vw, 34.98vw, 26.60vw, 0);
 	opacity: 0.1;
 	-webkit-filter: blur(5px);
 }
 #cover .front
 {
-	width: 270px;
-	height: 270px;
-	margin-left: 105px;
+	width: 19.68vw;
+	height: 19.68vw;
+	margin-left: 7.65vw;
 	position: relative;
 }
 
@@ -1053,8 +1053,8 @@ body
 	background-color: rgba(0, 0, 0, 0.6);
 	position: absolute;
 	top: 0;
-	left: 105px;
-	width: 270px;
+	left: 7.65vw;
+	width: 19.68vw;
 	padding: 10px 0;
 	text-decoration: none;
 	text-align: center;
