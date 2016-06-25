@@ -1215,13 +1215,13 @@ body
 }
 #tabs .column-item .overlay-icon
 {
-	height: 85px;
+	height: calc(50% + 25px);
 	width: 100%;
 	display: flex;
 	justify-content: center;
 	padding: calc(50% - 25px) 0 0 0 !important;
 	position: absolute;
-	top: calc(50% - 60px);
+	top: 0;
 	left: 0;
 	color: #FFF;
 	font-size: 50px;
