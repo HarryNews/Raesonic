@@ -196,14 +196,20 @@ Player.setItem = function($item, isManualSwitch)
 
 				$("#cover")
 					.append(
-						$("<img>")
-							.attr("src", largeImageUrl)
+						$("<div>")
 							.addClass("back")
-							.click(Player.toggle),
-						$("<img>")
-							.attr("src", largeImageUrl)
+							.click(Player.toggle)
+							.append(
+								$("<img>")
+									.attr("src", largeImageUrl)
+							),
+						$("<div>")
 							.addClass("front")
 							.click(Player.toggle)
+							.append(
+								$("<img>")
+									.attr("src", largeImageUrl)
+							)
 					);
 
 				$("#content-image")

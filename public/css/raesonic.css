@@ -1030,21 +1030,27 @@ body
 }
 #cover .back
 {
-	width: 34.98vw;
-	height: auto;
-	top: -6.92vw;
+	width: 100%;
+	height: 100%;
+	top: 0;
 	left: 0;
 	margin: 0;
 	position: absolute;
-	clip: rect(6.92vw, 34.98vw, 26.60vw, 0);
+	overflow: hidden;
+}
+#cover .back img
+{
+	width: 100%;
+	height: auto;
+	margin-top: -19.9%;
 	opacity: 0.1;
 	-webkit-filter: blur(5px);
 }
-#cover .front
+#cover .front img
 {
-	width: 19.68vw;
-	height: 19.68vw;
-	margin-left: 7.65vw;
+	width: 56.2%;
+	height: auto;
+	margin-left: 21.9%;
 	position: relative;
 }
 
@@ -1053,8 +1059,8 @@ body
 	background-color: rgba(0, 0, 0, 0.6);
 	position: absolute;
 	top: 0;
-	left: 7.65vw;
-	width: 19.68vw;
+	left: 21.9%;
+	width: 56.2%;
 	padding: 10px 0;
 	text-decoration: none;
 	text-align: center;
