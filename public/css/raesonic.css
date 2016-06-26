@@ -59,6 +59,15 @@ body
 	user-select: none;
 	cursor: default;
 }
+#content-right > .meta, #tabs .column .meta, #tab-content .content-info, #tabs .action .changes
+{
+	-webkit-touch-callout: text;
+	-webkit-user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+}
 
 
 /* Header */
