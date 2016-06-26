@@ -735,6 +735,24 @@ body
 {
 	margin-bottom: 15px;
 }
+#window p a
+{
+	text-decoration: none;
+	display: inline-block;
+	margin-top: 5px;
+	padding-bottom: 2px;
+	border-bottom: 1px solid rgba(85, 77, 102, 0.3);
+	color: #554D66;
+	-webkit-transition: padding-right ease-out 200ms, border-color ease-out 200ms;
+	-moz-transition: padding-right ease-out 200ms, border-color ease-out 200ms;
+	-o-transition: padding-right ease-out 200ms, border-color ease-out 200ms;
+	transition: padding-right ease-out 200ms, border-color ease-out 200ms;
+}
+#window p a:hover
+{
+	padding-right: 5px;
+	border-bottom: 1px solid rgba(85, 77, 102, 0.6);
+}
 #window .content-thumbnail
 {
 	width: 47px;
@@ -934,6 +952,16 @@ body
 .window-link.inner:nth-child(even):hover
 {
 	background-color: #585167;
+}
+a.window-link
+{
+	text-decoration: none;
+	display: block;
+}
+.window-link .icon
+{
+	font-size: 10px;
+	margin-left: 4px;
 }
 
 #toast
