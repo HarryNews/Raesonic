@@ -1155,7 +1155,7 @@ a.window-link
 	display: flex;
 	align-items: center;
 }
-#tabs-menu div, #tabs .section-menu div
+#tabs-menu > div, #tabs .section-menu > div
 {
 	display: flex;
 	justify-content: center;
@@ -1169,15 +1169,34 @@ a.window-link
 	-o-transition: background-color ease-out 200ms;
 	transition: background-color ease-out 200ms;
 }
-#tabs-menu div:hover, #tabs .section-menu div:hover
+#tabs-menu > div:hover, #tabs .section-menu > div:hover
 {
 	background-color: #615B6B;
 }
-#tabs-menu div.active, #tabs-menu div.active:hover,
-#tabs .section-menu div.active, #tabs .section-menu div.active:hover
+#tabs-menu > div.active, #tabs-menu > div.active:hover,
+#tabs .section-menu > div.active, #tabs .section-menu > div.active:hover
 {
 	background-color: #3F394C;
 	cursor: default;
+}
+#tabs-menu > div .label, #tabs .section-menu > div .label
+{
+	width: 0;
+	font-size: 14px;
+	margin-left: 0;
+	opacity: 0;
+	overflow: hidden;
+	-webkit-transition: opacity ease-out 200ms, margin-left ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms, margin-left ease-out 200ms;
+	-o-transition: opacity ease-out 200ms, margin-left ease-out 200ms;
+	transition: opacity ease-out 200ms, margin-left ease-out 200ms;
+}
+#tabs-menu > div.active .label, #tabs-menu > div:hover .label,
+#tabs .section-menu > div.active .label, #tabs .section-menu > div:hover .label
+{
+	margin-left: 8px;
+	width: initial;
+	opacity: 0.7;
 }
 
 #tabs-overlay
@@ -1427,22 +1446,25 @@ a.window-link
 	height: 41px;
 	overflow: hidden;
 }
-#tabs .section-menu div
+#tabs .section-menu > div
 {
 	background-color: #97939F !important;
 	height: 20px;
 	padding-top: 13px;
-	color: #FFF !important;
-	font-size: 18px !important;
 	text-shadow: 0 0 1px #000;
 }
-#tabs .section-menu div:hover
+#tabs .section-menu > div:hover
 {
 	background-color: #A4A1AA !important;
 }
-#tabs .section-menu div.active
+#tabs .section-menu > div.active
 {
 	background-color: #7D7788 !important;
+}
+#tabs .section-menu > div .icon
+{
+	color: #FFF !important;
+	font-size: 18px !important;
 }
 #tabs .tab-overlay
 {

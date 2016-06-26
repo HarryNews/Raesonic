@@ -223,7 +223,7 @@ History.setActiveSection = function(alias)
 	if($section.is(".active"))
 		return;
 
-	$("#history-menu div, #tab-history .section")
+	$("#history-menu > div, #tab-history .section")
 		.removeClass("active");
 	
 	$section.addClass("active");
@@ -311,7 +311,7 @@ History.onSectionMenuClick = function()
 
 History.init = function()
 {
-	$("#history-menu div").click(History.onSectionMenuClick);
+	$("#history-menu > div").click(History.onSectionMenuClick);
 }
 
 module.exports = History;

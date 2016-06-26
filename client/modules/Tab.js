@@ -43,7 +43,7 @@ Tab.setActive = function(tab)
 	if(tab.onSetActive)
 		tab.onSetActive();
 
-	$("#tabs-menu div, #tabs .tab-contents")
+	$("#tabs-menu > div, #tabs .tab-contents")
 		.removeClass("active");
 	
 	$tab.addClass("active");
@@ -78,7 +78,7 @@ Tab.onMenuClick = function()
 
 Tab.init = function()
 {
-	$("#tabs-menu div")
+	$("#tabs-menu > div")
 		.each(Tab.setAlias)
 		.click(Tab.onMenuClick);
 }
