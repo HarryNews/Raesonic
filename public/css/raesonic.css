@@ -1466,7 +1466,7 @@ body
 #tab-content .content-info
 {
 	position: absolute;
-	bottom: calc(7vw - 82px);
+	bottom: calc(35% - 57px);
 	left: 0;
 	width: 90%;
 	padding: 0 5%;
