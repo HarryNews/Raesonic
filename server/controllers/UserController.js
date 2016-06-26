@@ -12,6 +12,8 @@ module.exports = function(core)
 	var passport = core.passport;
 	var config = core.config;
 
+	var isSignUpEnabled = config.server.signup;
+
 	var User = sequelize.models.User;
 	var Playlist = sequelize.models.Playlist;
 
@@ -20,6 +22,9 @@ module.exports = function(core)
 	(
 		function(username, password, next)
 		{
+			if(!isSignUpEnabled)
+				return next(null, false, "signup disabled");
+
 			password = UserController.encyptPassword(password);
 
 			sequelize.transaction(function(tr)

@@ -14,7 +14,12 @@ Required packages can be installed with
 	$ npm install
 	$ npm install -g browserify
 
-To bundle client-side scripts, use
+Bundle the client-side scripts (GNU/Linux)
+
+	$ chmod u+x build.sh
+	$ ./build.sh 
+	
+Bundle the client-side scripts (Windows)
 
 	$ build
 	
