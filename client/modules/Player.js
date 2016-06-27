@@ -230,8 +230,9 @@ Player.setItem = function($item, isManualSwitch)
 						.attr({ href: response.permalink_url, target: "_blank" })
 						.click(Player.pause)
 						.append(
-							$("<img>")
-								.attr({ src: "/img/soundcloud.png", id: "soundcloud" })
+							$("<div>")
+								.attr("id", "soundcloud")
+								.addClass("soundcloud icon")
 						)
 				);
 

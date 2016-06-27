@@ -1,3 +1,11 @@
+.icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
+.avatar { width: 43px; height: 43px; background-position: -51px 0; }
+.logo { width: 50px; height: 50px; background-position: 0 0; }
+.pause { width: 40px; height: 40px; background-position: -95px 0; }
+.play { width: 40px; height: 40px; background-position: 0 -51px; }
+.previous { width: 40px; height: 40px; background-position: -41px -51px; }
+.soundcloud { width: 64px; height: 43px; background-position: -82px -48px; }
+
 html
 {
 	height: 100%;
@@ -69,6 +77,9 @@ body
 	user-select: text;
 }
 
+.h-flip { -webkit-transform: scaleX(-1); }
+.v-flip { -webkit-transform: scaleY(-1); }
+
 
 /* Header */
 
@@ -81,13 +92,14 @@ body
 	border-bottom: 1px solid #292531;
 	text-align: center;
 	overflow: hidden;
+	display: flex;
+	flex-direction: row;
 }
 
 #header .button
 {
 	width: 294px;
 	height: 48px;
-	float: left;
 	text-align: left;
 	line-height: 17px;
 	padding: 1px 3px;
@@ -111,9 +123,13 @@ body
 	width: 288px !important;
 	padding-left: 9px !important;
 }
+#header-logo
+{
+	margin-left: auto;
+	margin-right: auto;
+}
 #header-right
 {
-	float: right !important;
 	text-align: right !important;
 }
 
@@ -1569,23 +1585,29 @@ a.window-link
 {
 	color: #FFF;
 	cursor: pointer;
-	padding: 10px;
-	margin: 8px;
-	font-size: 17px;
+	padding: 2px;
+	margin: 3px;
+	opacity: 1;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
 }
 #controls .icon:hover
 {
-	color: #BDBCBF;
+	opacity: 0.7;
+}
+#previous
+{
+	margin-left: 10px !important;
 }
 #play
 {
-	margin: 0 6px 0 12px !important;
-	font-size: 21px !important;
+	margin: 0 18px 0 15px !important;
 }
 #pause
 {
-	margin: 0 7px 0 10px !important;
-	font-size: 21px !important;
+	margin: 0 18px 0 15px !important;
 	display: none;
 }
 

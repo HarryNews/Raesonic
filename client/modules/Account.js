@@ -170,19 +170,24 @@ Account.sync = function()
 // Set authentication state and update affected elements
 Account.setAuthenticated = function(isAuthenticated)
 {
+	$("#user-avatar").empty();
+
 	if(!isAuthenticated)
 	{
 		Account.own = null;
 
 		$("#user-name").text("Guest");
 		$("#user-details").text("log in");
-		$("#user-avatar").attr("src", "/img/avatar.png");
 	}
 	else
 	{
 		$("#user-name").text(Account.own.username);
 		$("#user-details").text("member");
-		$("#user-avatar").attr("src", Account.own.avatar);
+
+		$("#user-avatar").append(
+			$("<img>")
+				.attr("src", Account.own.avatar)
+		);
 	}
 
 	Account.authenticated = isAuthenticated;
