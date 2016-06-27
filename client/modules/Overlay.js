@@ -47,6 +47,10 @@ Overlay.create = function(name, elements, options, done)
 		.hide()
 		.removeClass("hidden")
 		.fadeIn(200);
+
+	// Clear the toast
+	var Toast = require("./Toast.js");
+	Toast.clear();
 }
 
 Overlay.createElement = function(data)

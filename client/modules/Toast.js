@@ -38,4 +38,10 @@ Toast.show = function(message, toastClass)
 		});
 }
 
+// Remove the notification message
+Toast.clear = function()
+{
+	$("#toast-message").remove();
+}
+
 module.exports = Toast;
