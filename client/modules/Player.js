@@ -345,6 +345,7 @@ Player.updateVolume = function()
 
 	$("#volume-on").toggle(!Player.muted && Player.volume > 0);
 	$("#volume-fill").width(Player.volume + "%");
+	$("#volume-tip").text( Math.round(Player.volume) + "%" );
 }
 
 // Called every 500ms
@@ -369,7 +370,8 @@ Player.onTick = function()
 				$("#seekbar-buffer")
 					.stop(true, true)
 					.animate(
-						{"width": (buffered / SoundCloud.player.options.duration * 100) + "%"},
+						{"width": (buffered /
+							SoundCloud.player.options.duration * 100) + "%"},
 						500, "linear"
 					);
 			}
@@ -385,13 +387,16 @@ Player.onTick = function()
 		$("#seekbar-fill")
 			.stop(true, true)
 			.animate(
-				{"width": (SoundCloud.player.currentTime() / SoundCloud.player.options.duration * 100) + "%"},
+				{"width": (SoundCloud.player.currentTime() /
+					SoundCloud.player.options.duration * 100) + "%"},
 				500, "linear"
 			);
 
 		date = new Date(null);
-		date.setMilliseconds(SoundCloud.player.currentTime());
-		$("#current-time").text( date.toISOString().substr(14, 5) );
+		date.setMilliseconds( SoundCloud.player.currentTime() );
+
+		$("#current-time, #seekbar-tip")
+			.text( date.toISOString().substr(14, 5) );
 
 		SoundCloud.player.setVolume(Player.volume / 100);
 		return;
@@ -424,13 +429,16 @@ Player.onTick = function()
 	$("#seekbar-fill")
 		.stop(true, true)
 		.animate(
-			{"width": (YouTube.player.getCurrentTime() / duration * 100) + "%"},
+			{"width": (YouTube.player.getCurrentTime() /
+				duration * 100) + "%"},
 			500, "linear"
 		);
 
 	date = new Date(null);
-	date.setSeconds(YouTube.player.getCurrentTime());
-	$("#current-time").text(date.toISOString().substr(14, 5));
+	date.setSeconds( YouTube.player.getCurrentTime() );
+
+	$("#current-time, #seekbar-tip")
+		.text( date.toISOString().substr(14, 5) );
 
 	YouTube.player.setVolume(Player.volume);
 }
@@ -472,6 +480,8 @@ Player.onDocumentMouseUp = function()
 	{
 		Local.set( "volume", Math.round(Player.volume).toString() );
 		Player.draggingVolume = false;
+		$("#volume-tip").removeClass("visible");
+
 		return;
 	}
 
@@ -479,11 +489,13 @@ Player.onDocumentMouseUp = function()
 		return;
 
 	Player.draggingSeekbar = false;
+	$("#seekbar-tip").removeClass("visible");
 	setTimeout(Player.unfreezeSeekbar, 500);
 
 	var seek =
 		Math.min(
-			(Player.mouseX - $("#seekbar").offset().left) / $("#seekbar").width(),
+			(Player.mouseX -
+				$("#seekbar").offset().left) / $("#seekbar").width(),
 			1
 		);
 
@@ -528,8 +540,9 @@ Player.onNextIconClick = function()
 // Called upon pressing a mouse button on the seekbar
 Player.onSeekbarMouseDown = function(event)
 {
-	if(!SoundCloud.player && (!YouTube.loaded || YouTube.player.getPlayerState() == 5))
-		return;
+	if( !SoundCloud.player &&
+		(!YouTube.loaded || YouTube.player.getPlayerState() == 5) )
+			return;
 
 	if(Player.draggingSeekbar)
 		return;
@@ -541,6 +554,8 @@ Player.onSeekbarMouseDown = function(event)
 	Player.dragInterval = setInterval(Player.onSeekbarDrag, 10);
 	Player.draggingSeekbar = true;
 	Player.freezeSeekbar = true;
+
+	$("#seekbar-tip").addClass("visible");
 }
 
 // Called upon pressing a mouse button on the volume bar
@@ -553,6 +568,8 @@ Player.onVolumeMouseDown = function(event)
 	Player.dragInterval = setInterval(Player.onVolumeDrag, 10);
 	Player.draggingVolume = true;
 	Player.muted = false;
+
+	$("#volume-tip").addClass("visible");
 }
 
 // Called while seekbar is being dragged
@@ -561,7 +578,8 @@ Player.onSeekbarDrag = function()
 	var seek =
 		Math.max(
 			Math.min(
-				(Player.mouseX - $("#seekbar").offset().left) / $("#seekbar").width(),
+				(Player.mouseX -
+					$("#seekbar").offset().left) / $("#seekbar").width(),
 				1),
 			0);
 
@@ -571,7 +589,7 @@ Player.onSeekbarDrag = function()
 	{
 		var milliseconds = seek * SoundCloud.player.options.duration;
 
-		if(!SoundCloud.player.isPlaying())
+		if( !SoundCloud.player.isPlaying() )
 			SoundCloud.player.play();
 
 		SoundCloud.player.seek(milliseconds, false);
@@ -581,7 +599,9 @@ Player.onSeekbarDrag = function()
 			.width((seek * 100) + "%");
 
 		date.setMilliseconds(milliseconds);
-		$("#current-time").text(date.toISOString().substr(14, 5));
+
+		$("#current-time, #seekbar-tip")
+			.text( date.toISOString().substr(14, 5) );
 
 		return;
 	}
@@ -597,7 +617,9 @@ Player.onSeekbarDrag = function()
 		.width((seek * 100) + "%");
 
 	date.setSeconds(seconds);
-	$("#current-time").text(date.toISOString().substr(14, 5));
+
+	$("#current-time, #seekbar-tip")
+		.text( date.toISOString().substr(14, 5) );
 }
 
 // Called while volume is being dragged

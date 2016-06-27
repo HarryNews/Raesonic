@@ -1637,6 +1637,26 @@ a.window-link
 	height: 15px;
 	background-color: #fff;
 }
+.bar .tip
+{
+	position: absolute;
+	width: 63px;
+	right: -31px;
+	top: -21px;
+	font-size: 12px;
+	text-align: center;
+	color: #A299B2;
+	opacity: 0;
+	pointer-events: none;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
+}
+.bar .fill:hover .tip, .bar .tip.visible
+{
+	opacity: 1;
+}
 #volume
 {
 	width: 15%;
