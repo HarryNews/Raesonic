@@ -5,11 +5,25 @@ var Item = {};
 // Add item with the specified content to the active playlist
 Item.create = function(sourceId, externalId)
 {
-	var Playlist = require("./Playlist.js");
+	var Account = require("./Account.js");
 
-	// No active playlist, bail out
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+	
+	var Playlist = require("./Playlist.js");
+	var Toast = require("./Toast.js");
+
 	if(!Playlist.active)
+	{
+		Toast.show("No active playlist", Toast.ERROR);
 		return;
+	}
+
+	if(Playlist.active.user != null)
+	{
+		Toast.show("Playlist belongs to another user", Toast.ERROR);
+		return;
+	}
 
 	$.ajax
 	({

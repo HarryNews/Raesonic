@@ -204,6 +204,8 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 		playlistId: playlistId,
 		name: name,
 		access: access,
+		alias: alias,
+		user: user,
 	};
 
 	var $access = $("<span>")
