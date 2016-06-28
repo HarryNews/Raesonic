@@ -1,10 +1,16 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.avatar { width: 43px; height: 43px; background-position: -51px 0; }
-.logo { width: 50px; height: 50px; background-position: 0 0; }
-.pause { width: 40px; height: 40px; background-position: -95px 0; }
-.play { width: 40px; height: 40px; background-position: 0 -51px; }
-.previous { width: 40px; height: 40px; background-position: -41px -51px; }
-.soundcloud { width: 64px; height: 43px; background-position: -82px -48px; }
+.arrowleft { width: 40px; height: 40px; background-position: 0 0; }
+.avatar { width: 43px; height: 43px; background-position: -133px 0; }
+.logo { width: 50px; height: 50px; background-position: -82px 0; }
+.muted { width: 40px; height: 40px; background-position: -41px 0; }
+.pause { width: 40px; height: 40px; background-position: -177px 0; }
+.play { width: 40px; height: 40px; background-position: -218px 0; }
+.previous { width: 40px; height: 40px; background-position: -65px -51px; }
+.soundcloud { width: 64px; height: 43px; background-position: 0 -48px; }
+.speakerloud { width: 40px; height: 40px; background-position: -106px -51px; }
+.speakernormal { width: 40px; height: 40px; background-position: -147px -51px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -188px -51px; }
+.speakersilent { width: 40px; height: 40px; background-position: -229px -51px; }
 
 html
 {
@@ -1581,70 +1587,75 @@ a.window-link
 	position: relative;
 }
 
-#controls .icon
+#controls > .icon
 {
 	color: #FFF;
 	cursor: pointer;
-	padding: 2px;
-	margin: 3px;
+	margin: 3px 3px 6px 3px;
 	opacity: 1;
+	flex-shrink: 0;
 	-webkit-transition: opacity ease-out 200ms;
 	-moz-transition: opacity ease-out 200ms;
 	-o-transition: opacity ease-out 200ms;
 	transition: opacity ease-out 200ms;
 }
-#controls .icon:hover
+#controls > .icon:hover
 {
 	opacity: 0.7;
 }
 #previous
 {
-	margin-left: 10px !important;
+	margin-left: 5px !important;
 }
 #play
 {
-	margin: 0 18px 0 15px !important;
+	margin: 3px 6px 6px 10px !important;
 }
 #pause
 {
-	margin: 0 18px 0 15px !important;
+	margin: 3px 8px 6px 8px !important;
 	display: none;
 }
 
 #controls .time
 {
-	margin: 0 10px 1px 10px;
+	margin: 0 10px 3px 10px;
 	font-size: 14px;
 	color: #BDBCBF;
 }
 
 .bar
 {
-	background-color: #464054;
 	width: 100%;
 	height: 5px;
 	display: inline-block;
-	vertical-align: 4px;
 	cursor: pointer;
 	border-radius: 2px;
-	margin: 0 3px;
+	margin: 0 3px 2px 3px;
+	padding: 8px 0;
 	position: relative;
 }
-.bar .buffer
+.bar > div
 {
 	background-color: #5A516C;
 	width: 0%;
 	height: 5px;
 	border-radius: 2px;
+	position: absolute;
+	top: 8px;
+}
+.bar .back
+{
+	background-color: #464054;
+	width: 100%;
+}
+.bar .buffer
+{
+	background-color: #5A516C;
 }
 .bar .fill
 {
 	background-color: #A299B2;
-	width: 0%;
-	height: 5px;
-	border-radius: 2px;
-	position: absolute;
-	top: 0;
 	overflow: visible !important;
 }
 .bar .fill::after
@@ -1682,7 +1693,7 @@ a.window-link
 #volume
 {
 	width: 15%;
-	margin: 0;
+	margin: 0 0 2px 0;
 }
 #volume-on
 {
@@ -1691,18 +1702,16 @@ a.window-link
 
 #speaker
 {
-	font-size: 18px !important;
-	min-width: 17px;
 	display: block;
 	position: relative;
+	margin-left: 8px !important;
 }
 #muted
 {
 	color: #575269 !important;
 	position: absolute;
-	left: -13px;
-	top: -12px;
-	font-size: 24px !important;
+	left: 0;
+	top: 0;
 	display: none;
 }
 

@@ -334,14 +334,20 @@ Player.updateVolume = function()
 		YouTube.player.setVolume(Player.volume);
 	}
 
-	var state = "up";
+	var volume = (!Player.muted)
+		? Player.volume
+		: Player.lastVolume;
 
-	if(Player.volume == 0)
-		state = "off";
-	else if(Player.volume < 30)
-		state = "down";
+	var state = "loud";
 
-	$("#speaker").attr("class", "icon " + state + " fa fa-volume-" + state);
+	if(volume == 0)
+		state = "silent";
+	else if(volume < 30)
+		state = "quiet";
+	else if(volume < 60)
+		state = "normal";
+
+	$("#speaker").attr("class", "speaker" + state + " icon");
 	$("#muted").toggle(Player.muted);
 
 	$("#volume-on").toggle(!Player.muted && Player.volume > 0);
@@ -551,10 +557,11 @@ Player.onSeekbarMouseDown = function(event)
 	if(event.which != 1)
 		return;
 
-	Player.onSeekbarDrag();
-	Player.dragInterval = setInterval(Player.onSeekbarDrag, 10);
 	Player.draggingSeekbar = true;
 	Player.freezeSeekbar = true;
+
+	Player.onSeekbarDrag();
+	Player.dragInterval = setInterval(Player.onSeekbarDrag, 10);
 
 	$("#seekbar-tip").addClass("visible");
 }
@@ -564,11 +571,12 @@ Player.onVolumeMouseDown = function(event)
 {
 	if(event.which != 1)
 		return;
+	
+	Player.draggingVolume = true;
+	Player.muted = false;
 
 	Player.onVolumeDrag();
 	Player.dragInterval = setInterval(Player.onVolumeDrag, 10);
-	Player.draggingVolume = true;
-	Player.muted = false;
 
 	$("#volume-tip").addClass("visible");
 }
