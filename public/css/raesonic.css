@@ -1700,7 +1700,7 @@ a.window-link
 {
 	display: block;
 	position: relative;
-	margin-left: 8px !important;
+	margin: 3px 0 6px 11px !important;
 }
 #muted
 {
