@@ -1,20 +1,21 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.add { width: 26px; height: 26px; background-position: -137px -44px; }
-.addlarge { width: 40px; height: 40px; background-position: -54px -44px; }
-.addsmall { width: 26px; height: 26px; background-position: 0 -51px; }
-.arrowleft { width: 40px; height: 40px; background-position: -95px -44px; }
-.avatar { width: 43px; height: 43px; background-position: -120px 0; }
-.edit { width: 26px; height: 26px; background-position: -27px -51px; }
-.logo { width: 50px; height: 50px; background-position: 0 0; }
-.muted { width: 40px; height: 40px; background-position: 0 -78px; }
-.pause { width: 40px; height: 40px; background-position: -41px -85px; }
+.add { width: 26px; height: 26px; background-position: -82px -51px; }
+.addlarge { width: 40px; height: 40px; background-position: -95px 0; }
+.addsmall { width: 26px; height: 26px; background-position: -41px -140px; }
+.arrowleft { width: 40px; height: 40px; background-position: -136px 0; }
+.avatar { width: 43px; height: 43px; background-position: 0 0; }
+.edit { width: 26px; height: 26px; background-position: -68px -140px; }
+.flaglarge { width: 40px; height: 40px; background-position: 0 -44px; }
+.logo { width: 50px; height: 50px; background-position: -44px 0; }
+.muted { width: 40px; height: 40px; background-position: -41px -51px; }
+.pause { width: 40px; height: 40px; background-position: 0 -85px; }
 .play { width: 40px; height: 40px; background-position: -82px -85px; }
 .previous { width: 40px; height: 40px; background-position: -123px -85px; }
-.soundcloud { width: 64px; height: 43px; background-position: -51px 0; }
-.speakerloud { width: 40px; height: 40px; background-position: 0 -119px; }
-.speakernormal { width: 40px; height: 40px; background-position: -41px -126px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -82px -126px; }
-.speakersilent { width: 40px; height: 40px; background-position: -123px -126px; }
+.soundcloud { width: 64px; height: 43px; background-position: -109px -41px; }
+.speakerloud { width: 40px; height: 40px; background-position: -41px -92px; }
+.speakernormal { width: 40px; height: 40px; background-position: 0 -126px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -95px -126px; }
+.speakersilent { width: 40px; height: 40px; background-position: -136px -126px; }
 
 html
 {
@@ -1700,7 +1701,7 @@ a.window-link
 {
 	display: block;
 	position: relative;
-	margin: 3px 0 6px 11px !important;
+	margin: 3px 0 6px 8px !important;
 }
 #muted
 {
