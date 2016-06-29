@@ -344,7 +344,7 @@ Player.updateVolume = function()
 		state = "silent";
 	else if(volume < 30)
 		state = "quiet";
-	else if(volume < 60)
+	else if(volume < 60 || Player.muted)
 		state = "normal";
 
 	$("#speaker").attr("class", "speaker" + state + " icon");

@@ -1,16 +1,18 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.arrowleft { width: 40px; height: 40px; background-position: 0 0; }
-.avatar { width: 43px; height: 43px; background-position: -133px 0; }
-.logo { width: 50px; height: 50px; background-position: -82px 0; }
-.muted { width: 40px; height: 40px; background-position: -41px 0; }
-.pause { width: 40px; height: 40px; background-position: -177px 0; }
-.play { width: 40px; height: 40px; background-position: -218px 0; }
-.previous { width: 40px; height: 40px; background-position: -65px -51px; }
-.soundcloud { width: 64px; height: 43px; background-position: 0 -48px; }
-.speakerloud { width: 40px; height: 40px; background-position: -106px -51px; }
-.speakernormal { width: 40px; height: 40px; background-position: -147px -51px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -188px -51px; }
-.speakersilent { width: 40px; height: 40px; background-position: -229px -51px; }
+.add { width: 26px; height: 26px; background-position: 0 -58px; }
+.arrowleft { width: 40px; height: 40px; background-position: -51px 0; }
+.avatar { width: 43px; height: 43px; background-position: -119px -41px; }
+.edit { width: 26px; height: 26px; background-position: -27px -58px; }
+.logo { width: 50px; height: 50px; background-position: 0 0; }
+.muted { width: 40px; height: 40px; background-position: -92px 0; }
+.pause { width: 40px; height: 40px; background-position: -133px 0; }
+.play { width: 40px; height: 40px; background-position: -174px 0; }
+.previous { width: 40px; height: 40px; background-position: -215px 0; }
+.soundcloud { width: 64px; height: 43px; background-position: -54px -41px; }
+.speakerloud { width: 40px; height: 40px; background-position: -256px 0; }
+.speakernormal { width: 40px; height: 40px; background-position: -163px -44px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -204px -44px; }
+.speakersilent { width: 40px; height: 40px; background-position: -245px -44px; }
 
 html
 {
@@ -279,7 +281,7 @@ body
 }
 #playlist-new
 {
-	padding: 10px 9px 9px 9px;
+	padding: 6px 0 7px 5px;
 	background-color: #4A4554;
 	border-bottom: 1px solid #302C3A;
 	color: #C8C4D4;
@@ -298,13 +300,12 @@ body
 }
 #playlist-new .icon
 {
-	color: #F2F2F2;
-	font-size: 14px;
-	margin: 0 8px 0 2px;
+	opacity: 0.95;
+	margin-right: 1px;
 }
 #playlist-new .label
 {
-	margin-bottom: 2px;
+	margin-bottom: 1px;
 }
 .playlist 
 {
@@ -370,13 +371,13 @@ body
 }
 .playlist > .icon
 {
-	color: #F2F2F2;
 	display: inline-block;
-	width: 16px;
-	height: 16px;
+	width: 26px;
+	height: 26px;
 	margin-right: 10px;
-	padding: 5px 5px;
 	float: right;
+	opacity: 0.95;
+	position: relative;
 	cursor: pointer;
 	-webkit-transition: color ease-out 200ms;
 	-moz-transition: color ease-out 200ms;
@@ -385,15 +386,15 @@ body
 }
 .playlist.active > .icon
 {
-	color: #302D39;
+	-webkit-filter: brightness(0.15) sepia(1) hue-rotate(200deg);
 }
 .playlist > .icon:after
 {
 	content: '';
 	display: block;
 	position: absolute;
-	width: 23px;
-	height: 23px;
+	width: 24px;
+	height: 24px;
 	top: 1px;
 	left: -1px;
 	border: 1px solid rgba(255, 255, 255, 0);
@@ -528,11 +529,11 @@ body
 }
 .item.active > .icon
 {
-	color: #3A3745 !important;
-	-webkit-transition: color ease-out 200ms;
-	-moz-transition: color ease-out 200ms;
-	-o-transition: color ease-out 200ms;
-	transition: color ease-out 200ms;
+	-webkit-filter: brightness(0.15) sepia(1) hue-rotate(200deg);
+	-webkit-transition: -webkit-filter ease-out 200ms;
+	-moz-transition: -webkit-filter ease-out 200ms;
+	-o-transition: -webkit-filter ease-out 200ms;
+	transition: -webkit-filter ease-out 200ms;
 }
 .item.active:hover
 {
@@ -573,13 +574,13 @@ body
 }
 .item > .icon
 {
-	color: #F2F2F2;
 	display: inline-block;
-	width: 16px;
-	height: 16px;
-	margin: 7px 10px 0 0;
-	padding: 5px 5px;
+	width: 26px;
+	height: 26px;
+	margin: 6px 10px 0 0;
 	float: right;
+	opacity: 0.95;
+	position: relative;
 	cursor: pointer;
 	-webkit-transition: color ease-out 200ms;
 	-moz-transition: color ease-out 200ms;
@@ -591,8 +592,8 @@ body
 	content: '';
 	display: block;
 	position: absolute;
-	width: 23px;
-	height: 23px;
+	width: 24px;
+	height: 24px;
 	top: 1px;
 	left: -1px;
 	border: 1px solid rgba(255, 255, 255, 0);
@@ -609,11 +610,6 @@ body
 .item.active > .icon:hover:after
 {
 	border: 1px solid #3A3745;
-}
-.item .add
-{
-	margin-bottom: 1px;
-	font-size: 18px;
 }
 #add-list
 {

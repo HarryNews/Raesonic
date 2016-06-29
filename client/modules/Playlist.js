@@ -364,7 +364,7 @@ Playlist.addSectionPlaylist = function(playlist)
 
 	var $icon =
 		$("<div>")
-			.addClass("edit icon fa fa-pencil")
+			.addClass("edit icon")
 			.click(Playlist.onEditIconClick);
 
 	var $playlist = 
