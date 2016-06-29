@@ -1,18 +1,20 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.add { width: 26px; height: 26px; background-position: 0 -58px; }
-.arrowleft { width: 40px; height: 40px; background-position: -51px 0; }
-.avatar { width: 43px; height: 43px; background-position: -119px -41px; }
-.edit { width: 26px; height: 26px; background-position: -27px -58px; }
+.add { width: 26px; height: 26px; background-position: -137px -44px; }
+.addlarge { width: 40px; height: 40px; background-position: -54px -44px; }
+.addsmall { width: 26px; height: 26px; background-position: 0 -51px; }
+.arrowleft { width: 40px; height: 40px; background-position: -95px -44px; }
+.avatar { width: 43px; height: 43px; background-position: -120px 0; }
+.edit { width: 26px; height: 26px; background-position: -27px -51px; }
 .logo { width: 50px; height: 50px; background-position: 0 0; }
-.muted { width: 40px; height: 40px; background-position: -92px 0; }
-.pause { width: 40px; height: 40px; background-position: -133px 0; }
-.play { width: 40px; height: 40px; background-position: -174px 0; }
-.previous { width: 40px; height: 40px; background-position: -215px 0; }
-.soundcloud { width: 64px; height: 43px; background-position: -54px -41px; }
-.speakerloud { width: 40px; height: 40px; background-position: -256px 0; }
-.speakernormal { width: 40px; height: 40px; background-position: -163px -44px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -204px -44px; }
-.speakersilent { width: 40px; height: 40px; background-position: -245px -44px; }
+.muted { width: 40px; height: 40px; background-position: 0 -78px; }
+.pause { width: 40px; height: 40px; background-position: -41px -85px; }
+.play { width: 40px; height: 40px; background-position: -82px -85px; }
+.previous { width: 40px; height: 40px; background-position: -123px -85px; }
+.soundcloud { width: 64px; height: 43px; background-position: -51px 0; }
+.speakerloud { width: 40px; height: 40px; background-position: 0 -119px; }
+.speakernormal { width: 40px; height: 40px; background-position: -41px -126px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -82px -126px; }
+.speakersilent { width: 40px; height: 40px; background-position: -123px -126px; }
 
 html
 {
@@ -281,7 +283,7 @@ body
 }
 #playlist-new
 {
-	padding: 6px 0 7px 5px;
+	padding: 6px 0 7px 4px;
 	background-color: #4A4554;
 	border-bottom: 1px solid #302C3A;
 	color: #C8C4D4;
@@ -301,7 +303,6 @@ body
 #playlist-new .icon
 {
 	opacity: 0.95;
-	margin-right: 1px;
 }
 #playlist-new .label
 {
@@ -1520,9 +1521,8 @@ a.window-link
 
 #tab-related .column-item.icon
 {
-	height: 30px;
+	height: 40px;
 	margin-top: calc(4.4vw - 20px);
-	padding: 5px;
 }
 #related-rating
 {
