@@ -352,7 +352,7 @@ Player.updateVolume = function()
 
 	$("#volume-on").toggle(!Player.muted && Player.volume > 0);
 	$("#volume-fill").width(Player.volume + "%");
-	$("#volume-tip").text( Math.round(Player.volume) + "%" );
+	$("#volume-tip").text( Math.ceil(Player.volume) + "%" );
 }
 
 // Called every 500ms

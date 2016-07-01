@@ -23,6 +23,7 @@ var Playlist =
 		"shared corner icon fa fa-link",
 		"public corner icon fa fa-globe",
 	],
+	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 }
 
@@ -192,12 +193,13 @@ Playlist.loadMain = function()
 // Set the playlist as active
 Playlist.setActive = function(playlistId, name, access, alias, user, items)
 {
-	var accessIcons =
+	var accessNames =
 	{
-		[Playlist.ACCESS.PRIVATE]: "private icon fa fa-lock",
-		[Playlist.ACCESS.SHARED]: "shared icon fa fa-link",
-		[Playlist.ACCESS.PUBLIC]: "public icon fa fa-globe",
+		[Playlist.ACCESS.PRIVATE]: "private",
+		[Playlist.ACCESS.SHARED]: "shared",
+		[Playlist.ACCESS.PUBLIC]: "public",
 	};
+	var accessName = accessNames[access];
 
 	Playlist.active =
 	{
@@ -209,11 +211,8 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 	};
 
 	var $access = $("<span>")
-		.attr
-		({
-			id: "playlist-access",
-			class: accessIcons[access],
-		});
+		.attr("id", "playlist-access")
+		.text(accessName);
 
 	$("#playlist-name")
 		.text(name)
@@ -400,12 +399,12 @@ Playlist.highlightActivePlaylist = function()
 // Fill the playlists section with data from server or the local storage
 Playlist.updateSection = function(previousAlias)
 {
-	// Make the first tab active if none of them are
-	if( !$("#playlists-menu .active").length )
-		$("#playlists-menu-private").addClass("active");
-
 	// Obtain storage of the currently active section
-	var sectionAlias = $("#playlists-menu .active").data("alias");
+	var sectionAlias =
+		$("#playlists-dropdown .dropdown-item.active").data("alias");
+
+	Playlist.updateNav(sectionAlias);
+
 	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
 
 	// If the active section has not changed
@@ -448,25 +447,154 @@ Playlist.updateSection = function(previousAlias)
 	Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
 }
 
+// Update nav in the playlists dropdown header button
+Playlist.updateNav = function(alias)
+{
+	var $section =
+		$( "#playlists-dropdown #item-" + alias.toLowerCase() );
+
+	var $subcat = $section.parents(".dropdown-subcat");
+	var inSubcat = ($subcat.length != 0)
+
+	$elements = [];
+
+	if(inSubcat)
+	{
+		var name = $subcat
+			.find(".subcat-header .label")
+			.text();
+
+		var $label = $("<div>")
+			.addClass("label")
+			.text(name);
+
+		var $icon = $("<div>")
+			.addClass("navarrow icon");
+
+		$elements.push($label, $icon)
+	}
+
+	var name = alias.charAt(0).toUpperCase() +
+		alias.slice(1).toLowerCase();
+
+	var $label = $("<div>")
+		.addClass("label")
+		.text(name);
+
+	$elements.push($label);
+
+	$("#playlist-active-nav")
+		.empty()
+		.append($elements);
+}
+
+// Add a category to the playlists dropdown
+Playlist.addDropdownCategory = function(name, $elements)
+{
+	$("#playlists-dropdown")
+		.append(
+			$("<div>")
+				.attr("id", "category-" + name)
+				.addClass("dropdown-category")
+				.append($elements)
+		);
+}
+
+// Add a subcategory to the playlists dropdown
+Playlist.addDropdownSubcat = function(name, $elements)
+{
+	var $icon = $("<div>")
+		.addClass("list" + name.toLowerCase() + " icon");
+
+	var $label = $("<div>")
+		.addClass("label")
+		.text(name);
+
+	var $expandIcon = $("<div>")
+		.addClass("subcatexpand icon");
+
+	var $header = $("<div>")
+		.addClass("subcat-header")
+		.append($icon, $label, $expandIcon)
+		.click(Playlist.onSubcatHeaderClick);
+
+	var $items = $("<div>")
+		.addClass("subcat-items")
+		.append($elements);
+
+	var subcatId = name.toLowerCase();
+
+	var $subcat = $("<div>")
+		.attr("id", "subcat-" + subcatId)
+		.addClass("dropdown-subcat")
+		.append($header, $items);
+
+	return $subcat;
+}
+
+// Add an item to the playlists dropdown
+Playlist.addDropdownItem = function(name, inSubcat)
+{
+	var iconClass = inSubcat
+		 ? "navarrow icon"
+		 : "list" + name.toLowerCase() + " icon";
+
+	var $icon = $("<div>")
+		.addClass(iconClass);
+
+	var $label = $("<div>")
+		.addClass("label")
+		.text(name);
+
+	var itemId = name.toLowerCase();
+	var alias = name.toUpperCase();
+
+	var $item = $("<div>")
+		.attr("id", "item-" + itemId)
+		.addClass("dropdown-item")
+		.data("alias", alias)
+		.append($icon, $label)
+		.click(Playlist.onDropdownItemClick);
+
+	return $item;
+}
+
+// Initialise playlists dropdown
+Playlist.initDropdown = function()
+{
+	var Account = require("./Account.js");
+
+	Playlist.addDropdownCategory("own",
+	[
+		Playlist.addDropdownSubcat("Playlists",
+		[
+			Playlist.addDropdownItem("Private", Playlist.SUBCAT_ITEM),
+			Playlist.addDropdownItem("Shared", Playlist.SUBCAT_ITEM),
+			Playlist.addDropdownItem("Public", Playlist.SUBCAT_ITEM),
+		]),
+		Playlist.addDropdownItem("Favorites"),
+		Playlist.addDropdownItem("Recent"),
+	]);
+
+	if(Account.reputation >= 0)
+	{
+		Playlist.addDropdownCategory("global",
+		[
+			Playlist.addDropdownItem("Flags"),
+		]);
+	}
+
+	$("#playlists-dropdown .dropdown-subcat:first, " +
+		"#playlists-dropdown .dropdown-item:first")
+			.addClass("active");
+}
+
 // Clear the active section and remove all playlist data
 Playlist.clearAllSections = function()
 {
 	$("#playlists")
 		.empty()
 		.removeData();
-}
-
-// Store alias as a data value of the menu button
-Playlist.setMenuAlias = function()
-{
-	var alias = $(this).attr("id");
-
-	// "playlists-menu-private" > "PRIVATE"
-	alias = alias
-		.substring(alias.indexOf("playlists-menu-") + 15)
-		.toUpperCase();
-
-	$(this).data("alias", alias);
 }
 
 // Hide/show the playlists management sidebar
@@ -499,16 +627,33 @@ Playlist.toggleSidebar = function()
 Playlist.setActiveSection = function(alias)
 {
 	var $section =
-		$( "#playlists-menu-" + alias.toLowerCase() );
+		$( "#playlists-dropdown #item-" + alias.toLowerCase() );
 
 	// Section is already active, bail out
-	if($section.is(".active"))
+	if( $section.is(".active") )
 		return;
 
-	var $previous = $("#playlists-menu div.active");
+	var $previous =
+		$("#playlists-dropdown .dropdown-item.active");
+
 	var previousAlias = $previous.data("alias");
 
+	$previous
+		.parents(".dropdown-subcat")
+		.removeClass("active");
+
 	$previous.removeClass("active");
+
+	var $subcat = $section.parents(".dropdown-subcat");
+	var inSubcat = ($subcat.length != 0)
+
+	if(inSubcat)
+	{
+		$section
+			.parents(".dropdown-subcat")
+			.addClass("active");
+	}
+
 	$section.addClass("active");
 	
 	Playlist.updateSection(previousAlias);
@@ -662,7 +807,8 @@ Playlist.initPlaylistOverlay = function(currentAccess)
 	}
 
 	// Use active sidebar section
-	var activeAlias = $("#playlists-menu div.active").data("alias");
+	var activeAlias =
+		$("#playlists-dropdown .dropdown-item.active").data("alias");
 
 	$("#window input[type=\"radio\"]")
 		.filterByData("sectionAlias", activeAlias)
@@ -790,9 +936,10 @@ Playlist.onAccountSync = function()
 {
 	var Account = require("./Account.js");
 
-	// Clear the playlists storage if not authenticated
-	if(!Account.authenticated)
-		Playlist.clearAllSections();
+	// Update sections based on authentication status
+	Account.authenticated
+		? Playlist.initDropdown()
+		: Playlist.clearAllSections();
 
 	// Load playlist from the current url
 	if(!Playlist.active || !Account.authenticated)
@@ -902,11 +1049,33 @@ Playlist.onHeaderClick = function()
 	Playlist.toggleSidebar();
 }
 
-// Called upon clicking on the section menu button
-Playlist.onMenuClick = function()
+// Called upon clicking on the active playlist button
+Playlist.onActivePlaylistClick = function()
+{
+	var $dropdown = $("#playlists-dropdown");
+
+	$dropdown.is(":visible")
+		? $dropdown.slideUp(200)
+		: $dropdown.slideDown(200);
+}
+
+// Called upon clicking on the subcategory header in a dropdown
+Playlist.onSubcatHeaderClick = function()
+{
+	var $items = $(this).siblings(".subcat-items");
+
+	$items.is(":visible")
+		? $items.slideUp(200)
+		: $items.slideDown(200);
+}
+
+// Called upon clicking on the item in a dropdown
+Playlist.onDropdownItemClick = function()
 {
 	var alias = $(this).data("alias");
 	Playlist.setActiveSection(alias);
+
+	$("#playlists-dropdown").slideUp(200);
 }
 
 // Called upon clicking on the new playlist button
@@ -1060,11 +1229,9 @@ Playlist.init = function()
 {
 	$(window).on("popstate", Playlist.onWindowPopState);
 
-	$("#playlists-menu div")
-		.each(Playlist.setMenuAlias)
-		.click(Playlist.onMenuClick);
-
 	$("#header-left").click(Playlist.onHeaderClick);
+	$("#playlist-active").click(Playlist.onActivePlaylistClick)
+
 	$("#playlist-new").click(Playlist.onNewPlaylistClick)
 }
 

@@ -153,7 +153,7 @@ History.request = function(historyType, entityId)
 							.text(username)
 							.append(
 								$("<div>")
-									.addClass("flag icon fa fa-flag")
+									.addClass("flag icon")
 									.toggleClass("active", active)
 									.attr("title", "Flag for moderator attention")
 									.data
@@ -171,7 +171,7 @@ History.request = function(historyType, entityId)
 							.text(relativeDate)
 							.append(
 								$("<div>")
-									.addClass("date icon fa fa-clock-o")
+									.addClass("clock icon")
 									.attr("title", new Date(date).toString())
 							)
 					);

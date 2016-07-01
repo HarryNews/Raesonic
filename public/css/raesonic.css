@@ -1,21 +1,31 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.add { width: 26px; height: 26px; background-position: -82px -51px; }
-.addlarge { width: 40px; height: 40px; background-position: -95px 0; }
-.addsmall { width: 26px; height: 26px; background-position: -41px -140px; }
-.arrowleft { width: 40px; height: 40px; background-position: -136px 0; }
-.avatar { width: 43px; height: 43px; background-position: 0 0; }
-.edit { width: 26px; height: 26px; background-position: -68px -140px; }
-.flaglarge { width: 40px; height: 40px; background-position: 0 -44px; }
-.logo { width: 50px; height: 50px; background-position: -44px 0; }
-.muted { width: 40px; height: 40px; background-position: -41px -51px; }
-.pause { width: 40px; height: 40px; background-position: 0 -85px; }
-.play { width: 40px; height: 40px; background-position: -82px -85px; }
-.previous { width: 40px; height: 40px; background-position: -123px -85px; }
-.soundcloud { width: 64px; height: 43px; background-position: -109px -41px; }
-.speakerloud { width: 40px; height: 40px; background-position: -41px -92px; }
-.speakernormal { width: 40px; height: 40px; background-position: 0 -126px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -95px -126px; }
-.speakersilent { width: 40px; height: 40px; background-position: -136px -126px; }
+.add { width: 26px; height: 26px; background-position: -41px 0; }
+.addlarge { width: 40px; height: 40px; background-position: 0 0; }
+.addsmall { width: 26px; height: 26px; background-position: -41px -27px; }
+.arrowleft { width: 40px; height: 40px; background-position: 0 -41px; }
+.avatar { width: 43px; height: 43px; background-position: -41px -190px; }
+.clock { width: 15px; height: 15px; background-position: -41px -234px; }
+.edit { width: 26px; height: 26px; background-position: -68px -44px; }
+.flag { width: 15px; height: 15px; background-position: -57px -234px; }
+.flaglarge { width: 40px; height: 40px; background-position: -95px -44px; }
+.listfavorites { width: 26px; height: 26px; background-position: -41px -54px; }
+.listflags { width: 26px; height: 26px; background-position: -68px -71px; }
+.listplaylists { width: 26px; height: 26px; background-position: -41px -81px; }
+.listrecent { width: 26px; height: 26px; background-position: 0 -123px; }
+.listsubcat { width: 26px; height: 26px; background-position: -27px -123px; }
+.logo { width: 50px; height: 50px; background-position: -85px -208px; }
+.menusmall { width: 26px; height: 26px; background-position: 0 -150px; }
+.muted { width: 40px; height: 40px; background-position: 0 -82px; }
+.navarrow { width: 6px; height: 14px; background-position: -85px -190px; }
+.pause { width: 40px; height: 40px; background-position: -95px -85px; }
+.play { width: 40px; height: 40px; background-position: -54px -108px; }
+.previous { width: 40px; height: 40px; background-position: -95px -126px; }
+.soundcloud { width: 64px; height: 43px; background-position: -68px 0; }
+.speakerloud { width: 40px; height: 40px; background-position: -54px -149px; }
+.speakernormal { width: 40px; height: 40px; background-position: -95px -167px; }
+.speakerquiet { width: 40px; height: 40px; background-position: 0 -177px; }
+.speakersilent { width: 40px; height: 40px; background-position: 0 -218px; }
+.subcatexpand { width: 26px; height: 26px; background-position: -27px -150px; }
 
 html
 {
@@ -116,6 +126,7 @@ body
 	padding: 1px 3px;
 	display: none;
 	cursor: pointer;
+	position: relative;
 	-webkit-transition: background-color ease-out 200ms;
 	-moz-transition: background-color ease-out 200ms;
 	-o-transition: background-color ease-out 200ms;
@@ -148,8 +159,13 @@ body
 {
 	color: #9F98B3;
 	font-size: 16px;
-	vertical-align: -7px;
-	display: inline;
+	vertical-align: -11px;
+	display: inline-block;
+	position: relative;
+	width: 280px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 #header .button .name:after
 {
@@ -160,16 +176,32 @@ body
 {
 	color: #D0CADE;
 	font-size: 14px;
-	display: inline;
+	display: inline-block;
+	margin-top: -7px;
+	position: absolute;
+	top: 33px;
+	width: 280px;
+	left: 9px;
 }
 
+#playlist-name
+{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#playlist-access
+{
+	font-size: 13px;
+	margin-left: 4px;
+	color: #7A738C;
+}
 #playlist-details-user
 {
 	font-size: 11px;
 	margin-left: 5px;
 	color: #C4BECF;
 }
-
 #playlist-details-avatar
 {
 	width: 13px;
@@ -178,25 +210,6 @@ body
 	margin: 0 4px -2px 2px;
 	border-radius: 100%;
 	box-shadow: 0 1px 0 0 #222;
-}
-
-#playlist-access
-{
-	font-size: 12px;
-	margin-left: 4px;
-	color: #7A738C;
-}
-#playlist-access.private
-{
-	font-size: 13px;
-}
-#playlist-access.shared
-{
-	margin-left: 3px;
-}
-#playlist-access.public, #playlist-access.shared
-{
-	vertical-align: 1px;
 }
 
 #user-avatar
@@ -208,6 +221,16 @@ body
 	border-radius: 1px;
 	box-shadow: 0 1px 0 0 #222;
 	float: right;
+}
+#user-name
+{
+	display: inline !important;
+	vertical-align: -7px !important;
+}
+#user-details
+{
+	left: 10px !important;
+	width: 235px !important;
 }
 
 
@@ -239,29 +262,127 @@ body
 	border-bottom: 1px solid #292531;
 	border-right: 1px solid rgba(41, 37, 49, 0.5);
 	background-color: #E2E2E2;
+	position: relative;
 }
-#playlists-menu .icon
+#playlist-active
 {
-	padding: 11px 18px;
-	color: #6F677E;
+	width: 100%;
+	padding: 5px 10px 6px 4px;
+	font-size: 14px;
+	cursor: pointer;
+	display: flex;
+    align-items: center;
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
+}
+#playlist-active .icon
+{
+	-webkit-filter: brightness(0.3) sepia(1) hue-rotate(200deg);
+	opacity: 0.95;
+}
+#playlist-active .label
+{
+	margin-bottom: 1px;
+	display: inline-block;
+}
+#playlist-active .navarrow
+{
+	display: inline-block;
+	margin: 0 5px;
+	vertical-align: -2px;
+	opacity: 0.5;
+}
+#playlist-active:hover
+{
+	background-color: #EBEBEB;
+}
+#playlists-dropdown
+{
+	position: absolute;
+	left: 0;
+	top: 37px;
+	z-index: 2;
+	background-color: #E2E2E2;
+	width: 100%;
+	height: calc(100vh - 139px);
+	overflow-y: scroll !important;
+	border-top: 1px solid #4A4554;
+	display: none;
+}
+#playlists-dropdown::-webkit-scrollbar
+{
+	height: 12px;
+	width: 13px;
+	background: #B5B5B5;
+	border-left: 1px solid #797979;
+	border-right: none;
+}
+#playlists-dropdown::-webkit-scrollbar-thumb
+{
+	background: #E8E8E8;
+	border-left: 1px solid #797979;
+	border-right: none;
+}
+#playlists-dropdown .icon
+{
+	-webkit-filter: brightness(0.3) sepia(1) hue-rotate(200deg);
+	opacity: 0.95;
+	display: inline-block;
+	margin: 5px 0px 0 4px;
+}
+#playlists-dropdown .label
+{
+	vertical-align: 8px;
+	display: inline-block;
 	font-size: 15px;
+}
+#playlists-dropdown .navarrow
+{
+	margin: 9px 7px 6px 17px;
+}
+#playlists-dropdown .dropdown-category
+{
+	border-bottom: 1px solid #CCC;
+}
+#playlists-dropdown .dropdown-category:last-of-type
+{
+	border-bottom: none;
+}
+#playlists-dropdown .dropdown-subcat .subcatexpand
+{
+	float: right;
+	margin-right: 2px;
+}
+#playlists-dropdown .dropdown-subcat .dropdown-item .label
+{
+	font-size: 14px;
+}
+#playlists-dropdown .dropdown-item, #playlists-dropdown .subcat-header
+{
+	background-color: rgba(0, 0, 0, 0);
 	cursor: pointer;
 	-webkit-transition: background-color ease-out 200ms;
 	-moz-transition: background-color ease-out 200ms;
 	-o-transition: background-color ease-out 200ms;
 	transition: background-color ease-out 200ms;
 }
-#playlists-menu .icon:hover
+#playlists-dropdown .dropdown-item:nth-child(even), #playlists-dropdown .subcat-header:nth-child(even)
 {
-	background-color: #EBEBEB;
+	background-color: #DDD;
 }
-#playlists-menu .icon.active
+#playlists-dropdown .dropdown-item:hover, #playlists-dropdown .subcat-header:hover
 {
-	background-color: #F5F5F5;
+	background-color: #EAEAEA;
 }
-#playlists-menu .icon.shared
+#playlists-dropdown .dropdown-item.active, #playlists-dropdown .dropdown-subcat.active .subcat-header
 {
-	font-size: 14px;
+	background-color: #F1F1F1;
+}
+#playlists-dropdown .dropdown-item.active:hover, #playlists-dropdown .dropdown-subcat.active .subcat-header:hover
+{
+	background-color: #F3F3F3;
 }
 #playlists
 {
@@ -1269,7 +1390,8 @@ a.window-link
 }
 #tabs .tab-contents .active.icon
 {
-	color: #D6855C;
+	-webkit-filter: brightness(0.46) sepia(1) hue-rotate(-40deg) contrast(2);
+	opacity: 1;
 }
 #tabs .tab-contents .icon.inactive
 {
@@ -1448,25 +1570,23 @@ a.window-link
 #tabs .action .icon
 {
 	font-size: 14px;
-	margin: 0 4px 0 5px;
-	color: #AFA9BC;
-	-webkit-transition: color ease-out 200ms;
-	-moz-transition: color ease-out 200ms;
-	-o-transition: color ease-out 200ms;
-	transition: color ease-out 200ms;
+	margin: 0 3px 0 5px;
+	vertical-align: -2px;
+	display: inline-block;
+	-webkit-filter: brightness(0.15) sepia(1) hue-rotate(200deg);
+	opacity: 0.3;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
 }
 #tabs .action .icon:hover
 {
-	color: #3D3749;
+	opacity: 1;
 }
-#tabs .action .flag.icon
+#tabs .action .clock.icon
 {
-	font-size: 13px;
-	margin-left: 4px;
-	vertical-align: 1px;
-}
-#tabs .action .date.icon
-{
+	vertical-align: -3px;
 	cursor: default;
 }
 #tabs .section-menu
