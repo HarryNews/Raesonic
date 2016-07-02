@@ -309,7 +309,7 @@ Playlist.clearActive = function()
 // Retrieve the list of all playlists in a section
 Playlist.loadSection = function(sectionId, sectionAlias)
 {
-	// todo: retrieve from cookies
+	// todo: retrieve from local storage
 	if(sectionId == Playlist.SECTION.RECENT)
 		return;
 
@@ -336,6 +336,11 @@ Playlist.loadSection = function(sectionId, sectionAlias)
 			$("#playlists")
 				.data(sectionAlias.toLowerCase(), storage)
 				.animate({ scrollTop: 0, }, 0);
+
+			$(".playlist")
+				.hide()
+				.delay(200)
+				.fadeIn(400);
 		}
 	});
 }
@@ -439,6 +444,11 @@ Playlist.updateSection = function(previousAlias)
 
 		Playlist.highlightActivePlaylist();
 		$("#playlists").animate({ scrollTop: 0, }, 0);
+
+		$(".playlist")
+			.hide()
+			.delay(200)
+			.fadeIn(400);
 
 		return;
 	}
@@ -576,7 +586,8 @@ Playlist.initDropdown = function()
 		Playlist.addDropdownItem("Recent"),
 	]);
 
-	if(Account.reputation >= 0)
+	// todo: use Reputation.hasPermission(Reputation.VIEW_FLAGS)
+	if(Account.authenticated && Account.own.reputation >= 200)
 	{
 		Playlist.addDropdownCategory("global",
 		[
