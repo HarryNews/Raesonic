@@ -17,12 +17,6 @@ var Playlist =
 		PUBLIC: 3,
 	},
 	PERSONAL_SECTIONS: ["private", "shared", "public"],
-	PERSONAL_SECTION_ICONS:
-	[
-		"private corner icon fa fa-lock",
-		"shared corner icon fa fa-link",
-		"public corner icon fa fa-globe",
-	],
 	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 }

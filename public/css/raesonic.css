@@ -768,7 +768,7 @@ body
 }
 #add-list .list-element
 {
-	padding: 10px 13px;
+	padding: 4px 5px 2px 5px;
 	position: relative;
 	background-color: #E4D6FF;
 	cursor: pointer;
@@ -792,27 +792,29 @@ body
 {
 	background-color: #F8F5FF;
 }
+#add-list .list-element .icon
+{
+	display: inline-block;
+	-webkit-filter: brightness(0.2) sepia(1) hue-rotate(200deg);
+	margin-top: 1px;
+}
+#add-list .list-element .label
+{
+	display: inline-block;
+	vertical-align: 4px;
+	width: calc(100% - 33px);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#add-list .list-element span.access
+{
+	margin-left: 4px;
+	font-size: 11px;
+}
 #add-list .list-element span.padded
 {
 	margin-left: 4px;
-}
-#add-list .list-element .icon
-{
-	padding: 1px 8px 0 0;
-	font-size: 14px;
-	vertical-align: -1px;
-}
-#add-list .list-element .icon.corner
-{
-	position: absolute;
-	top: 15px;
-	left: 10px;
-	font-size: 14px;
-	text-shadow: 1px -1px #E4D6FF, -1px 2px #E4D6FF;
-}
-#add-list .list-element:nth-child(even) .icon.corner
-{
-	text-shadow: 1px -1px #F2EBFF, -1px 2px #F2EBFF;
 }
 
 #overlay
