@@ -66,7 +66,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 					.addClass("title")
 					.html( Item.formatTitle( item[2] ) ),
 				$("<div>")
-					.addClass("add icon fa fa-plus")
+					.addClass("add icon")
 					.toggleClass("hidden", !isContentAttached)
 					.click(Item.onAddIconClick)
 			)
@@ -89,7 +89,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 			})
 			.append(
 				$("<div>")
-					.addClass("edit icon fa fa-pencil")
+					.addClass("edit icon")
 					.click(Item.onEditIconClick)
 			);
 	}

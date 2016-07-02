@@ -435,11 +435,20 @@ Item.onAddIconClick = function()
 	if(Item.active && Item.active.trackId != $item.data("trackId") &&
 		Item.active.trackId != -1 && $item.data("trackId") != -1)
 	{
+		var trackName = Item.active.artist + " – " +
+			Item.padSpans(Item.active.title);
+
+		var $icon = $("<div>")
+			.addClass("listrelated icon");
+
+		var $label = $("<div>")
+			.addClass("label")
+			.html(trackName);
+
 		$dropdown.append(
 			$("<div>")
 				.addClass("list-element")
-				.html( "<div class=\"icon fa fa-exchange\"></div>" +
-					Item.active.artist + " – " + Item.padSpans(Item.active.title) )
+				.append($icon, $label)
 				.click(Item.onRelationElementClick)
 		);
 	}
@@ -465,15 +474,25 @@ Item.onAddIconClick = function()
 				var name = $playlist.find(".name").text();
 				var access = $playlist.data("access");
 
-				var accessIcon =
-					Playlist.PERSONAL_SECTION_ICONS[sectionIndex];
+				var accessName =
+					Playlist.PERSONAL_SECTIONS[sectionIndex];
+
+				var $icon = $("<div>")
+					.addClass("listplaylists icon");
+
+				var $label = $("<div>")
+					.addClass("label")
+					.text(name)
+					.append(
+						$("<span>")
+							.addClass("access")
+							.text(accessName)
+					);
 
 				$dropdown.append(
 					$("<div>")
 						.addClass("list-element")
-						.html("<div class=\"icon fa fa-list\"></div>" +
-							"<div class=\"" + accessIcon + "\"></div>" +
-							name)
+						.append($icon, $label)
 						.data
 						({
 							playlistId: playlistId,

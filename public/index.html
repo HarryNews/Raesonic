@@ -7,7 +7,6 @@
 	<title>Raesonic</title>
 	<link href="http://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet" type="text/css">
 	<link href="/css/raesonic.css" rel="stylesheet" type="text/css">
-	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 	<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
 	<script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
 	<script src="/js/jquery.min.js"></script>
@@ -20,9 +19,9 @@
 			<div id="playlist-name" class="name"></div>
 			<div id="playlist-details" class="details"></div>
 		</div>
-		<img src="/img/logo.png" class="logo" alt="Raesonic">
+		<div id="header-logo" class="logo" title="Raesonic"></div>
 		<div id="header-right" class="button">
-			<img src="/img/avatar.png" id="user-avatar">
+			<div id="user-avatar" class="avatar"></div>
 			<div id="user-name" class="name"></div>
 			<div id="user-details" class="details"></div>
 		</div>
@@ -30,14 +29,14 @@
 	<div id="content">
 		<div id="sidebar">
 			<div id="playlists-menu">
-				<div id="playlists-menu-private" class="private icon fa fa-lock"></div>
-				<div id="playlists-menu-shared" class="shared icon fa fa-link"></div>
-				<div id="playlists-menu-public" class="public icon fa fa-globe"></div>
-				<div id="playlists-menu-favorites" class="favorites icon fa fa-star"></div>
-				<div id="playlists-menu-recent" class="recent icon fa fa-clock-o"></div>
+				<div id="playlist-active">
+					<div class="menusmall icon"></div>
+					<div id="playlist-active-nav"></div>
+				</div>
+				<div id="playlists-dropdown"></div>
 			</div>
 			<div id="playlist-new">
-				<div class="create icon fa fa-plus"></div>
+				<div class="addsmall icon"></div>
 				<div class="label">create new playlist</div>
 			</div>
 			<div id="playlists"></div>
@@ -64,21 +63,21 @@
 			<div id="tabs">
 				<div id="tabs-menu">
 					<div id="menu-related" class="active">
-						<div class="icon fa fa-exchange"></div>
+						<div class="tabrelated icon"></div>
 						<div class="label">Related</div>
 					</div>
 					<div id="menu-content">
-						<div class="icon fa fa-th-list"></div>
+						<div class="tabcontent icon"></div>
 						<div class="label">Content</div>
 					</div>
 					<div id="menu-history">
-						<div class="icon fa fa-history"></div>
+						<div class="tabhistory icon"></div>
 						<div class="label">History</div>
 					</div>
 				</div>
 				<div id="tab-related" class="tab-contents active">
 					<div class="column">
-						<div id="related-add" class="column-item icon fa fa-plus" title="Add to playlist"></div>
+						<div id="related-add" class="column-item addlarge icon" title="Add to playlist"></div>
 					</div>
 					<div class="column">
 						<div id="related-first-image" class="image-wrapper"></div>
@@ -89,9 +88,9 @@
 					</div>
 					<div class="column">
 						<div class="column-item">
-							<div id="related-upvote" class="icon fa fa-chevron-up"></div>
+							<div id="related-upvote" class="arrowup icon"></div>
 							<div id="related-rating"></div>
-							<div id="related-downvote" class="icon fa fa-chevron-down"></div>
+							<div id="related-downvote" class="arrowup icon v-flip"></div>
 						</div>
 					</div>
 					<div class="column">
@@ -102,25 +101,27 @@
 						</div>
 					</div>
 					<div class="column">
-						<div id="related-flag" class="column-item icon fa fa-flag" title="Flag for moderator attention"></div>
+						<div id="related-flag" class="column-item flaglarge icon" title="Flag for moderator attention"></div>
 					</div>
 					<div id="related-overlay" class="tab-overlay">
-						<div class="icon fa fa-exchange"></div>
+						<div class="explorelarge icon"></div>
 						<div class="label">View recommendations</div>
 					</div>
 				</div>
 				<div id="tab-content" class="tab-contents">
 					<div class="column">
-						<div id="content-previous" class="column-item icon fa fa-chevron-left fa-3x" title="Previous content"></div>
+						<div id="content-previous" class="column-item arrowleft icon" title="Previous content"></div>
 					</div>
 					<div class="column">
 						<div class="column-item">
 							<div id="content-image" class="image-wrapper"></div>
-							<div id="content-replace" class="overlay-icon icon fa fa-check fa-3x"></div>
+							<div id="content-replace" class="overlay-icon">
+								<div class="checklarge icon"></div>
+							</div>
 						</div>
 					</div>
 					<div class="column">
-						<div id="content-next" class="column-item icon fa fa-chevron-right fa-5x" title="Next content"></div>
+						<div id="content-next" class="column-item arrowleft icon h-flip" title="Next content"></div>
 					</div>
 					<div class="content-info">
 						<div id="content-name" class="info-name"></div>
@@ -132,11 +133,11 @@
 					<div id="history-content-links" class="section"></div>
 					<div id="history-menu" class="section-menu">
 						<div id="history-menu-track-edits" class="active">
-							<div class="icon fa fa-pencil"></div>
+							<div class="tabtrackedits icon"></div>
 							<div class="label">Track name changes</div>
 						</div>
 						<div id="history-menu-content-links">
-							<div class="icon fa fa-link"></div>
+							<div class="tabcontentlinks icon"></div>
 							<div class="label">Content associations</div>
 						</div>
 					</div>
@@ -146,22 +147,24 @@
 		</div>
 	</div>
 	<div id="controls">
-		<div id="previous" class="icon fa fa-chevron-left"></div>
-		<div id="play" class="icon fa fa-play"></div>
-		<div id="pause" class="icon fa fa-pause"></div>
-		<div id="next" class="icon fa fa-chevron-right"></div>
+		<div id="previous" class="previous icon"></div>
+		<div id="play" class="play icon"></div>
+		<div id="pause" class="pause icon"></div>
+		<div id="next" class="previous icon h-flip"></div>
 		<div id="current-time" class="time">00:00</div>
 		<div id="seekbar" class="bar">
+			<div id="seekbar-back" class="back"></div>
 			<div id="seekbar-buffer" class="buffer"></div>
 			<div id="seekbar-fill" class="fill">
 				<div id="seekbar-tip" class="tip">00:00</div>
 			</div>
 		</div>
 		<div id="total-time" class="time">00:00</div>
-		<div id="speaker" class="icon silent fa fa-volume-up">
-			<div id="muted" class="icon fa fa-ban"></div>
+		<div id="speaker" class="speakerloud icon">
+			<div id="muted" class="muted icon"></div>
 		</div>
 		<div id="volume" class="bar">
+			<div id="volume-back" class="back"></div>
 			<div id="volume-on" class="buffer"></div>
 			<div id="volume-fill" class="fill">
 				<div id="volume-tip" class="tip">80%</div>
