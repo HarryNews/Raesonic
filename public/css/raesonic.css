@@ -1,31 +1,40 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
 .add { width: 26px; height: 26px; background-position: -41px 0; }
 .addlarge { width: 40px; height: 40px; background-position: 0 0; }
-.addsmall { width: 26px; height: 26px; background-position: -41px -27px; }
+.addsmall { width: 26px; height: 26px; background-position: -119px 0; }
 .arrowleft { width: 40px; height: 40px; background-position: 0 -41px; }
-.avatar { width: 43px; height: 43px; background-position: -41px -190px; }
-.clock { width: 15px; height: 15px; background-position: -41px -234px; }
-.edit { width: 26px; height: 26px; background-position: -68px -44px; }
-.flag { width: 15px; height: 15px; background-position: -57px -234px; }
-.flaglarge { width: 40px; height: 40px; background-position: -95px -44px; }
-.listfavorites { width: 26px; height: 26px; background-position: -41px -54px; }
-.listflags { width: 26px; height: 26px; background-position: -68px -71px; }
-.listplaylists { width: 26px; height: 26px; background-position: -41px -81px; }
-.listrecent { width: 26px; height: 26px; background-position: 0 -123px; }
-.listsubcat { width: 26px; height: 26px; background-position: -27px -123px; }
-.logo { width: 50px; height: 50px; background-position: -85px -208px; }
-.menusmall { width: 26px; height: 26px; background-position: 0 -150px; }
-.muted { width: 40px; height: 40px; background-position: 0 -82px; }
-.navarrow { width: 6px; height: 14px; background-position: -85px -190px; }
-.pause { width: 40px; height: 40px; background-position: -95px -85px; }
-.play { width: 40px; height: 40px; background-position: -54px -108px; }
-.previous { width: 40px; height: 40px; background-position: -95px -126px; }
-.soundcloud { width: 64px; height: 43px; background-position: -68px 0; }
-.speakerloud { width: 40px; height: 40px; background-position: -54px -149px; }
-.speakernormal { width: 40px; height: 40px; background-position: -95px -167px; }
-.speakerquiet { width: 40px; height: 40px; background-position: 0 -177px; }
-.speakersilent { width: 40px; height: 40px; background-position: 0 -218px; }
-.subcatexpand { width: 26px; height: 26px; background-position: -27px -150px; }
+.arrowup { width: 40px; height: 40px; background-position: -41px -54px; }
+.avatar { width: 43px; height: 43px; background-position: -150px -78px; }
+.checklarge { width: 50px; height: 40px; background-position: -106px -179px; }
+.clock { width: 15px; height: 15px; background-position: -7px -82px; }
+.edit { width: 26px; height: 26px; background-position: -41px -27px; }
+.explorelarge { width: 50px; height: 50px; background-position: -68px 0; }
+.flag { width: 15px; height: 15px; background-position: -23px -82px; }
+.flaglarge { width: 40px; height: 40px; background-position: -82px -54px; }
+.listfavorites { width: 26px; height: 26px; background-position: -119px -27px; }
+.listflags { width: 26px; height: 26px; background-position: -146px -51px; }
+.listplaylists { width: 26px; height: 26px; background-position: -173px -51px; }
+.listrecent { width: 26px; height: 26px; background-position: -123px -78px; }
+.listrelated { width: 26px; height: 26px; background-position: -173px -122px; }
+.listsubcat { width: 26px; height: 26px; background-position: -123px -124px; }
+.logo { width: 50px; height: 50px; background-position: -146px 0; }
+.menusmall { width: 26px; height: 26px; background-position: -173px -149px; }
+.muted { width: 40px; height: 40px; background-position: -41px -95px; }
+.navarrow { width: 6px; height: 14px; background-position: 0 -82px; }
+.pause { width: 40px; height: 40px; background-position: -82px -95px; }
+.play { width: 40px; height: 40px; background-position: 0 -98px; }
+.previous { width: 40px; height: 40px; background-position: -41px -136px; }
+.soundcloud { width: 64px; height: 43px; background-position: -41px -177px; }
+.speakerloud { width: 40px; height: 40px; background-position: -82px -136px; }
+.speakernormal { width: 40px; height: 40px; background-position: 0 -139px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -157px -179px; }
+.speakersilent { width: 40px; height: 40px; background-position: 0 -180px; }
+.subcatexpand { width: 26px; height: 26px; background-position: -123px -151px; }
+.tabcontent { width: 22px; height: 18px; background-position: -123px -54px; }
+.tabcontentlinks { width: 22px; height: 18px; background-position: -123px -105px; }
+.tabhistory { width: 22px; height: 18px; background-position: -150px -122px; }
+.tabrelated { width: 22px; height: 18px; background-position: -150px -141px; }
+.tabtrackedits { width: 22px; height: 18px; background-position: -150px -160px; }
 
 html
 {
@@ -885,7 +894,7 @@ body
 }
 #window p.final.subject
 {
-	margin-bottom: 15px;
+	margin-bottom: 20px;
 }
 #window p a
 {
@@ -1386,18 +1395,20 @@ a.window-link
 
 #tabs .tab-contents .icon
 {
-	font-size: 30px;
-	color: #3D3749;
 	cursor: pointer;
 }
 #tabs .tab-contents .active.icon
 {
-	-webkit-filter: brightness(0.46) sepia(1) hue-rotate(-40deg) contrast(2);
+	-webkit-filter: brightness(0.46) sepia(1) hue-rotate(-30deg) contrast(2);
 	opacity: 1;
+}
+#tabs .tab-contents .arrowup.active
+{
+	-webkit-filter: brightness(1.85) sepia(1) hue-rotate(-25deg) contrast(2.8)
 }
 #tabs .tab-contents .icon.inactive
 {
-	color: rgba(61, 55, 74, 0.2);
+	opacity: 0.2;
 	cursor: default;
 }
 #tabs .column
@@ -1420,23 +1431,16 @@ a.window-link
 	flex-wrap: wrap;
 	position: relative;
 }
-#tabs .column-item .icon
-{
-	padding: 5px;
-}
 #tabs .column-item .overlay-icon
 {
-	height: calc(50% + 25px);
+	height: calc(50% + 20px);
 	width: 100%;
 	display: flex;
 	justify-content: center;
-	padding: calc(50% - 25px) 0 0 0 !important;
+	padding: calc(50% - 20px) 0 0 0 !important;
 	position: absolute;
 	top: 0;
 	left: 0;
-	color: #FFF;
-	font-size: 50px;
-	text-shadow: rgba(0, 0, 0, 1) 0 0 4px;
 	opacity: 0;
 	cursor: default;
 	-webkit-transition: all ease-out 200ms;
@@ -1444,13 +1448,16 @@ a.window-link
 	-o-transition: all ease-out 200ms;
 	transition: all ease-out 200ms;
 }
+#tabs .column-item .overlay-icon .icon
+{
+	cursor: inherit;
+}
 #tabs .column-item .overlay-icon:hover
 {
 	opacity: 0.6;
 }
 #tabs .column-item .overlay-icon.active
 {
-	color: #FFF;
 	opacity: 1;
 	cursor: pointer;
 }
@@ -1477,9 +1484,9 @@ a.window-link
 #tabs .column .meta
 {
 	position: absolute;
-	width: 150%;
+	width: 130%;
 	bottom: 3%;
-	left: -25%;
+	left: -15%;
 	text-align: center;
 }
 #tabs .column .meta-title
@@ -1600,22 +1607,17 @@ a.window-link
 #tabs .section-menu > div
 {
 	background-color: #97939F !important;
-	height: 20px;
+	height: 23px;
 	padding-top: 13px;
 	text-shadow: 0 0 1px #000;
 }
 #tabs .section-menu > div:hover
 {
-	background-color: #A4A1AA !important;
+	background-color: #8A8593 !important;
 }
 #tabs .section-menu > div.active
 {
 	background-color: #7D7788 !important;
-}
-#tabs .section-menu > div .icon
-{
-	color: #FFF !important;
-	font-size: 18px !important;
 }
 #tabs .tab-overlay
 {
@@ -1651,7 +1653,7 @@ a.window-link
 {
 	padding-right: 1px;
 	font-size: 21px;
-	margin: 5px 0 1px 0;
+	margin: 7px 0;
 	width: 100%;
 	display: flex;
 	justify-content: center;
@@ -1659,9 +1661,8 @@ a.window-link
 
 #tab-content .column-item.icon
 {
-	height: 30px;
+	height: 40px;
 	margin-top: calc(4.4vw - 20px);
-	padding: 5px;
 }
 #tab-content .content-info
 {
@@ -1708,7 +1709,6 @@ a.window-link
 
 #controls > .icon
 {
-	color: #FFF;
 	cursor: pointer;
 	margin: 3px 3px 6px 3px;
 	opacity: 1;
@@ -1827,7 +1827,6 @@ a.window-link
 }
 #muted
 {
-	color: #575269 !important;
 	position: absolute;
 	left: 0;
 	top: 0;

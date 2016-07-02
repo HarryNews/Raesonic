@@ -64,15 +64,15 @@
 			<div id="tabs">
 				<div id="tabs-menu">
 					<div id="menu-related" class="active">
-						<div class="icon fa fa-exchange"></div>
+						<div class="tabrelated icon"></div>
 						<div class="label">Related</div>
 					</div>
 					<div id="menu-content">
-						<div class="icon fa fa-th-list"></div>
+						<div class="tabcontent icon"></div>
 						<div class="label">Content</div>
 					</div>
 					<div id="menu-history">
-						<div class="icon fa fa-history"></div>
+						<div class="tabhistory icon"></div>
 						<div class="label">History</div>
 					</div>
 				</div>
@@ -89,9 +89,9 @@
 					</div>
 					<div class="column">
 						<div class="column-item">
-							<div id="related-upvote" class="icon fa fa-chevron-up"></div>
+							<div id="related-upvote" class="arrowup icon"></div>
 							<div id="related-rating"></div>
-							<div id="related-downvote" class="icon fa fa-chevron-down"></div>
+							<div id="related-downvote" class="arrowup icon v-flip"></div>
 						</div>
 					</div>
 					<div class="column">
@@ -105,22 +105,24 @@
 						<div id="related-flag" class="column-item flaglarge icon" title="Flag for moderator attention"></div>
 					</div>
 					<div id="related-overlay" class="tab-overlay">
-						<div class="icon fa fa-exchange"></div>
+						<div class="explorelarge icon"></div>
 						<div class="label">View recommendations</div>
 					</div>
 				</div>
 				<div id="tab-content" class="tab-contents">
 					<div class="column">
-						<div id="content-previous" class="column-item icon fa fa-chevron-left fa-3x" title="Previous content"></div>
+						<div id="content-previous" class="column-item arrowleft icon" title="Previous content"></div>
 					</div>
 					<div class="column">
 						<div class="column-item">
 							<div id="content-image" class="image-wrapper"></div>
-							<div id="content-replace" class="overlay-icon icon fa fa-check fa-3x"></div>
+							<div id="content-replace" class="overlay-icon">
+								<div class="checklarge icon"></div>
+							</div>
 						</div>
 					</div>
 					<div class="column">
-						<div id="content-next" class="column-item icon fa fa-chevron-right fa-5x" title="Next content"></div>
+						<div id="content-next" class="column-item arrowleft icon h-flip" title="Next content"></div>
 					</div>
 					<div class="content-info">
 						<div id="content-name" class="info-name"></div>
@@ -132,11 +134,11 @@
 					<div id="history-content-links" class="section"></div>
 					<div id="history-menu" class="section-menu">
 						<div id="history-menu-track-edits" class="active">
-							<div class="icon fa fa-pencil"></div>
+							<div class="tabtrackedits icon"></div>
 							<div class="label">Track name changes</div>
 						</div>
 						<div id="history-menu-content-links">
-							<div class="icon fa fa-link"></div>
+							<div class="tabcontentlinks icon"></div>
 							<div class="label">Content associations</div>
 						</div>
 					</div>
