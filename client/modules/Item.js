@@ -1,3 +1,4 @@
+var Throttle = require("throttle-debounce/throttle");
 var Overlay = require("./Overlay.js");
 
 var Item = {};
@@ -65,6 +66,11 @@ Item.create = function(sourceId, externalId)
 		}
 	});
 }
+Item.createThrottled = Throttle(2000,
+function(sourceId, externalId)
+{
+	Item.create(sourceId, externalId);
+});
 
 // Add item with the specified content to the specified playlist
 Item.copy = function(playlistId, name, access, sourceId, externalId)
@@ -119,6 +125,11 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 		}
 	});
 }
+Item.copyThrottled = Throttle(2000,
+function(playlistId, name, access, sourceId, externalId)
+{
+	Item.copy(playlistId, name, access, sourceId, externalId);
+});
 
 // Remove specified item from the playlist
 Item.remove = function(itemId)
@@ -268,8 +279,10 @@ Item.updateEditOverlay = function()
 		: (artistChanged && titleChanged)
 
 	saveAllowed
-		? Overlay.setAction("Save", Item.onItemSaveClick)
-		: Overlay.setAction("Remove", Item.onItemRemoveClick);
+		? Overlay.setAction("Save",
+			Item.onItemSaveClickThrottled)
+		: Overlay.setAction("Remove",
+			Item.onItemRemoveClickThrottled);
 }
 
 // Replace &+ with <span>&amp;</span>
@@ -542,22 +555,31 @@ Item.onItemSaveClick = function()
 	var artistChanged = ( $("#edit-artist").val() != Item.editing.artist );
 	var titleChanged = ( $("#edit-title").val() != Item.editing.title );
 
-	Item.rename
-	(
-		Item.editing.itemId,
-		Item.editing.trackId,
-		$("#edit-artist").val(),
-		$("#edit-title").val(),
-		artistChanged,
-		titleChanged
-	);
+	var itemId = Item.editing.itemId;
+	var trackId = Item.editing.trackId;
+
+	var artist = $("#edit-artist").val();
+	var title = $("#edit-title").val();
+
+	Item.rename(itemId, trackId, artist, title,
+		artistChanged, titleChanged);
 }
+Item.onItemSaveClickThrottled =
+Throttle(5000, function()
+{
+	Item.onItemSaveClick();
+});
 
 // Called upon clicking the remove button in the overlay
 Item.onItemRemoveClick = function()
 {
 	Item.remove(Item.editing.itemId);
 }
+Item.onItemRemoveClickThrottled =
+Throttle(5000, function()
+{
+	Item.onItemRemoveClick();
+});
 
 // Called upon clicking a track item in the dropdown list
 Item.onRelationElementClick = function()
@@ -638,7 +660,7 @@ Item.onPlaylistElementClick = function()
 	var playlistData = $playlist.data();
 	var itemData = $item.data();
 
-	Item.copy(playlistData.playlistId, playlistData.name,
+	Item.copyThrottled(playlistData.playlistId, playlistData.name,
 		playlistData.access, itemData.sourceId, itemData.externalId);
 
 	Item.fadeRemoveDropdown();
@@ -650,7 +672,7 @@ Item.onRelationCreateClick = function()
 	var data = $("#relation-subject").data();
 
 	var Relation = require("./Relation.js");
-	Relation.create(data.trackId, data.linkedId);
+	Relation.createThrottled(data.trackId, data.linkedId);
 }
 
 // Called when the mouse is pressed somewhere

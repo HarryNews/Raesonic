@@ -1,3 +1,4 @@
+var Throttle = require("throttle-debounce/throttle");
 var Overlay = require("./Overlay.js");
 
 var Flag =
@@ -91,6 +92,11 @@ Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
 		}
 	});
 }
+Flag.createThrottled = Throttle(5000,
+function(entityType, entityId, secondId, reasonId, $flag)
+{
+	Flag.create(entityType, entityId, secondId, reasonId, $flag);
+});
 
 // Called once upon creating a flag overlay
 Flag.initOverlay = function(entityType)
@@ -300,8 +306,8 @@ Flag.onReportSubmitClick = function()
 	var reasonId = $radio.data("reasonId");
 	var data = $("#flag-subject").data();
 
-	Flag.create(data.entityType, data.entityId, data.secondId,
-		reasonId, data.flag);
+	Flag.createThrottled(data.entityType, data.entityId,
+		data.secondId, reasonId, data.flag);
 }
 
 module.exports = Flag;

@@ -1,3 +1,4 @@
+var Throttle = require("throttle-debounce/throttle");
 var ItemList = require("./ItemList.js");
 
 var Search =
@@ -102,6 +103,11 @@ Search.globally = function(query)
 		}
 	});
 }
+Search.globallyThrottled = Throttle(2000,
+function(query)
+{
+	Search.globally(query);
+});
 
 // Create content if the query is a content URL
 // Returns true if the query looks like a content URL
@@ -115,7 +121,7 @@ Search.createContent = function(query)
 	if( match && match[5] )
 	{
 		var externalId = match[5];
-		Item.create(Content.SOURCE.YOUTUBE, externalId);
+		Item.createThrottled(Content.SOURCE.YOUTUBE, externalId);
 		return true;
 	}
 
@@ -131,7 +137,7 @@ Search.createContent = function(query)
 		.then(function onSoundCloudResolve(response)
 		{
 			var externalId = response.id.toString();
-			Item.create(Content.SOURCE.SOUNDCLOUD, externalId);
+			Item.createThrottled(Content.SOURCE.SOUNDCLOUD, externalId);
 		})
 		.catch(function(error)
 		{
@@ -185,7 +191,7 @@ Search.onKeyUp = function(event)
 	if(isContentUrl)
 		return;
 
-	Search.globally(query);
+	Search.globallyThrottled(query);
 }
 
 // Called upon clicking the search clear button

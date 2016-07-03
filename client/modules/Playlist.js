@@ -1,3 +1,4 @@
+var Throttle = require("throttle-debounce/throttle");
 var Overlay = require("./Overlay.js");
 
 var Playlist =
@@ -75,6 +76,11 @@ Playlist.create = function(name, access, sectionAlias)
 		}
 	});
 }
+Playlist.createThrottled = Throttle(5000,
+function(name, access, sectionAlias)
+{
+	Playlist.create(name, access, sectionAlias);
+});
 
 // Edit name and access of the specified playlist
 Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
@@ -124,6 +130,11 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 		}
 	});
 }
+Playlist.editThrottled = Throttle(2000,
+function(playlistId, name, access, alias, sectionAlias)
+{
+	Playlist.edit(playlistId, name, access, alias, sectionAlias);
+});
 
 // Delete the specified playlist
 Playlist.delete = function(playlistId)
@@ -154,6 +165,11 @@ Playlist.delete = function(playlistId)
 		},
 	});
 }
+Playlist.deleteThrottled = Throttle(5000,
+function(playlistId)
+{
+	Playlist.delete(playlistId);
+});
 
 // Retrieve playlist tracks and metadata
 Playlist.load = function(playlistId)
@@ -401,6 +417,9 @@ Playlist.updateSection = function(previousAlias)
 	// Obtain storage of the currently active section
 	var sectionAlias =
 		$("#playlists-dropdown .dropdown-item.active").data("alias");
+
+	if(sectionAlias == null)
+		return;
 
 	Playlist.updateNav(sectionAlias);
 
@@ -936,6 +955,32 @@ Playlist.updatePlaylistOverlay = function()
 	$("#overlay label").toggleClass("disabled", deletingPlaylist);
 }
 
+// Returns true if the playlist passed validation
+Playlist.hasPassedInputValidation = function()
+{
+	var name = $("#playlist-edit-name").val();
+
+	if(name.length < 3)
+		Overlay.setError("#playlist-edit-name", "min. 3 characters");
+
+	if( name.length > 0 && !Playlist.NAME_REGEX.test(name) )
+		Overlay.setError("#playlist-edit-name",
+			"contains prohibited characters");
+
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+	{
+		Overlay.shakeRadioButtonLabels();
+		return false;
+	}
+
+	if( Overlay.hasErrors() )
+		return false;
+
+	return true;
+}
+
 // Called when the user authentication is done
 Playlist.onAccountSync = function()
 {
@@ -1095,49 +1140,38 @@ Playlist.onNewPlaylistClick = function()
 // Called when the create playlist button is clicked
 Playlist.onPlaylistCreateClick = function()
 {
-	if( $("#playlist-edit-name").val().length < 3 )
-		Overlay.setError("#playlist-edit-name", "min. 3 characters");
-
-	if($("#playlist-edit-name").val().length > 0 &&
-		!Playlist.NAME_REGEX.test( $("#playlist-edit-name").val() ))
-		Overlay.setError("#playlist-edit-name",
-			"contains prohibited characters");
-
-	var $radio = Overlay.getActiveRadioButton();
-
-	if(!$radio.length)
-		return Overlay.shakeRadioButtonLabels();
-
-	if( Overlay.hasErrors() )
+	if( !Playlist.hasPassedInputValidation() )
 		return;
 
 	var name = $("#playlist-edit-name").val();
+	var $radio = Overlay.getActiveRadioButton();
+
 	var access = $radio.data("accessId");
 	var sectionAlias = $radio.data("sectionAlias");
 
-	Playlist.create(name, access, sectionAlias);
+	Playlist.createThrottled(name, access, sectionAlias);
 }
 
 // Called when the save playlist button is clicked
 Playlist.onPlaylistSaveClick = function()
 {
-	var $radio = Overlay.getActiveRadioButton();
-
-	if(!$radio.length)
-		return Overlay.shakeRadioButtonLabels();
-
-	if( Overlay.hasErrors() )
+	if( !Playlist.hasPassedInputValidation() )
 		return;
 
+	var playlistId = Playlist.editing.playlistId;
 	var name = $("#playlist-edit-name").val();
+	var $radio = Overlay.getActiveRadioButton();
 
-	var access =
-		$radio.parent().children("input[type=\"radio\"]").index($radio) + 1;
+	var access = $radio
+		.parent()
+		.children("input[type=\"radio\"]")
+		.index($radio) + 1;
 
+	var alias = Playlist.editing.alias;
 	var sectionAlias = $radio.data("sectionAlias");
 
-	Playlist.edit(Playlist.editing.playlistId, name,
-		access, Playlist.editing.alias, sectionAlias);
+	Playlist.editThrottled(playlistId, name, access,
+		alias, sectionAlias);
 }
 
 // Called when the remove playlist button is clicked
@@ -1189,7 +1223,7 @@ Playlist.onPlaylistCancelClick = function()
 // Called when the confirmation code has been entered
 Playlist.onPlaylistCodeInput = function()
 {
-	Playlist.delete(Playlist.deleting.playlistId);
+	Playlist.deleteThrottled(Playlist.deleting.playlistId);
 }
 
 // Called when the playlist item is clicked

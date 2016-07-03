@@ -1,3 +1,4 @@
+var Throttle = require("throttle-debounce/throttle");
 var Overlay = require("./Overlay.js");
 
 var Account =
@@ -60,6 +61,11 @@ Account.create = function(username, password)
 		}
 	});
 }
+Account.createThrottled = Throttle(5000,
+function(username, password)
+{
+	Account.create(username, password);
+});
 
 // Login into an existing account
 Account.login = function(username, password)
@@ -98,6 +104,11 @@ Account.login = function(username, password)
 		}
 	});
 }
+Account.loginThrottled = Throttle(5000,
+function(username, password)
+{
+	Account.login(username, password);
+});
 
 // Send email with a link to reset password
 Account.restore = function(username)
@@ -113,7 +124,8 @@ Account.restore = function(username)
 			if(response.errors)
 				return;
 
-			Overlay.onActionComplete("Email sent");
+			Overlay.onActionComplete("Temporarily unavailable");
+			// Overlay.onActionComplete("Email sent");
 		}
 	});
 }
@@ -273,7 +285,8 @@ Account.updateLoginOverlay = function()
 		( $("#login-username").val().length > 2 );
 	
 	restoreAllowed
-		? Overlay.setAction("Forgot password", Account.onRestoreClick)
+		? Overlay.setAction("Forgot password",
+			Account.onRestoreClickThrottled)
 		: Overlay.setAction(null);
 
 	Overlay.clearErrors();
@@ -292,7 +305,8 @@ Account.updateSignUpOverlay = function()
 // Update the account overlay
 Account.updateAccountOverlay = function()
 {
-	Overlay.setAction("Logout", Account.onLogoutClick)
+	Overlay.setAction("Logout",
+		Account.onLogoutClickThrottled);
 }
 
 // Called upon clicking the user header
@@ -306,46 +320,44 @@ Account.onHeaderClick = function()
 // Called upon clicking the login button on the login screen
 Account.onLoginConfirmClick = function()
 {
-	if( $("#login-username").val().length < 3 )
+	var username = $("#login-username").val();
+	var password = $("#login-password").val();
+
+	if(username.length < 3)
 		Overlay.setError("#login-username", "incorrect");
 
-	if( $("#login-password").val().length < 8 )
+	if(password.length < 8)
 		Overlay.setError("#login-password", "incorrect");
 
 	if( Overlay.hasErrors() )
 		return;
 
-	Account.login
-	(
-		$("#login-username").val(),
-		$("#login-password").val()
-	);
+	Account.loginThrottled(username, password);
 }
 
 // Called upon clicking the sign up button on the sign up screen
 Account.onSignUpConfirmClick = function()
 {
-	if( $("#signup-username").val().length < 3 )
+	var username = $("#signup-username").val();
+	var password = $("#signup-password").val();
+	var repeat = $("#signup-repeat").val();
+
+	if(username.length < 3)
 		Overlay.setError("#signup-username", "min. 3 characters");
 
-	if($("#signup-username").val().length > 0 &&
-		!/^[a-z0-9]+$/i.test( $("#signup-username").val() ))
+	if( username.length > 0 && !/^[a-z0-9]+$/i.test(username) )
 		Overlay.setError("#signup-username", "contains prohibited characters");
 
-	if( $("#signup-password").val().length < 8 )
+	if(password.length < 8)
 		Overlay.setError("#signup-password", "min. 8 characters");
 
-	if( $("#signup-repeat").val() != $("#signup-password").val() )
+	if(repeat != password)
 		Overlay.setError("#signup-repeat", "does not match");
 
 	if( Overlay.hasErrors() )
 		return;
 
-	Account.create
-	(
-		$("#signup-username").val(),
-		$("#signup-password").val()
-	);
+	Account.createThrottled(username, password);
 }
 
 // Called upon clicking the sign up button on the login screen
@@ -460,12 +472,22 @@ Account.onRestoreClick = function()
 {
 	Account.restore( $("#login-username").val() );
 }
+Account.onRestoreClickThrottled =
+Throttle(5000, function()
+{
+	Account.onRestoreClick();
+});
 
 // Called upon clicking the log out button
 Account.onLogoutClick = function()
 {
 	Account.logout();
 }
+Account.onLogoutClickThrottled =
+Throttle(5000, function()
+{
+	Account.onLogoutClick();
+});
 
 Account.init = function(onSync)
 {

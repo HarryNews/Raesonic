@@ -1,3 +1,5 @@
+var Throttle = require("throttle-debounce/throttle");
+
 var Content =
 {
 	SOURCE:
@@ -338,10 +340,10 @@ Content.onNextIconClick = function()
 // Called upon clicking the replace content icon
 Content.onReplaceIconClick = function()
 {
-	var $icon = $(this);
+	var $icon = $("#content-replace");
 
 	// Inactive icon, bail out
-	if(!$icon.is(".active"))
+	if( !$icon.is(".active") )
 		return;
 
 	var $item = $(".item.active");
@@ -357,7 +359,13 @@ Content.init = function()
 {
 	$("#content-previous").click(Content.onPreviousIconClick);
 	$("#content-next").click(Content.onNextIconClick);
-	$("#content-replace").click(Content.onReplaceIconClick);
+
+	$("#content-replace").click(
+		Throttle(2000, function()
+		{
+			Content.onReplaceIconClick();
+		})
+	);
 }
 
 module.exports = Content;

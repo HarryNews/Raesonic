@@ -1,13 +1,15 @@
- var Relation =
- {
- 	// Response status codes
+var Throttle = require("throttle-debounce/throttle");
+
+var Relation =
+{
+	// Response status codes
 	STATUS_CREATED: 1,
 	STATUS_UPVOTED: 2,
 	// User vote types
 	VOTE_POSITIVE: 1,
 	VOTE_CLEAR: 0,
 	VOTE_NEGATIVE: -1,
- };
+};
 
 // Create a relation between two tracks
 Relation.create = function(trackId, linkedId)
@@ -39,6 +41,11 @@ Relation.create = function(trackId, linkedId)
 		}
 	});
 }
+Relation.createThrottled = Throttle(5000,
+function(trackId, linkedId)
+{
+	Relation.create(trackId, linkedId);
+});
 
 // Request relations of the specified track and switch to the list view
 // Play the item with provided trackId if resuming previous view
@@ -165,6 +172,11 @@ Relation.vote = function(trackId, linkedId, vote)
 		}
 	});
 }
+Relation.voteThrottled = Throttle(2000,
+function(trackId, linkedId, vote)
+{
+	Relation.vote(trackId, linkedId, vote);
+});
 
 // Set vote on the active relation
 Relation.setActiveVote = function(vote, $icon)
@@ -182,7 +194,8 @@ Relation.setActiveVote = function(vote, $icon)
 	if($icon.is(".active"))
 		vote = Relation.VOTE_CLEAR;
 
-	Relation.vote(Item.active.trackId, Relation.active.trackId, vote);
+	Relation.voteThrottled(Item.active.trackId,
+		Relation.active.trackId, vote);
 }
 
 // Return to normal view after viewing recommendations
