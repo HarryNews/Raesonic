@@ -23,6 +23,7 @@
     "express": "4.13.1",
     "express-session": "1.13.0",
     "gravatar": "1.5.2",
+    "moment": "2.13.0",
     "paperwork": "2.1.1",
     "passport": "0.3.2",
     "passport-local": "1.0.0",

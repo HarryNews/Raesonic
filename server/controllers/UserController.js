@@ -3,6 +3,7 @@ module.exports = function(core)
 	var PassportStrategy = require("passport-local").Strategy;
 	var Crypto = require("crypto-js");
 	var Gravatar = require("gravatar");
+	var Moment = require("moment");
 	
 	var UserController = {};
 
@@ -97,6 +98,19 @@ module.exports = function(core)
 		})
 		.then(function(user)
 		{
+			var isDifferentDay =
+				!Moment(user.visitDate).isSame(new Date(), "day");
+
+			if(isDifferentDay)
+			{
+				user.update
+				({
+					visitDate: new Date(),
+					reputationToday: 0,
+					activityToday: 0,
+				});
+			}
+
 			next(null, user);
 		});
 	});
