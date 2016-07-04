@@ -1,6 +1,9 @@
 module.exports = function(core)
 {
-	var TrackController = {};
+	var TrackController =
+	{
+		NAME_REGEX: /^[a-z0-9?!#%^&();:_+\- /'.,]+$/i,
+	};
 
 	var app = core.app;
 	var sequelize = core.sequelize;
@@ -294,10 +297,11 @@ module.exports = function(core)
 	// Returns true if the track artist or title is valid
 	TrackController.validateName = function(name)
 	{
-		if(name.length < 3 || name.length > 50)
+		if(name.length < 2 || name.length > 50)
 			return false;
 
-		// todo: restrict to a-zA-Z0-9!&()_+-' (estimate)
+		if(!TrackController.NAME_REGEX.test(name))
+			return false;
 
 		return true;
 	}

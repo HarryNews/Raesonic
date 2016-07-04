@@ -1,7 +1,10 @@
 var Throttle = require("throttle-debounce/throttle");
 var Overlay = require("./Overlay.js");
 
-var Item = {};
+var Item =
+{
+	NAME_REGEX: /^[a-z0-9?!#%^&();:_+\- /'.,]+$/i,
+};
 
 // Add item with the specified content to the active playlist
 Item.create = function(sourceId, externalId)
@@ -263,12 +266,23 @@ Item.play = function($item, isManualSwitch)
 // Update the item editing overlay
 Item.updateEditOverlay = function()
 {
+	Overlay.clearErrors();
+
 	// Without itemId no changes are possible
 	if(!Item.editing.itemId)
 		return Overlay.setAction(null);
 
-	var artistChanged = ( $("#edit-artist").val() != Item.editing.artist );
-	var titleChanged = ( $("#edit-title").val() != Item.editing.title );
+	var artist = $("#edit-artist").val();
+	var title = $("#edit-title").val();
+
+	if( artist.length > 0 && !Item.NAME_REGEX.test(artist) )
+		Overlay.setError("#edit-artist", "contains prohibited characters");
+
+	if( title.length > 0 && !Item.NAME_REGEX.test(title) )
+		Overlay.setError("#edit-title", "contains prohibited characters");
+
+	var artistChanged = (artist != Item.editing.artist);
+	var titleChanged = (title != Item.editing.title);
 
 	var trackExists = (Item.editing.trackId != -1);
 
@@ -278,9 +292,14 @@ Item.updateEditOverlay = function()
 		? (artistChanged || titleChanged)
 		: (artistChanged && titleChanged)
 
+	var hasErrors = Overlay.hasErrors();
+
 	saveAllowed
 		? Overlay.setAction("Save",
-			Item.onItemSaveClickThrottled)
+			hasErrors
+				? null
+				: Item.onItemSaveClickThrottled
+		)
 		: Overlay.setAction("Remove",
 			Item.onItemRemoveClickThrottled);
 }
@@ -552,14 +571,29 @@ Item.onAddIconClick = function()
 // Called upon clicking the save button in the overlay
 Item.onItemSaveClick = function()
 {
-	var artistChanged = ( $("#edit-artist").val() != Item.editing.artist );
-	var titleChanged = ( $("#edit-title").val() != Item.editing.title );
+	var artist = $("#edit-artist").val();
+	var title = $("#edit-title").val();
+
+	if(artist.length < 2)
+		Overlay.setError("#edit-artist", "min. 2 characters");
+
+	if(title.length < 2)
+		Overlay.setError("#edit-title", "min. 2 characters");
+
+	if( artist.length > 0 && !Item.NAME_REGEX.test(artist) )
+		Overlay.setError("#edit-artist", "contains prohibited characters");
+
+	if( title.length > 0 && !Item.NAME_REGEX.test(title) )
+		Overlay.setError("#edit-title", "contains prohibited characters");
+
+	if( Overlay.hasErrors() )
+		return;
+
+	var artistChanged = (artist != Item.editing.artist);
+	var titleChanged = (title != Item.editing.title);
 
 	var itemId = Item.editing.itemId;
 	var trackId = Item.editing.trackId;
-
-	var artist = $("#edit-artist").val();
-	var title = $("#edit-title").val();
 
 	Item.rename(itemId, trackId, artist, title,
 		artistChanged, titleChanged);

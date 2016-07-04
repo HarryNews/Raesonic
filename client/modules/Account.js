@@ -297,8 +297,9 @@ Account.updateSignUpOverlay = function()
 {
 	Overlay.clearErrors();
 
-	if($("#signup-username").val().length > 0 &&
-		!/^[a-z0-9]+$/i.test( $("#signup-username").val() ))
+	var username = $("#signup-username").val();
+
+	if( username.length > 0 && !/^[a-z0-9]+$/i.test(username) )
 		Overlay.setError("#signup-username", "contains prohibited characters");
 }
 
