@@ -607,10 +607,6 @@ Playlist.initDropdown = function()
 			Playlist.addDropdownItem("Flags"),
 		]);
 	}
-
-	$("#playlists-dropdown .dropdown-subcat:first, " +
-		"#playlists-dropdown .dropdown-item:first")
-			.addClass("active");
 }
 
 // Clear the active section and remove all playlist data
