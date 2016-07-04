@@ -56,6 +56,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		var PlaylistController = core.controllers.Playlist;
 		
 		PlaylistController.verifyOwnership(req.user, PlaylistController.BY_ITEMID, req.params.itemId, res,

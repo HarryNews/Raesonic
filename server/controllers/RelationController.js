@@ -29,6 +29,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		if(req.body.trackId == req.body.linkedId)
 			return res.status(400).json({ errors: ["self-link not allowed"] });
 
@@ -211,6 +216,11 @@ module.exports = function(core)
 	{
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
+
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
 
 		Relation.findOne
 		({

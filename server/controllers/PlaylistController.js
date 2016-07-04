@@ -44,6 +44,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		Playlist.create
 		({
 			name: req.body.name,
@@ -242,6 +247,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
 		function onConfirm(playlist)
@@ -265,6 +275,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,
 		function onConfirm(playlist)
@@ -284,6 +299,11 @@ module.exports = function(core)
 	{
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
+
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
 
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,

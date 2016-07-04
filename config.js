@@ -2,8 +2,12 @@ module.exports =
 {
 	server:
 	{
-		port: 3000,
-		signup: true
+		port: 3000
+	},
+	auth:
+	{
+		signup: true,
+		verification: false
 	},
 	session:
 	{

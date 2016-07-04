@@ -13,7 +13,8 @@ module.exports = function(core)
 	var passport = core.passport;
 	var config = core.config;
 
-	var isSignUpEnabled = config.server.signup;
+	var isSignUpEnabled = config.auth.signup;
+	var isVerificationRequired = config.auth.verification;
 
 	var User = sequelize.models.User;
 	var Playlist = sequelize.models.Playlist;
@@ -115,47 +116,11 @@ module.exports = function(core)
 		});
 	});
 
-	// Called upon receiving a result of sign up request
-	UserController.onSignUpResult = function(err, user, message, res, req)
+	UserController.isVerifiedUser = function(user)
 	{
-		if(err)
-			return res.status(401).json({ errors: ["internal error"] });
-
-		if(!user)
-			return res.status(401).json({ errors: [message] });
-
-		req.logIn(user, function(logInErr)
-		{
-			if(logInErr)
-				return next(err);
-
-			res.json( [] );
-		});
-	}
-
-	// Called upon receiving a result of login request
-	UserController.onLoginResult = function(err, user, message, res, req)
-	{
-		if(err)
-			return res.status(401).json({ errors: ["internal error"] });
-
-		if(!user)
-			return res.status(401).json({ errors: [message] });
-
-		req.logIn(user, function(logInErr)
-		{
-			if(logInErr)
-				return next(err);
-
-			res.json( [] );
-		});
-	}
-
-	// Called upon logout request
-	UserController.onLogout = function(req, res)
-	{
-		req.session.destroy();
-		res.json( [] );
+		return ( !isVerificationRequired ||
+			( user.email.length != 0 && user.emailToken.length == 0 )
+		);
 	}
 
 	UserController.getAccount = function(req, res)
@@ -209,6 +174,49 @@ module.exports = function(core)
 			return false;
 
 		return true;
+	}
+
+	// Called upon receiving a result of sign up request
+	UserController.onSignUpResult = function(err, user, message, res, req)
+	{
+		if(err)
+			return res.status(401).json({ errors: ["internal error"] });
+
+		if(!user)
+			return res.status(401).json({ errors: [message] });
+
+		req.logIn(user, function(logInErr)
+		{
+			if(logInErr)
+				return next(err);
+
+			res.json( [] );
+		});
+	}
+
+	// Called upon receiving a result of login request
+	UserController.onLoginResult = function(err, user, message, res, req)
+	{
+		if(err)
+			return res.status(401).json({ errors: ["internal error"] });
+
+		if(!user)
+			return res.status(401).json({ errors: [message] });
+
+		req.logIn(user, function(logInErr)
+		{
+			if(logInErr)
+				return next(err);
+
+			res.json( [] );
+		});
+	}
+
+	// Called upon logout request
+	UserController.onLogout = function(req, res)
+	{
+		req.session.destroy();
+		res.json( [] );
 	}
 
 	UserController.init = function()

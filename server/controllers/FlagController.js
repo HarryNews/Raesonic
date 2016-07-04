@@ -21,6 +21,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		Relation.findOne
 		({
 			attributes: ["relationId"],
@@ -60,6 +65,11 @@ module.exports = function(core)
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
+
 		TrackEdit.findOne
 		({
 			attributes: ["editId"],
@@ -89,6 +99,11 @@ module.exports = function(core)
 	{
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
+
+		var UserController = core.controllers.User;
+
+		if( !UserController.isVerifiedUser(req.user) )
+			return res.status(401).json({ errors: ["email not verified"] });
 
 		ContentLink.findOne
 		({
