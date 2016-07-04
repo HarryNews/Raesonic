@@ -499,7 +499,8 @@ Item.onAddIconClick = function()
 				var playlistId = $playlist.data("playlistId");
 
 				// Skip active playlist unless in another view
-				if(playlistId == Playlist.active.playlistId &&
+				if(Playlist.active &&
+					Playlist.active.playlistId == playlistId &&
 					!Playlist.active.hidden)
 						return;
 
