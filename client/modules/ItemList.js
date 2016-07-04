@@ -244,15 +244,22 @@ ItemList.restoreStorage = function()
 {
 	var Playlist = require("./Playlist.js");
 
-	if(Playlist.active != null)
-		Playlist.active.hidden = false;
+	if(Playlist.active == null)
+	{
+		$("#items").empty();
+		return;
+	}
+
+	if(!Playlist.active.hidden)
+		return;
+
+	Playlist.active.hidden = false;
+	$("#items").empty();
 
 	var storage = $("#items").data("storage") || [];
 
 	if(!storage.length)
 		return;
-
-	$("#items").empty();
 
 	storage.forEach(function($item)
 	{
