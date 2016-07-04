@@ -609,9 +609,11 @@ Playlist.initDropdown = function()
 	}
 }
 
-// Clear the active section and remove all playlist data
+// Clear the dropdown, active section and remove all playlist data
 Playlist.clearAllSections = function()
 {
+	$("#playlists-dropdown").empty();
+
 	$("#playlists")
 		.empty()
 		.removeData();
