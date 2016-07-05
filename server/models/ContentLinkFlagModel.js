@@ -16,8 +16,12 @@ module.exports = function(sequelize)
 	ContentLinkFlag.belongsTo(ContentLink, { foreignKey: "linkId" });
 	
 	var User = sequelize.models.User;
-	User.hasMany(ContentLinkFlag, { foreignKey: "userId" });
-	ContentLinkFlag.belongsTo(User, { foreignKey: "userId" });
+
+	User.hasMany(ContentLinkFlag, { foreignKey: "userId", as: "User" });
+	ContentLinkFlag.belongsTo(User, { foreignKey: "userId", as: "User" });
+	
+	User.hasMany(ContentLinkFlag, { foreignKey: "reviewerId", as: "Reviewer" });
+	ContentLinkFlag.belongsTo(User, { foreignKey: "reviewerId", as: "Reviewer" });
 	
 	return ContentLinkFlag;
 }

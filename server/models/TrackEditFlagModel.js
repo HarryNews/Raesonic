@@ -16,8 +16,12 @@ module.exports = function(sequelize)
 	TrackEditFlag.belongsTo(TrackEdit, { foreignKey: "editId" });
 	
 	var User = sequelize.models.User;
-	User.hasMany(TrackEditFlag, { foreignKey: "userId" });
-	TrackEditFlag.belongsTo(User, { foreignKey: "userId" });
+
+	User.hasMany(TrackEditFlag, { foreignKey: "userId", as: "User" });
+	TrackEditFlag.belongsTo(User, { foreignKey: "userId", as: "User" });
+	
+	User.hasMany(TrackEditFlag, { foreignKey: "reviewerId", as: "Reviewer" });
+	TrackEditFlag.belongsTo(User, { foreignKey: "reviewerId", as: "Reviewer" });
 	
 	return TrackEditFlag;
 }

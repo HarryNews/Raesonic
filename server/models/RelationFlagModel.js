@@ -16,8 +16,12 @@ module.exports = function(sequelize)
 	RelationFlag.belongsTo(Relation, { foreignKey: "relationId" });
 	
 	var User = sequelize.models.User;
-	User.hasMany(RelationFlag, { foreignKey: "userId" });
-	RelationFlag.belongsTo(User, { foreignKey: "userId" });
+
+	User.hasMany(RelationFlag, { foreignKey: "userId", as: "User" });
+	RelationFlag.belongsTo(User, { foreignKey: "userId", as: "User" });
+	
+	User.hasMany(RelationFlag, { foreignKey: "reviewerId", as: "Reviewer" });
+	RelationFlag.belongsTo(User, { foreignKey: "reviewerId", as: "Reviewer" });
 	
 	return RelationFlag;
 }
