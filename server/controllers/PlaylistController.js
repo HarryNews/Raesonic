@@ -30,12 +30,15 @@ module.exports = function(core)
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
+	var config = core.config;
 
 	var User = sequelize.models.User;
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
 	var Playlist = sequelize.models.Playlist;
 	var Item = sequelize.models.Item;
+
+	var isVerificationRequired = config.auth.verification;
 
 	// Creates a new playlist with the specified name
 	// Note: Main playlists are not created with this method
@@ -92,7 +95,7 @@ module.exports = function(core)
 				include:
 				[{
 					model: User,
-					attributes: ["userId", "username", "email"],
+					attributes: ["userId", "username", "email", "emailToken"],
 				},
 				{
 					model: Item,
@@ -125,11 +128,20 @@ module.exports = function(core)
 				// Include playlist creator data unless it's the same user
 				if(!req.user || req.user.userId != playlist.User.userId)
 				{
+					var playlistOwner = playlist.User;
+
+					var hasVerifiedEmail = ( playlistOwner.email.length != 0 &&
+						( !isVerificationRequired ||
+							playlistOwner.emailToken.length == 0 )
+					);
+
 					playlistData.push
 					([
-						playlist.User.username,
+						playlistOwner.username,
 						Gravatar.url(
-							playlist.User.email || playlist.User.username,
+							hasVerifiedEmail
+								? playlistOwner.email
+								: playlistOwner.username,
 							{ s: "13", r: "pg", d: "retro" }
 						),
 					]);

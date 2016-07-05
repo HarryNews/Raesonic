@@ -136,7 +136,9 @@ module.exports = function(core)
 			user.userId,
 			user.username,
 			Gravatar.url(
-				user.email || user.username,
+				UserController.isVerifiedUser(user)
+					? user.email
+					: user.username,
 				{ s: "43", r: "pg", d: "retro" }
 			),
 			(isReputationEnabled
