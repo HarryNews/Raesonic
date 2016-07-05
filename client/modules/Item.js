@@ -501,6 +501,14 @@ Item.onEditIconClick = function()
 		var $link = $("#edit-guidelines-label a");
 		Article.addLink($link, Article.TRACK_NAMING_GUIDELINES);
 
+		var Reputation = require("./Reputation.js");
+
+		if( Reputation.hasPermission(
+			Reputation.PERMISSION.AUTOCHECK_GUIDELINES) )
+		{
+			$("#edit-guidelines-agree").prop("checked", true);
+		}
+
 		Item.updateEditOverlay();
 	});
 }
