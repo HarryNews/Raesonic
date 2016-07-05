@@ -633,7 +633,7 @@ Throttle(5000, function()
 // Called upon clicking a track item in the dropdown list
 Item.onRelationElementClick = function()
 {
-	if(Overlay.isActive())
+	if( Overlay.isActive() )
 		return;
 
 	Item.fadeRemoveDropdown();

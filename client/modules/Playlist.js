@@ -875,7 +875,7 @@ Playlist.showPlaylistOverlay = function(playlistId, name, access)
 	if(!Account.authenticated)
 		return Account.showLoginOverlay();
 
-	if(Overlay.isActive())
+	if( Overlay.isActive() )
 		return;
 
 	var elements =

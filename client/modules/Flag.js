@@ -300,13 +300,13 @@ Flag.onAccountSync = function()
 // Called upon clicking the flag icon
 Flag.onIconClick = function()
 {
+	if( Overlay.isActive() )
+		return Overlay.destroy();
+
 	var Account = require("./Account.js");
 
 	if(!Account.authenticated)
 		return Account.showLoginOverlay();
-
-	if(Overlay.isActive())
-		return;
 
 	var $flag = $(this);
 

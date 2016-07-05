@@ -203,7 +203,7 @@ Account.setAuthenticated = function(isAuthenticated)
 // Create and show an overlay for authentication
 Account.showLoginOverlay = function()
 {
-	if(Overlay.isActive())
+	if( Overlay.isActive() )
 		return;
 
 	Overlay.create("Existing account",
@@ -258,7 +258,7 @@ Account.showLoginOverlay = function()
 // Create and show an overlay for account actions
 Account.showAccountOverlay = function()
 {
-	if(Overlay.isActive())
+	if( Overlay.isActive() )
 		return;
 
 	Overlay.create("Account",
@@ -307,6 +307,9 @@ Account.updateAccountOverlay = function()
 // Called upon clicking the user header
 Account.onHeaderClick = function()
 {
+	if( Overlay.isActive() )
+		return Overlay.destroy();
+
 	Account.authenticated
 		? Account.showAccountOverlay()
 		: Account.showLoginOverlay();
