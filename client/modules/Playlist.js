@@ -1030,10 +1030,7 @@ Playlist.onAccountSync = function()
 Playlist.onLoadResponse = function(response)
 {
 	if(response.errors)
-	{
-		Playlist.updateSection();
-		return;
-	}
+		return Playlist.onLoadError(response);
 
 	var playlist = response[0];
 	var items = response[1];
@@ -1051,7 +1048,7 @@ Playlist.onLoadResponse = function(response)
 Playlist.onLoadError = function(response)
 {
 	Playlist.clearActive();
-	Playlist.updateSection();
+	Playlist.setActiveSection("PRIVATE");
 
 	var json = response.responseJSON;
 
