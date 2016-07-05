@@ -206,7 +206,7 @@ Account.showLoginOverlay = function()
 	if(Overlay.isActive())
 		return;
 
-	Overlay.create("Log in",
+	Overlay.create("Existing account",
 	[{
 		tag: "<input>",
 		attributes:
@@ -359,7 +359,7 @@ Account.onSignUpConfirmClick = function()
 // Transforms login window into a sign up window
 Account.onSignUpStartClick = function()
 {
-	$("#window-header").text("Sign up");
+	$("#window-header").text("New account");
 
 	$("#login-username").attr("id", "signup-username");
 	$("#login-password").attr("id", "signup-password");
@@ -421,7 +421,7 @@ Account.onSignUpStartClick = function()
 // Transforms sign up window into a login window
 Account.onLoginStartClick = function()
 {
-	$("#window-header").text("Log in");
+	$("#window-header").text("Existing account");
 
 	$("#signup-username").attr("id", "login-username");
 	$("#signup-password").attr("id", "login-password");
