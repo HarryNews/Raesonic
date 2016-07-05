@@ -75,6 +75,20 @@ ItemList.addItem = function(item, prepend, useStorage)
 	// If the itemId is known, store extra values
 	if(item[3] != null)
 	{
+		var Reputation = require("./Reputation.js");
+
+		var isEditingAllowed = Reputation.hasPermission(
+			Reputation.PERMISSION.EDIT_OWN_TRACKS, true
+		);
+
+		var $edit = $("<div>")
+			.addClass("edit icon")
+			.toggleClass("disabled", !isEditingAllowed)
+			.click(Item.onEditIconClick);
+
+		if(!isEditingAllowed)
+			$edit.attr("title", "Not enough reputation");
+
 		$item
 			.data
 			({
@@ -87,11 +101,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 					item[5],
 				],
 			})
-			.append(
-				$("<div>")
-					.addClass("edit icon")
-					.click(Item.onEditIconClick)
-			);
+			.append($edit);
 	}
 
 	// If the relation rating is known, store relation values
@@ -271,6 +281,24 @@ ItemList.restoreStorage = function()
 	$("#items").data( "storage", [] );
 
 	ItemList.scrollTo( $(".item.active") );
+}
+
+// Called when the user account status has changed
+ItemList.onAccountSync = function()
+{
+	// Update all edit icons based on reputation
+	var Reputation = require("./Reputation.js");
+
+	var isEditingAllowed = Reputation.hasPermission(
+		Reputation.PERMISSION.EDIT_OWN_TRACKS, true
+	);
+
+	$(".item > .edit.icon")
+		.toggleClass("disabled", !isEditingAllowed)
+		.attr("title", isEditingAllowed
+			? ""
+			: "Not enough reputation"
+		);
 }
 
 module.exports = ItemList;

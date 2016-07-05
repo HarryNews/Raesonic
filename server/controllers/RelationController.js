@@ -37,6 +37,18 @@ module.exports = function(core)
 		if(req.body.trackId == req.body.linkedId)
 			return res.status(400).json({ errors: ["self-link not allowed"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.CREATE_RELATIONS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.CREATE_RELATIONS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
+
 		Track.count
 		({
 			where:
@@ -44,7 +56,7 @@ module.exports = function(core)
 				$or:
 				[
 					{ trackId: req.body.trackId },
-					{ trackId: req.body.linkedId }
+					{ trackId: req.body.linkedId },
 				]
 			}
 		})
@@ -54,8 +66,7 @@ module.exports = function(core)
 			if(amount != 2)
 				return res.status(404).json({ errors: ["track not found"] });
 
-			// todo: use ReputationController.getVoteValue(req.user)
-			var voteValue = 1;
+			var voteValue = ReputationController.getVoteValue(req.user);
 
 			sequelize.transaction(function(tr)
 			{
@@ -95,7 +106,17 @@ module.exports = function(core)
 						userId: req.user.userId,
 						value: voteValue
 					},
-					{ transaction: tr });
+					{ transaction: tr })
+					.then(function(relationVote)
+					{
+						return ReputationController.addActivity(req.user,
+							ReputationController.ACTIVITY.CREATE_RELATIONS,
+							tr,
+						function onDone()
+						{
+							return relationVote;
+						});
+					});
 				});
 			})
 			.then(function(entity)
@@ -222,6 +243,15 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		var votePermission = (req.body.vote == -1)
+			? ReputationController.PERMISSION.VOTE_RELATIONS_DOWN
+			: ReputationController.PERMISSION.VOTE_RELATIONS_UP;
+
+		if( !ReputationController.hasPermission(req.user, votePermission) )
+			return res.status(403).json({ errors: ["not enough reputation"] });
+
 		Relation.findOne
 		({
 			attributes: ["relationId", "trust", "doubt"],
@@ -257,8 +287,8 @@ module.exports = function(core)
 		if(vote == RelationController.VOTE_CLEAR)
 			return RelationController.clearRelationVote(relation, req, res);
 
-		// todo: use ReputationController.getVoteValue(req.user) * vote;
-		var voteValue = 1 * vote;
+		var ReputationController = core.controllers.Reputation;
+		var voteValue = ReputationController.getVoteValue(req.user) * vote;
 
 		sequelize.transaction(function(tr)
 		{

@@ -90,6 +90,12 @@ History.request = function(historyType, entityId)
 
 			var latest = ["", ""];
 
+			var Reputation = require("./Reputation.js");
+
+			var canSubmitFlags = Reputation.hasPermission(
+				Reputation.PERMISSION.SUBMIT_FLAGS, true
+			);
+
 			response.forEach(function addAction(action)
 			{
 				var actionId = action[0];
@@ -137,10 +143,10 @@ History.request = function(historyType, entityId)
 					.append(
 						$("<div>")
 							.addClass("artist")
-							.html(change[0]),
+							.html( change[0] ),
 						$("<div>")
 							.addClass("title")
-							.html(change[1])
+							.html( change[1] )
 					);
 
 				var relativeDate = History.getRelativeDate(date);
@@ -155,7 +161,11 @@ History.request = function(historyType, entityId)
 								$("<div>")
 									.addClass("flag icon")
 									.toggleClass("active", active)
-									.attr("title", "Flag for moderator attention")
+									.toggleClass("disabled", !canSubmitFlags)
+									.attr("title", canSubmitFlags
+										? "Flag for moderator attention"
+										: "Not enough reputation"
+									)
 									.data
 									({
 										entityType: request.entityType,

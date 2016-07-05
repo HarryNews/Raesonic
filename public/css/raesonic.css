@@ -743,6 +743,11 @@ body
 {
 	border: 1px solid #3A3745;
 }
+.item > .icon.disabled
+{
+	opacity: 0.2;
+	cursor: default;
+}
 #add-list
 {
 	position: absolute;
@@ -1402,11 +1407,11 @@ a.window-link
 	-webkit-filter: brightness(0.46) sepia(1) hue-rotate(-30deg) contrast(2);
 	opacity: 1;
 }
-#tabs .tab-contents .arrowup.active
+#tabs .tab-contents .arrowup.active, #related-flag.active
 {
-	-webkit-filter: brightness(1.85) sepia(1) hue-rotate(-25deg) contrast(2.8)
+	-webkit-filter: brightness(1.85) sepia(1) hue-rotate(-25deg) contrast(2.8) !important;
 }
-#tabs .tab-contents .icon.inactive
+#tabs .tab-contents .icon.inactive, #tabs .tab-contents .icon.disabled
 {
 	opacity: 0.2;
 	cursor: default;
@@ -1592,6 +1597,11 @@ a.window-link
 #tabs .action .icon:hover
 {
 	opacity: 1;
+}
+#tabs .action .icon.disabled, #tabs .action .icon.disabled:hover
+{
+	cursor: default;
+	opacity: 0.1;
 }
 #tabs .action .clock.icon
 {

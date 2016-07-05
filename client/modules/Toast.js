@@ -1,5 +1,14 @@
 var Toast =
 {
+	ERRORS:
+	{
+		"internal error":
+			"Error has occurred, please try again later",
+		"not enough reputation":
+			"Not enough reputation to proceed. Sorry!",
+		"exceeded daily activity limit":
+			"Daily activity limit exceeded, please try again later",
+	},
 	// Toast classes
 	INFO: "info",
 	ERROR: "error",
@@ -36,6 +45,56 @@ Toast.show = function(message, toastClass)
 		{
 			$(this).remove();
 		});
+}
+
+// Called upon a request error
+Toast.onRequestError = function(response)
+{
+	var json = response.responseJSON;
+
+	if(!json || !json.errors)
+		return;
+
+	var error = json.errors[0];
+
+	if(error == "not authenticated")
+	{
+		Toast.show("Session has expired, please log in and try again",
+			Toast.ERROR);
+
+		setTimeout(function()
+		{
+			var Account = require("./Account.js");
+			Account.sync();
+		}, 3000);
+
+		return;
+	}
+
+	if(error == "email not verified")
+	{
+		var Overlay = require("./Overlay.js");
+		Overlay.destroy();
+
+		Toast.show("Email needs to be verified to proceed, " +
+			"please review the settings", Toast.ERROR);
+
+		setTimeout(function()
+		{
+			// todo: show email settings window
+		}, 3000);
+
+		return;
+	}
+
+	for(var errorId in Toast.ERRORS)
+	{
+		if(error == errorId)
+		{
+			Toast.show(Toast.ERRORS[errorId], Toast.ERROR);
+			return;
+		}
+	}
 }
 
 // Remove the notification message

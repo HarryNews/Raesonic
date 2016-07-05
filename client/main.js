@@ -7,6 +7,7 @@ $(document).ready(function()
 	var Player = require("./modules/Player.js");
 	var Content = require("./modules/Content.js");
 	var Playlist = require("./modules/Playlist.js");
+	var ItemList = require("./modules/ItemList.js");
 	var Relation = require("./modules/Relation.js");
 	var History = require("./modules/History.js");
 	var Flag = require("./modules/Flag.js");
@@ -33,6 +34,8 @@ $(document).ready(function()
 	function onAccountSync()
 	{
 		Playlist.onAccountSync();
+		ItemList.onAccountSync();
+		Relation.onAccountSync();
 		Flag.onAccountSync();
 
 		Overlay.destroy();

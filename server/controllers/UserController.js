@@ -15,6 +15,7 @@ module.exports = function(core)
 
 	var isSignUpEnabled = config.auth.signup;
 	var isVerificationRequired = config.auth.verification;
+	var isReputationEnabled = config.auth.reputation;
 
 	var User = sequelize.models.User;
 	var Playlist = sequelize.models.Playlist;
@@ -129,6 +130,7 @@ module.exports = function(core)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
 		var user = req.user;
+
 		var response =
 		[
 			user.userId,
@@ -137,7 +139,9 @@ module.exports = function(core)
 				user.email || user.username,
 				{ s: "43", r: "pg", d: "retro" }
 			),
-			user.reputation
+			(isReputationEnabled
+				? user.reputation
+				: 10000),
 		];
 
 		res.json(response);

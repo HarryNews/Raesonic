@@ -14,6 +14,8 @@ var Relation =
 // Create a relation between two tracks
 Relation.create = function(trackId, linkedId)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/relations/",
@@ -30,15 +32,14 @@ Relation.create = function(trackId, linkedId)
 
 			var Overlay = require("./Overlay.js");
 			Overlay.destroy();
-			
-			var Toast = require("./Toast.js");
 
 			var message = (status == Relation.STATUS_CREATED)
 				? "Recommendation created successfully"
 				: "Recommendation has been upvoted";
 
 			Toast.show(message, Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Relation.createThrottled = Throttle(5000,
@@ -138,6 +139,8 @@ Relation.request = function(trackId, resumeTrackId)
 // Update vote on a relation between two tracks
 Relation.vote = function(trackId, linkedId, vote)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/tracks/" + trackId + "/relations/" + linkedId + "/votes/",
@@ -169,7 +172,8 @@ Relation.vote = function(trackId, linkedId, vote)
 			});
 
 			Relation.updateActiveRating(rating, vote);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Relation.voteThrottled = Throttle(2000,
@@ -191,7 +195,10 @@ Relation.setActiveVote = function(vote, $icon)
 	if(!Item.active)
 		return;
 
-	if($icon.is(".active"))
+	if( $icon.is(".disabled") )
+		return;
+
+	if( $icon.is(".active") )
 		vote = Relation.VOTE_CLEAR;
 
 	Relation.voteThrottled(Item.active.trackId,
@@ -219,15 +226,32 @@ Relation.updateActiveRating = function(rating, vote)
 {
 	$("#related-rating").text(rating);
 
+	var Reputation = require("./Reputation.js");
+
+	var canVoteUp = Reputation.hasPermission(
+		Reputation.PERMISSION.VOTE_RELATIONS_UP, true
+	);
+	var canVoteDown = Reputation.hasPermission(
+		Reputation.PERMISSION.VOTE_RELATIONS_DOWN, true
+	);
+
 	$("#related-upvote")
-		.attr( "title", "These tracks are similar" +
-			( (vote > 0) ? " (click to undo)" : "" ) )
-		.toggleClass( "active", (vote > 0) );
+		.attr("title", canVoteUp
+			? "These tracks are similar" +
+				( (vote > 0) ? " (click to undo)" : "" )
+			: "Not enough reputation"
+		)
+		.toggleClass( "active", (vote > 0) )
+		.toggleClass("disabled", !canVoteUp);
 
 	$("#related-downvote")
-		.attr( "title", "These tracks are different" +
-			( (vote < 0) ? " (click to undo)" : "") )
-		.toggleClass( "active", (vote < 0) );
+		.attr("title", canVoteDown
+			? "These tracks are different" +
+				( (vote < 0) ? " (click to undo)" : "")
+			: "Not enough reputation"
+		)
+		.toggleClass( "active", (vote < 0) )
+		.toggleClass("disabled", !canVoteDown);
 }
 
 // Called when a relation item is selected, and when it is made active
@@ -241,7 +265,14 @@ Relation.onRelationItemChange = function($item, artist, title)
 	Relation.active.resumeTrackId = data.trackId;
 	Relation.updateActiveRating(data.rating, data.vote);
 
+	var Reputation = require("./Reputation.js");
+
+	var canSubmitFlags = Reputation.hasPermission(
+		Reputation.PERMISSION.SUBMIT_FLAGS, true
+	);
+
 	var Flag = require("./Flag.js");
+
 	$("#related-flag")
 		.data
 		({
@@ -253,7 +284,24 @@ Relation.onRelationItemChange = function($item, artist, title)
 			secondArtist: Relation.active.artist,
 			secondTitle: Relation.active.title,
 		})
-		.toggleClass( "active", $item.data("flagged") );
+		.toggleClass( "active", $item.data("flagged") )
+		.toggleClass("disabled", !canSubmitFlags)
+		.attr("title", canSubmitFlags
+			? "Flag for moderator attention"
+			: "Not enough reputation"
+		);
+}
+
+// Called when the user account status has changed
+Relation.onAccountSync = function()
+{
+	var $item = $(".item.active");
+
+	if(!$item.length)
+		return;
+
+	var data = $item.data();
+	Relation.updateActiveRating(data.rating, data.vote);
 }
 
 // Called upon pressing the view relations button

@@ -71,6 +71,8 @@ Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
 		}
 	}
 
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: flagUrl,
@@ -86,10 +88,10 @@ Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
 
 			Overlay.destroy();
 
-			var Toast = require("./Toast.js");
 			Toast.show("Report has been submitted, thank you for " +
 				"keeping Raesonic clean!", Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Flag.createThrottled = Throttle(5000,
@@ -268,16 +270,31 @@ Flag.showFlagOverlay = function(data, $flag)
 	});
 }
 
-// Called when the user authentication is done
+// Called when the user account status has changed
 Flag.onAccountSync = function()
 {
+	// Update all flags based on reputation
+	var Reputation = require("./Reputation.js");
+
+	var canSubmitFlags = Reputation.hasPermission(
+		Reputation.PERMISSION.SUBMIT_FLAGS, true
+	);
+
+	$(".flag.icon, .flaglarge.icon")
+		.toggleClass("disabled", !canSubmitFlags)
+		.attr("title", canSubmitFlags
+			? "Flag for moderator attention"
+			: "Not enough reputation"
+		);
+
 	var Account = require("./Account.js");
 
 	if(Account.authenticated)
 		return;
 
 	// Remove active state from all flags
-	$(".flag.icon.active").removeClass("active");
+	$(".flag.icon.active, .flaglarge.icon.active")
+		.removeClass("active");
 }
 
 // Called upon clicking the flag icon
@@ -292,6 +309,10 @@ Flag.onIconClick = function()
 		return;
 
 	var $flag = $(this);
+
+	if( $flag.is(".disabled") )
+		return;
+
 	Flag.showFlagOverlay($flag.data(), $flag);
 }
 

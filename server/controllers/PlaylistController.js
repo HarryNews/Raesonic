@@ -49,6 +49,14 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		if( req.body.access == PlaylistController.ACCESS.PUBLIC &&
+			!ReputationController.hasPermission(req.user,
+				ReputationController.PERMISSION.OWN_PUBLIC_PLAYLISTS) )
+					return res.status(403).json
+						({ errors: ["not enough reputation"] });
+
 		Playlist.create
 		({
 			name: req.body.name,
@@ -251,6 +259,14 @@ module.exports = function(core)
 
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
+
+		var ReputationController = core.controllers.Reputation;
+
+		if( req.body.access == PlaylistController.ACCESS.PUBLIC &&
+			!ReputationController.hasPermission(req.user,
+				ReputationController.PERMISSION.OWN_PUBLIC_PLAYLISTS) )
+					return res.status(403).json
+						({ errors: ["not enough reputation"] });
 
 		PlaylistController.verifyOwnership(req.user,
 			PlaylistController.BY_PLAYLISTID, req.params.playlistId, res,

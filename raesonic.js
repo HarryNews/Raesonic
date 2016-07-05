@@ -42,6 +42,7 @@ var core =
 // Create workspace controllers
 var controllers = {};
 controllers.User = require("./server/controllers/UserController.js")(core);
+controllers.Reputation = require("./server/controllers/ReputationController.js")(core);
 controllers.Track = require("./server/controllers/TrackController.js")(core);
 controllers.Content = require("./server/controllers/ContentController.js")(core);
 controllers.Playlist = require("./server/controllers/PlaylistController.js")(core);

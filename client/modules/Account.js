@@ -40,24 +40,18 @@ Account.create = function(username, password)
 
 			if(error == "username not available")
 				return Overlay.setError("#signup-username", "not available");
+			
+			var Toast = require("./Toast.js");
 
 			if(error == "signup disabled")
 			{
-				var Toast = require("./Toast.js");
 				Toast.show("Account creation is disabled, please try again later",
 					Toast.ERROR);
 
 				return;
 			}
 
-			if(error == "internal error")
-			{
-				var Toast = require("./Toast.js");
-				Toast.show("Error has occurred, please try again later",
-					Toast.ERROR);
-
-				return;
-			}
+			Toast.onRequestError(response);
 		}
 	});
 }

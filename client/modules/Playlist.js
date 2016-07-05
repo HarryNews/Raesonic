@@ -25,6 +25,8 @@ var Playlist =
 // Create a new playlist with the name provided
 Playlist.create = function(name, access, sectionAlias)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/playlists/",
@@ -71,9 +73,9 @@ Playlist.create = function(name, access, sectionAlias)
 
 			Overlay.destroy();
 
-			var Toast = require("./Toast.js");
 			Toast.show("Playlist created successfully", Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Playlist.createThrottled = Throttle(5000,
@@ -85,6 +87,8 @@ function(name, access, sectionAlias)
 // Edit name and access of the specified playlist
 Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/playlists/" + playlistId + "/",
@@ -127,7 +131,8 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 
 			var Toast = require("./Toast.js");
 			Toast.show("Playlist saved successfully", Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Playlist.editThrottled = Throttle(2000,
@@ -139,6 +144,8 @@ function(playlistId, name, access, alias, sectionAlias)
 // Delete the specified playlist
 Playlist.delete = function(playlistId)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/playlists/" + playlistId + "/",
@@ -160,9 +167,9 @@ Playlist.delete = function(playlistId)
 
 			Overlay.destroy();
 
-			var Toast = require("./Toast.js");
 			Toast.show("Playlist has been deleted", Toast.INFO);
 		},
+		error: Toast.onRequestError,
 	});
 }
 Playlist.deleteThrottled = Throttle(5000,
@@ -585,8 +592,6 @@ Playlist.addDropdownItem = function(name, inSubcat)
 // Initialise playlists dropdown
 Playlist.initDropdown = function()
 {
-	var Account = require("./Account.js");
-
 	Playlist.addDropdownCategory("own",
 	[
 		Playlist.addDropdownSubcat("Playlists",
@@ -599,13 +604,27 @@ Playlist.initDropdown = function()
 		Playlist.addDropdownItem("Recent"),
 	]);
 
-	// todo: use Reputation.hasPermission(Reputation.VIEW_FLAGS)
-	if(Account.authenticated && Account.own.reputation >= 200)
+	var globalItems = [];
+
+	var Reputation = require("./Reputation.js");
+
+	if( Reputation.hasPermission(
+		Reputation.PERMISSION.VIEW_FLAGS) )
+			globalItems.push( Playlist.addDropdownItem("Flags") );
+
+	if(globalItems.length)
+		Playlist.addDropdownCategory("global", globalItems);
+
+	if(Playlist.active != null)
 	{
-		Playlist.addDropdownCategory("global",
-		[
-			Playlist.addDropdownItem("Flags"),
-		]);
+		var Account = require("./Account.js");
+
+		// Obtain alias from the active playlist, unless it belongs to another user
+		var sectionAlias = (Playlist.active.user == null)
+			? Playlist.PERSONAL_SECTIONS[Playlist.active.access - 1]
+			: "PRIVATE";
+
+		Playlist.setActiveSection(sectionAlias);
 	}
 }
 
@@ -617,6 +636,9 @@ Playlist.clearAllSections = function()
 	$("#playlists")
 		.empty()
 		.removeData();
+
+	if( $("#sidebar").is(".visible") )
+		Playlist.toggleSidebar();
 }
 
 // Hide/show the playlists management sidebar
@@ -779,10 +801,18 @@ Playlist.initPlaylistOverlay = function(currentAccess)
 		[Playlist.ACCESS.PUBLIC]: "Public",
 	};
 
+	var Reputation = require("./Reputation.js");
+
 	for(var access in Playlist.ACCESS)
 	{
-		var radioId = "access-" + access.toLowerCase();
 		var accessId = Playlist.ACCESS[access];
+
+		if( accessId == Playlist.ACCESS.PUBLIC &&
+			!Reputation.hasPermission(
+				Reputation.PERMISSION.OWN_PUBLIC_PLAYLISTS) )
+					continue;
+
+		var radioId = "access-" + access.toLowerCase();
 
 		var $radio = Overlay.createElement
 		({
@@ -979,10 +1009,19 @@ Playlist.hasPassedInputValidation = function()
 	return true;
 }
 
-// Called when the user authentication is done
+// Called when the user account status has changed
 Playlist.onAccountSync = function()
 {
 	var Account = require("./Account.js");
+
+	// Remove playlist creator data if it's the same user
+	if( Playlist.active &&
+		Playlist.active.user &&
+		Playlist.active.user[0] == Account.own.username )
+	{
+		Playlist.active.user = null;
+		$("#playlist-details-user").remove();
+	}
 
 	// Update sections based on authentication status
 	Account.authenticated
@@ -992,13 +1031,6 @@ Playlist.onAccountSync = function()
 	// Load playlist from the current url
 	if(!Playlist.active || !Account.authenticated)
 		return Playlist.processUrl();
-
-	// Remove playlist creator data if it's the same user
-	var $user = $("#playlist-details-user");
-
-	if( $user.length &&
-		$user.text() == Account.own.username )
-			$user.remove();
 }
 
 // Called when the playlist is loaded
@@ -1053,13 +1085,7 @@ Playlist.onLoadError = function(response)
 		return;
 	}
 
-	if(error == "internal error")
-	{
-		Toast.show("Error has occurred, please try again later",
-			Toast.ERROR);
-		
-		return;
-	}
+	Toast.onRequestError(response);
 }
 
 // Called when the mouse is pressed somewhere

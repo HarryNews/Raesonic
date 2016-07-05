@@ -27,6 +27,18 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.EDIT_OWN_TRACKS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.EDIT_TRACKS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
+
 		Track.findOrCreate
 		({
 			where:
@@ -70,7 +82,15 @@ module.exports = function(core)
 						{
 							// Don't log the edit, if the track existed before
 							if(!created)
-								return track;
+							{
+								return ReputationController.addActivity(req.user,
+									ReputationController.ACTIVITY.EDIT_TRACKS,
+									tr,
+								function onDone()
+								{
+									return track;
+								});
+							}
 
 							return TrackEdit.create
 							({
@@ -82,8 +102,14 @@ module.exports = function(core)
 							{ transaction: tr })
 							.then(function()
 							{
-								return track;
-							})
+								return ReputationController.addActivity(req.user,
+									ReputationController.ACTIVITY.EDIT_TRACKS,
+									tr,
+								function onDone()
+								{
+									return track;
+								});
+							});
 						});
 					});
 				})
@@ -118,9 +144,17 @@ module.exports = function(core)
 		if(!artist.changed && !title.changed)
 			return res.status(400).json({ errors: ["no changes"] });
 
-		// todo: implement code below
-		// if(!ReputationController.hasPermission(req.user, ReputationController.EDIT_TRACK))
-		// 	return res.status(403).json({ errors: ["not enough reputation"] });
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.EDIT_OWN_TRACKS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.EDIT_TRACKS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
 
 		// Count amount of content the track is linked with
 		Content.count
@@ -133,120 +167,160 @@ module.exports = function(core)
 			if(!amount)
 				return res.status(500).json({ errors: ["internal error"] });
 
-			var changes = {};
-
-			sequelize.transaction(function(tr)
+			TrackEdit.findOne
+			({
+				attributes: ["editId", "trackId", "userId"],
+				where: { trackId: req.params.trackId },
+				order: [ ["editId", "ASC"] ],
+			})
+			.then(function(trackEdit)
 			{
-				// If the track belongs to a single content, it is updated, otherwise
-				// a new track is created and linked. That should prevent erroneous
-				// track changes, when the content is linked to mismatching tracks
-				if(amount == 1)
+				// Shouldn't really happen, but check if the track edit is not there
+				if(!trackEdit)
+					return res.status(500).json({ errors: ["internal error"] });
+
+				// Ask additional permission if the track belongs to other user
+				if(trackEdit.userId != req.user.userId)
 				{
-					if(artist.changed)
-						changes.artist = artist.name;
+					if( !ReputationController.hasPermission(req.user,
+						ReputationController.PERMISSION.EDIT_ALL_TRACKS) )
+							return res.status(403).json
+								({ errors: ["not enough reputation"] });
+				}
 
-					if(title.changed)
-						changes.title = title.name;
+				var changes = {};
 
-					// Check if a track with the new name already exists
-					return Track.findOne
-					({
-						where:
-						{
-							artist: artist.name,
-							title: title.name,
-						},
-						transaction: tr,
-					})
-					.then(function(conflictingTrack)
+				sequelize.transaction(function(tr)
+				{
+					// If the track belongs to a single content, it is updated, otherwise
+					// a new track is created and linked. That should prevent erroneous
+					// track changes, when the content is linked to mismatching tracks
+					if(amount == 1)
 					{
-						// Track already exists, link the content with it
-						if(conflictingTrack)
-						{
-							var ContentController = core.controllers.Content;
+						if(artist.changed)
+							changes.artist = artist.name;
 
-							return ContentController.linkContent(req.body.itemId,
-								conflictingTrack, tr, req, res,
-							function onContentLink(track)
+						if(title.changed)
+							changes.title = title.name;
+
+						// Check if a track with the new name already exists
+						return Track.findOne
+						({
+							where:
 							{
-								return track;
-							});
-						}
-
-						// Name is available, rename the existing track
-						return Track.update
-						(changes,
-						{
-							where: { trackId: req.params.trackId },
+								artist: artist.name,
+								title: title.name,
+							},
 							transaction: tr,
 						})
-						.then(function()
+						.then(function(conflictingTrack)
 						{
-							var track = { trackId: req.params.trackId };
+							// Track already exists, link the content with it
+							if(conflictingTrack)
+							{
+								var ContentController = core.controllers.Content;
+
+								return ContentController.linkContent(req.body.itemId,
+									conflictingTrack, tr, req, res,
+								function onContentLink(track)
+								{
+									return ReputationController.addActivity(req.user,
+										ReputationController.ACTIVITY.EDIT_TRACKS,
+										tr,
+									function onDone()
+									{
+										return track;
+									});
+								});
+							}
+
+							// Name is available, rename the existing track
+							return Track.update
+							(changes,
+							{
+								where: { trackId: req.params.trackId },
+								transaction: tr,
+							})
+							.then(function()
+							{
+								var track = { trackId: req.params.trackId };
+
+								changes.userId = req.user.userId;
+								changes.trackId = req.params.trackId;
+
+								return TrackEdit.create
+								(changes,
+								{ transaction: tr })
+								.then(function()
+								{
+									return ReputationController.addActivity(req.user,
+										ReputationController.ACTIVITY.EDIT_TRACKS,
+										tr,
+									function onDone()
+									{
+										return track;
+									});
+								});
+							});
+						});
+
+						return;
+					}
+
+					// There's multiple content linked with the track, the item's
+					// content is linked to a new/existing track with the new name
+
+					// No track updates below this line so both fields are required
+					changes = 
+					{
+						artist: artist.name,
+						title: title.name,
+					};
+
+					return Track.findOrCreate
+					({
+						where: changes,
+						transaction: tr,
+					})
+					.spread(function(track, created)
+					{
+						var ContentController = core.controllers.Content;
+
+						return ContentController.linkContent(req.body.itemId, track,
+							tr, req, res,
+						function onContentLink(track)
+						{
+							// Add no track edits if no tracks were created
+							if(!created)
+								return track;
 
 							changes.userId = req.user.userId;
-							changes.trackId = req.params.trackId;
+							changes.trackId = track.trackId;
 
-							return TrackEdit.create
-							(changes,
+							return TrackEdit
+							.create(changes,
 							{ transaction: tr })
 							.then(function()
 							{
-								return track;
+								return ReputationController.addActivity(req.user,
+									ReputationController.ACTIVITY.EDIT_TRACKS,
+									tr,
+								function onDone()
+								{
+									return track;
+								});
 							});
 						});
 					});
-
-					return;
-				}
-
-				// There's multiple content linked with the track, the item's
-				// content is linked to a new/existing track with the new name
-
-				// No track updates below this line so both fields are required
-				changes = 
-				{
-					artist: artist.name,
-					title: title.name,
-				};
-
-				return Track.findOrCreate
-				({
-					where: changes,
-					transaction: tr,
 				})
-				.spread(function(track, created)
+				.then(function(track)
 				{
-					var ContentController = core.controllers.Content;
-
-					return ContentController.linkContent(req.body.itemId, track,
-						tr, req, res,
-					function onContentLink(track)
-					{
-						// Add no track edits if no tracks were created
-						if(!created)
-							return track;
-
-						changes.userId = req.user.userId;
-						changes.trackId = track.trackId;
-
-						return TrackEdit
-						.create(changes,
-						{ transaction: tr })
-						.then(function()
-						{
-							return track;
-						});
-					});
+					res.json(track.trackId);
+				})
+				.catch(function(err)
+				{
+					return res.status(500).json({ errors: ["internal error"] });
 				});
-			})
-			.then(function(track)
-			{
-				res.json(track.trackId);
-			})
-			.catch(function(err)
-			{
-				return res.status(500).json({ errors: ["internal error"] });
 			});
 		});
 	}

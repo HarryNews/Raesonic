@@ -26,6 +26,18 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
+
 		Relation.findOne
 		({
 			attributes: ["relationId"],
@@ -70,6 +82,18 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
+
 		TrackEdit.findOne
 		({
 			attributes: ["editId"],
@@ -104,6 +128,18 @@ module.exports = function(core)
 
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
+
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["not enough reputation"] });
+
+		if( !ReputationController.canPerformActivity(req.user,
+			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
+				return res.status(403).json
+					({ errors: ["exceeded daily activity limit"] });
 
 		ContentLink.findOne
 		({
@@ -146,25 +182,54 @@ module.exports = function(core)
 
 		params[entityField] = entityId;
 
-		model.findOrCreate
-		({
-			defaults: { reasonId: req.body.reasonId },
-			where: params,
-		})
-		.spread(function(flag, created)
+		sequelize.transaction(function(tr)
 		{
-			// No changes required, bail out
-			if(created || flag.reasonId == req.body.reasonId)
-				return res.json( [] );
-
-			flag.update
+			return model.findOrCreate
 			({
-				reasonId: req.body.reasonId,
+				defaults: { reasonId: req.body.reasonId },
+				where: params,
+				transaction: tr,
 			})
-			.then(function()
+			.spread(function(flag, created)
 			{
-				res.json( [] );
+				var ReputationController = core.controllers.Reputation;
+
+				// No changes required, bail out
+				if(created || flag.reasonId == req.body.reasonId)
+				{
+					return ReputationController.addActivity(req.user,
+						ReputationController.ACTIVITY.SUBMIT_FLAGS,
+						tr,
+					function onDone()
+					{
+						return;
+					});
+				}
+
+				return flag.update
+				({
+					reasonId: req.body.reasonId,
+				},
+				{ transaction: tr })
+				.then(function()
+				{
+					return ReputationController.addActivity(req.user,
+						ReputationController.ACTIVITY.SUBMIT_FLAGS,
+						tr,
+					function onDone()
+					{
+						return;
+					});
+				});
 			});
+		})
+		.then(function()
+		{
+			res.json( [] );
+		})
+		.catch(function(err)
+		{
+			return res.status(500).json({ errors: ["internal error"] });
 		});
 	};
 

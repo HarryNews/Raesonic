@@ -192,6 +192,8 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			title: title,
 		};
 
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: tracksUrl,
@@ -249,12 +251,18 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 			$item.data("trackId", trackId);
 			Overlay.destroy();
 
-			var Toast = require("./Toast.js");
 			Toast.show("Track information saved successfully",
 				Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
+Item.renameThrottled = Throttle(5000,
+function(itemId, trackId, artist, title, artistChanged, titleChanged)
+{
+	Item.rename(itemId, trackId, artist, title,
+		artistChanged, titleChanged);
+});
 
 // Play the specified item
 Item.play = function($item, isManualSwitch)
@@ -298,7 +306,7 @@ Item.updateEditOverlay = function()
 		? Overlay.setAction("Save",
 			hasErrors
 				? null
-				: Item.onItemSaveClickThrottled
+				: Item.onItemSaveClick
 		)
 		: Overlay.setAction("Remove",
 			Item.onItemRemoveClickThrottled);
@@ -393,8 +401,13 @@ Item.onEditIconClick = function()
 
 	if(!Account.authenticated)
 		return Account.showLoginOverlay();
+
+	var $icon = $(this);
+
+	if( $icon.is(".disabled") )
+		return;
 	
-	var $item = $(this).parent();
+	var $item = $icon.parent();
 
 	Item.editing = 
 	{
@@ -462,27 +475,33 @@ Item.onAddIconClick = function()
 	Item.fadeRemoveDropdown();
 
 	var $dropdown = $("<div>").attr("id", "add-list");
-	
+
 	// Active item exists and differs from selected, both have tracks attached
 	if(Item.active && Item.active.trackId != $item.data("trackId") &&
 		Item.active.trackId != -1 && $item.data("trackId") != -1)
 	{
-		var trackName = Item.active.artist + " – " +
-			Item.padSpans(Item.active.title);
+		var Reputation = require("./Reputation.js");
 
-		var $icon = $("<div>")
-			.addClass("listrelated icon");
+		if( Reputation.hasPermission(
+			Reputation.PERMISSION.CREATE_RELATIONS) )
+		{
+			var trackName = Item.active.artist + " – " +
+				Item.padSpans(Item.active.title);
 
-		var $label = $("<div>")
-			.addClass("label")
-			.html(trackName);
+			var $icon = $("<div>")
+				.addClass("listrelated icon");
 
-		$dropdown.append(
-			$("<div>")
-				.addClass("list-element")
-				.append($icon, $label)
-				.click(Item.onRelationElementClick)
-		);
+			var $label = $("<div>")
+				.addClass("label")
+				.html(trackName);
+
+			$dropdown.append(
+				$("<div>")
+					.addClass("list-element")
+					.append($icon, $label)
+					.click(Item.onRelationElementClick)
+			);
+		}
 	}
 
 	var Playlist = require("./Playlist.js");
@@ -596,14 +615,9 @@ Item.onItemSaveClick = function()
 	var itemId = Item.editing.itemId;
 	var trackId = Item.editing.trackId;
 
-	Item.rename(itemId, trackId, artist, title,
+	Item.renameThrottled(itemId, trackId, artist, title,
 		artistChanged, titleChanged);
 }
-Item.onItemSaveClickThrottled =
-Throttle(5000, function()
-{
-	Item.onItemSaveClick();
-});
 
 // Called upon clicking the remove button in the overlay
 Item.onItemRemoveClick = function()

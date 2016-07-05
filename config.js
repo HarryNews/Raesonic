@@ -7,7 +7,9 @@ module.exports =
 	auth:
 	{
 		signup: true,
-		verification: false
+		verification: false,
+		reputation: false,
+		limits: false,
 	},
 	session:
 	{
