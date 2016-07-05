@@ -40,7 +40,7 @@ module.exports = function(core)
 
 	var isVerificationRequired = config.auth.verification;
 
-	// Creates a new playlist with the specified name
+	// Create a new playlist with the specified name
 	// Note: Main playlists are not created with this method
 	PlaylistController.createPlaylist = function(req, res)
 	{

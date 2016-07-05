@@ -51,6 +51,7 @@ controllers.Relation = require("./server/controllers/RelationController.js")(cor
 controllers.History = require("./server/controllers/HistoryController.js")(core);
 controllers.Flag = require("./server/controllers/FlagController.js")(core);
 controllers.Search = require("./server/controllers/SearchController.js")(core);
+controllers.Article = require("./server/controllers/ArticleController.js")(core);
 
 // Pass references and initialize API
 core.controllers = controllers;

@@ -24,7 +24,9 @@ YouTube.onPlayerStateChange = function(event)
 	var Player = require("../modules/Player.js");
 
 	var state = event.data
-	var playing = (state == YT.PlayerState.PLAYING || state == YT.PlayerState.BUFFERING);
+
+	var playing =
+		(state == YT.PlayerState.PLAYING || state == YT.PlayerState.BUFFERING);
 
 	Player.playing = playing;
 
@@ -84,7 +86,9 @@ YouTube.togglePlaybackQuality = function()
 // Update playback quality of the player
 YouTube.updatePlaybackQuality = function()
 {
-	YouTube.player.setPlaybackQuality(YouTube.hd ? "hd720" : "large");
+	YouTube.player
+		.setPlaybackQuality(YouTube.hd ? "hd720" : "large");
+
 	$("#hd").toggleClass("disabled", !YouTube.hd);
 }
 
@@ -107,7 +111,9 @@ YouTube.onVideoHoverOut = function()
 
 YouTube.init = function()
 {
-	$("#video").hover(YouTube.onVideoHoverIn, YouTube.onVideoHoverOut);
+	$("#video").hover(YouTube.onVideoHoverIn,
+		YouTube.onVideoHoverOut);
+
 	$("#hd").click(YouTube.togglePlaybackQuality);
 }
 

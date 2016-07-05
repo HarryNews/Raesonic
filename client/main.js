@@ -14,6 +14,7 @@ $(document).ready(function()
 	var Search = require("./modules/Search.js");
 	var Tab = require("./modules/Tab.js");
 	var Overlay = require("./modules/Overlay.js");
+	var Article = require("./modules/Article.js");
 	var Preloader = require("./modules/Preloader.js");
 
 	Account.init(onAccountSync);
@@ -29,6 +30,7 @@ $(document).ready(function()
 	History.init();
 	Search.init();
 	Overlay.init();
+	Article.init();
 	Tab.init();
 
 	function onAccountSync()

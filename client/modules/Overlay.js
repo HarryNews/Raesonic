@@ -70,6 +70,19 @@ Overlay.createElement = function(data)
 	return $element;
 }
 
+// Wrap a checkbox and its label, move them above separator
+Overlay.initCheckbox = function(name)
+{
+	$("#" + name + "-agree, #" + name + "-label")
+		.appendTo(
+			$("<div>")
+				.attr("id", name + "-container")
+				.addClass("checkbox-container")
+				.hide()
+				.insertBefore( $("#window-separator") )
+		);
+}
+
 // Changes the button text and configures the click action
 Overlay.setAction = function(name, onClick)
 {
@@ -131,7 +144,7 @@ Overlay.clearErrors = function()
 	$("#window .input-error").remove();
 }
 
-// Hides the overlay and clears the window
+// Hide the overlay and clear the window
 Overlay.destroy = function()
 {
 	$("#overlay").fadeOut(200, function onOverlayFadeOut()
