@@ -27,7 +27,7 @@ Relation.create = function(trackId, linkedId)
 			if(response.errors)
 				return;
 
-			var relationId = response[0];
+			// var relationId = response[0];
 			var status = response[1];
 
 			var Overlay = require("./Overlay.js");

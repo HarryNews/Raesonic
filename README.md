@@ -13,6 +13,7 @@ Required packages can be installed with
 
 	$ npm install
 	$ npm install -g browserify
+	$ npm install -g uglify-js
 
 Bundle the client-side scripts (GNU/Linux)
 

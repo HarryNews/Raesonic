@@ -1,1 +1,1 @@
-browserify client/main.js -o public/js/raesonic.js
+browserify client/main.js | uglifyjs > public/js/raesonic.js

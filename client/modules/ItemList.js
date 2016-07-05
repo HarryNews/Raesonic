@@ -51,8 +51,6 @@ ItemList.setItems = function(items, useStorage)
 // If the boolean is true, item is added to the beginning
 ItemList.addItem = function(item, prepend, useStorage)
 {
-	var Player = require("./Player.js");
-
 	var isContentAttached = ( item[4] != null );
 
 	var $item =

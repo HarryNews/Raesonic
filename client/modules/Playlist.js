@@ -20,7 +20,15 @@ var Playlist =
 	PERSONAL_SECTIONS: ["private", "shared", "public"],
 	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
-}
+};
+
+Playlist.ACCESS_LABELS = {};
+Playlist.ACCESS_LABELS[Playlist.ACCESS.PRIVATE] =
+	"Private (only me)";
+Playlist.ACCESS_LABELS[Playlist.ACCESS.SHARED] =
+	"Shared (anyone with the link)";
+Playlist.ACCESS_LABELS[Playlist.ACCESS.PUBLIC] =
+	"Public";
 
 // Create a new playlist with the name provided
 Playlist.create = function(name, access, sectionAlias)
@@ -210,13 +218,7 @@ Playlist.loadMain = function()
 // Set the playlist as active
 Playlist.setActive = function(playlistId, name, access, alias, user, items)
 {
-	var accessNames =
-	{
-		[Playlist.ACCESS.PRIVATE]: "private",
-		[Playlist.ACCESS.SHARED]: "shared",
-		[Playlist.ACCESS.PUBLIC]: "public",
-	};
-	var accessName = accessNames[access];
+	var accessName = Playlist.PERSONAL_SECTIONS[access - 1];
 
 	Playlist.active =
 	{
@@ -617,8 +619,6 @@ Playlist.initDropdown = function()
 
 	if(Playlist.active != null)
 	{
-		var Account = require("./Account.js");
-
 		// Obtain alias from the active playlist, unless it belongs to another user
 		var sectionAlias = (Playlist.active.user == null)
 			? Playlist.PERSONAL_SECTIONS[Playlist.active.access - 1]
@@ -794,13 +794,6 @@ Playlist.processUrl = function(onLoadStart)
 // Called once upon creating a playlist overlay
 Playlist.initPlaylistOverlay = function(currentAccess)
 {
-	var accessLabels =
-	{
-		[Playlist.ACCESS.PRIVATE]: "Private (only me)",
-		[Playlist.ACCESS.SHARED]: "Shared (anyone with the link)",
-		[Playlist.ACCESS.PUBLIC]: "Public",
-	};
-
 	var Reputation = require("./Reputation.js");
 
 	for(var access in Playlist.ACCESS)
@@ -838,7 +831,7 @@ Playlist.initPlaylistOverlay = function(currentAccess)
 			{
 				for: radioId,
 			},
-			text: accessLabels[accessId],
+			text: Playlist.ACCESS_LABELS[accessId],
 		});
 
 		( (accessId == 1)

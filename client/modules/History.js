@@ -57,11 +57,9 @@ History.request = function(historyType, entityId)
 		entityId = entityId.substring(2);
 
 	// Wipe the data storage
-	$("#tab-history").data
-	({
-		[request.key]: [],
-		[request.field]: entityId,
-	});
+	$("#tab-history")
+		.data( request.key, [] )
+		.data(request.field, entityId);
 
 	// No track attached, bail out
 	if(request.field == "trackId" && entityId == -1)

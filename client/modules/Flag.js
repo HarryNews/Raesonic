@@ -13,25 +13,23 @@ var Flag =
 	},
 };
 
-Flag.REASONS =
-{
-	[Flag.ENTITY.RELATION]:
-	[
-		[1, "reason-mismatching", "Mismatching recommendation"],
-		[2, "reason-incorrect", "Intentionally incorrect"],
-	],
-	[Flag.ENTITY.TRACK_EDIT]:
-	[
-		[1, "reason-mismatching", "Mismatching information"],
-		[2, "reason-incorrect", "Intentionally incorrect"],
-	],
-	[Flag.ENTITY.CONTENT_LINK]:
-	[
-		[1, "reason-mismatching", "Mismatching association"],
-		[2, "reason-incorrect", "Intentionally incorrect"],
-		[3, "reason-unavailable", "Content not available"],
-	]
-};
+Flag.REASONS = {};
+Flag.REASONS[Flag.ENTITY.RELATION] =
+[
+	[1, "reason-mismatching", "Mismatching recommendation"],
+	[2, "reason-incorrect", "Intentionally incorrect"],
+];
+Flag.REASONS[Flag.ENTITY.TRACK_EDIT] =
+[
+	[1, "reason-mismatching", "Mismatching information"],
+	[2, "reason-incorrect", "Intentionally incorrect"],
+];
+Flag.REASONS[Flag.ENTITY.CONTENT_LINK] =
+[
+	[1, "reason-mismatching", "Mismatching association"],
+	[2, "reason-incorrect", "Intentionally incorrect"],
+	[3, "reason-unavailable", "Content not available"],
+];
 
 // Flag specified entity as inappropriate
 Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
