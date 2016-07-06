@@ -201,14 +201,15 @@ Playlist.load = function(playlistId)
 // Retrieve main playlist of the user
 Playlist.loadMain = function()
 {
-	var Account = require("./Account.js")
+	var Account = require("./Account.js");
 
-	if(!Account.authenticated)
-		return;
+	var requestUrl = (Account.authenticated)
+		? "/own/playlists/main/"
+		: "/playlists/landing/";
 
 	$.ajax
 	({
-		url: "/own/playlists/main/",
+		url: requestUrl,
 		type: "GET",
 		success: Playlist.onLoadResponse,
 		error: Playlist.onLoadError,
@@ -243,7 +244,9 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 	if(items == null)
 		return;
 
-	var playlistUrl = "/playlist/" + alias + "/";
+	var playlistUrl = (alias != "landing")
+		? "/playlist/" + alias + "/"
+		: "/";
 
 	if(playlistUrl != window.location.pathname)
 		history.pushState(null, null, playlistUrl);
