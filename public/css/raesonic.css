@@ -1191,6 +1191,24 @@ a.window-link
 	font-size: 10px;
 	margin-left: 4px;
 }
+#window #signup-terms-container
+{
+	height: 50px;
+	margin-bottom: -4px;
+}
+#signup-terms-label
+{
+	line-height: 13px;
+	vertical-align: -7px;
+}
+#signup-terms-label span
+{
+	font-size: 13px;
+}
+#signup-terms-service:hover
+{
+	padding-right: 0 !important;
+}
 
 #article
 {

@@ -1,5 +1,7 @@
 var Article =
 {
+	TERMS_OF_SERVICE: 1,
+	PRIVACY_POLICY: 2,
 	TRACK_NAMING_GUIDELINES: 3,
 	cache: {},
 };

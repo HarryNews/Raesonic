@@ -352,6 +352,14 @@ Account.onSignUpConfirmClick = function()
 	if(repeat != password)
 		Overlay.setError("#signup-repeat", "does not match");
 
+	var agreedToTerms = $("#signup-terms-agree").is(":checked");
+
+	if(!agreedToTerms)
+	{
+		Overlay.shakeLabels();
+		return;
+	}
+
 	if( Overlay.hasErrors() )
 		return;
 
@@ -384,8 +392,46 @@ Account.onSignUpStartClick = function()
 		keyup: Account.updateSignUpOverlay,
 	});
 
-	$("#signup-password").after($repeat.hide());
+	$("#signup-password").after( $repeat.hide() );
 	$("#signup-repeat").slideDown(200);
+
+	var $checkbox = Overlay.createElement
+	({
+		tag: "<input>",
+		attributes:
+		{
+			id: "signup-terms-agree",
+			type: "checkbox",
+		},
+	});
+
+	var $label = Overlay.createElement
+	({
+		tag: "<label>",
+		attributes:
+		{
+			id: "signup-terms-label",
+			for: "signup-terms-agree",
+		},
+		html: "<span>I have read and agree to the</span><br>" +
+			"<a href=\"#\" id=\"signup-terms-service\">Terms of Service</a> and " +
+			"<a href=\"#\" id=\"signup-terms-privacy\">Privacy Policy</a>"
+	});
+
+	$("#signup-password")
+		.after( $checkbox, $label );
+
+	Overlay.initCheckbox("signup-terms");
+
+	$("#signup-terms-container")
+		.slideDown(200);
+
+	var Article = require("./Article.js");
+
+	Article.addLink( $("#signup-terms-service"),
+		Article.TERMS_OF_SERVICE );
+	Article.addLink( $("#signup-terms-privacy"),
+		Article.PRIVACY_POLICY );
 
 	$("#login-confirm").slideUp(200, function()
 	{
@@ -433,7 +479,9 @@ Account.onLoginStartClick = function()
 		.unbind()
 		.keyup(Account.updateLoginOverlay);
 
-	$("#signup-repeat, #signup-confirm").slideUp(200, function()
+	$("#signup-repeat, #signup-confirm, #signup-terms-container")
+		.slideUp(200,
+	function()
 	{
 		$(this).remove();
 	});

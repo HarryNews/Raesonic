@@ -121,7 +121,8 @@ Overlay.setError = function(selector, message)
 		);
 }
 
-Overlay.shakeRadioButtonLabels = function()
+// Shake all labels in the overlay
+Overlay.shakeLabels = function()
 {
 	$("#window label")
 		.stop(true, true)

@@ -320,7 +320,7 @@ Flag.onReportSubmitClick = function()
 	var $radio = Overlay.getActiveRadioButton();
 
 	if(!$radio.length)
-		return Overlay.shakeRadioButtonLabels();
+		return Overlay.shakeLabels();
 
 	var reasonId = $radio.data("reasonId");
 	var data = $("#flag-subject").data();

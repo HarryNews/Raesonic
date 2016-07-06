@@ -992,7 +992,7 @@ Playlist.hasPassedInputValidation = function()
 
 	if(!$radio.length)
 	{
-		Overlay.shakeRadioButtonLabels();
+		Overlay.shakeLabels();
 		return false;
 	}
 
