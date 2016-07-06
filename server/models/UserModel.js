@@ -10,7 +10,7 @@ module.exports = function(sequelize)
 		password: Sequelize.STRING(50),
 		email: Sequelize.STRING,
 		emailToken: Sequelize.STRING(20),
-		reputation: { type: Sequelize.INTEGER, defaultValue: 0 },
+		reputation: { type: Sequelize.INTEGER, defaultValue: -1 },
 		reputationToday: { type: Sequelize.INTEGER, defaultValue: 0 },
 		activityToday: { type: Sequelize.INTEGER, defaultValue: 0 },
 		signupDate: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },

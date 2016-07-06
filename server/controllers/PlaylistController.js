@@ -130,9 +130,9 @@ module.exports = function(core)
 				{
 					var playlistOwner = playlist.User;
 
-					var hasVerifiedEmail = ( playlistOwner.email.length != 0 &&
+					var hasVerifiedEmail = ( !!playlistOwner.email &&
 						( !isVerificationRequired ||
-							playlistOwner.emailToken.length == 0 )
+							!playlistOwner.emailToken )
 					);
 
 					playlistData.push

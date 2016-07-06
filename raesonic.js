@@ -4,13 +4,17 @@ var server;
 
 var paperwork = require("paperwork");
 var passport = require("passport");
+var nodeMailer = require("nodemailer");
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
 var session = require("express-session")
 var config = require("./config.js");
 
-// Create database controller
+// Create the database controller
 var sequelize = require("./server/controllers/SequelizeController.js")(config);
+
+// Create the mail transport
+var mailer = nodeMailer.createTransport(config.smtp);
 
 // Use public folder as the public application root
 app.use(express.static(__dirname + "/public"));
@@ -37,6 +41,7 @@ var core =
 	paperwork: paperwork,
 	passport: passport,
 	config: config,
+	mailer: mailer,
 };
 
 // Create workspace controllers

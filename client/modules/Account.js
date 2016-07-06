@@ -1,4 +1,5 @@
 var Throttle = require("throttle-debounce/throttle");
+var EmailValidator = require("email-validator");
 var Overlay = require("./Overlay.js");
 
 var Account =
@@ -123,6 +124,11 @@ Account.restore = function(username)
 		}
 	});
 }
+Account.restoreThrottled =
+Throttle(5000, function(username)
+{
+	Account.restore(username);
+});
 
 // Logout from the account
 Account.logout = function()
@@ -161,7 +167,9 @@ Account.sync = function()
 				userId: account[0],
 				username: account[1],
 				avatar: account[2],
-				reputation: account[3]
+				email: account[3][0],
+				verified: account[3][1],
+				reputation: account[4],
 			};
 
 			Account.setAuthenticated(true);
@@ -170,6 +178,63 @@ Account.sync = function()
 		{
 			Account.setAuthenticated(false);
 		}
+	});
+}
+
+// Create a new user account
+Account.saveEmail = function(email)
+{
+	var Toast = require("./Toast.js");
+
+	$.ajax
+	({
+		url: "/own/account/email/",
+		type: "PUT",
+		data: JSON.stringify
+		({
+			email: email,
+		}),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			Account.own.email = email;
+			Account.own.verified = false;
+
+			Account.updateEmailOverlay();
+
+			Toast.show("Confirmation email has been sent, check your inbox", Toast.INFO);
+		},
+		error: Toast.onRequestError,
+	});
+}
+Account.saveEmailThrottled = Throttle(10000,
+function(email)
+{
+	Account.saveEmail(email);
+}, true);
+
+// Resend the confirmation email
+Account.resendConfirmationEmail = function(email)
+{
+	var Toast = require("./Toast.js");
+
+	$.ajax
+	({
+		url: "/own/account/email/resend/",
+		type: "POST",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			Overlay.setAction("Email sent")
+
+			Toast.show("Confirmation email has been re-sent, check your inbox", Toast.INFO);
+		},
+		error: Toast.onRequestError,
 	});
 }
 
@@ -198,6 +263,18 @@ Account.setAuthenticated = function(isAuthenticated)
 
 	Account.authenticated = isAuthenticated;
 	Account.onSync();
+}
+
+// Process the URL on init
+Account.processUrl = function()
+{
+	var url = window.location.pathname.split("/");
+
+	if( url[1] != "verified" )
+		return;
+
+	var Preloader = require("./Preloader.js");
+	Preloader.verifiedEmail = true;
 }
 
 // Create and show an overlay for authentication
@@ -264,7 +341,17 @@ Account.showAccountOverlay = function()
 	Overlay.create("Account",
 	[
 		// todo: change password
-		// todo: change email
+		{
+			tag: "<div>",
+			attributes:
+			{
+				id: "login-create",
+				class: "inner window-link",
+			},
+			text: "Email Settings",
+			click: Account.onEmailSettingsClick,
+		},
+		// todo: legal documents
 	],
 	function onOverlayCreate()
 	{
@@ -272,18 +359,52 @@ Account.showAccountOverlay = function()
 	});
 }
 
+// Create and show an overlay for email settings
+Account.showEmailOverlay = function()
+{
+	Overlay.create("Email settings",
+	[{
+		tag: "<input>",
+		attributes:
+		{
+			id: "email-address",
+			type: "text",
+			class: "with-state",
+			maxlength: 254,
+			placeholder: "Email",
+		},
+		val: Account.own.email || "",
+		keyup: Account.updateEmailOverlay,
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "email-address-state",
+			class: "input-state",
+		},
+		change: Account.updateEmailOverlay,
+	}],
+	function onOverlayCreate()
+	{
+		Overlay.initState("email-address");
+
+		Account.updateEmailOverlay();
+	});
+}
+
 // Update the login overlay
 Account.updateLoginOverlay = function()
 {
+	Overlay.clearErrors();
+
 	var restoreAllowed =
 		( $("#login-username").val().length > 2 );
-	
+
 	restoreAllowed
 		? Overlay.setAction("Forgot password",
-			Account.onRestoreClickThrottled)
+			Account.onRestoreClick)
 		: Overlay.setAction(null);
-
-	Overlay.clearErrors();
 }
 
 // Update the sign up overlay
@@ -295,6 +416,44 @@ Account.updateSignUpOverlay = function()
 
 	if( username.length > 0 && !/^[a-z0-9]+$/i.test(username) )
 		Overlay.setError("#signup-username", "contains prohibited characters");
+}
+
+// Update the email settings overlay
+Account.updateEmailOverlay = function()
+{
+	Overlay.clearErrors();
+
+	var email = $("#email-address").val();
+
+	var sufficientLength = ( email.length > 2 );
+	var differentEmail = ( !Account.own.email || email != Account.own.email )
+	var saveAllowed = ( sufficientLength && differentEmail );
+
+	$("#email-address-state")
+		.text(differentEmail
+			? ( sufficientLength || !!Account.own.email )
+				? "changes not saved"
+				: "no email attached"
+			: Account.own.verified
+				? "verified"
+				: "awaiting confirmation"
+		)
+		.toggleClass("success",
+			!differentEmail && Account.own.verified
+		);
+
+	var resendAllowed = ( Account.own.email != null &&
+		!Account.own.verified &&
+		!differentEmail
+	);
+
+	saveAllowed
+		? Overlay.setAction("Save",
+			Account.onEmailSaveClick)
+		: resendAllowed
+			? Overlay.setAction("Resend",
+				Account.onEmailResendClickThrottled)
+			: Overlay.setAction(null);
 }
 
 // Update the account overlay
@@ -516,13 +675,9 @@ Account.onLoginStartClick = function()
 // Called upon clicking the forgot password button
 Account.onRestoreClick = function()
 {
-	Account.restore( $("#login-username").val() );
+	var username = $("#login-username").val();
+	Account.restoreThrottled(username);
 }
-Account.onRestoreClickThrottled =
-Throttle(5000, function()
-{
-	Account.onRestoreClick();
-});
 
 // Called upon clicking the log out button
 Account.onLogoutClick = function()
@@ -535,8 +690,45 @@ Throttle(5000, function()
 	Account.onLogoutClick();
 });
 
+// Called upon clicking the email settings button
+Account.onEmailSettingsClick = function()
+{
+	Overlay.destroy();
+	setTimeout(Account.showEmailOverlay, 500);
+}
+
+// Called upon clicking the save email button
+Account.onEmailSaveClick = function()
+{
+	var email = $("#email-address").val();
+
+	if(email.length < 3)
+		Overlay.setError("#email-address", "min. 3 characters");
+
+	if( email.length > 0 && !EmailValidator.validate(email) )
+		Overlay.setError("#email-address", "invalid email address");
+
+	if( Overlay.hasErrors() )
+		return;
+
+	Account.saveEmailThrottled(email);
+}
+
+// Called upon clicking the resend email button
+Account.onEmailResendClick = function()
+{
+	Account.resendConfirmationEmail();
+}
+Account.onEmailResendClickThrottled =
+Throttle(120000, function()
+{
+	Account.onEmailResendClick();
+}, true);
+
 Account.init = function(onSync)
 {
+	Account.processUrl();
+
 	Account.onSync = onSync;
 	Account.sync();
 

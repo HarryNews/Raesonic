@@ -2,7 +2,8 @@ module.exports =
 {
 	server:
 	{
-		port: 3000
+		url: "http://localhost:3000",
+		port: 3000,
 	},
 	auth:
 	{
@@ -13,11 +14,22 @@ module.exports =
 	},
 	session:
 	{
-		secret: "secret"
+		secret: "secret",
 	},
 	crypto:
 	{
-		salt: "salt"
+		salt: "salt",
+	},
+	smtp:
+	{
+		host: "hostname",
+		port: 465,
+		secure: true,
+		auth:
+		{
+			user: "no-reply@hostname",
+			pass: "password",
+		},
 	},
 	database:
 	{
@@ -27,6 +39,6 @@ module.exports =
 		name: "raesonic",
 		user: "user",
 		password: "password",
-		logging: true
-	}
+		logging: true,
+	},
 }

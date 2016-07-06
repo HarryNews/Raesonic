@@ -784,7 +784,7 @@ Playlist.processUrl = function(onLoadStart)
 	if(typeof onLoadStart == "function")
 		onLoadStart();
 
-	if(url[1] != "playlist")
+	if( url[1] != "playlist" )
 		return Playlist.loadMain();
 
 	var alias = url[2];

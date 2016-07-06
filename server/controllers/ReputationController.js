@@ -51,6 +51,7 @@ module.exports = function(core)
 			"1500": 3,
 		},
 		DAILY_LIMIT: 2,
+		EMAIL_VALIDATION_REWARD: 20,
 	};
 
 	var app = core.app;

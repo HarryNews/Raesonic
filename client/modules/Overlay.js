@@ -73,6 +73,13 @@ Overlay.createElement = function(data)
 	return $element;
 }
 
+// Move an input state below the input it's linked with
+Overlay.initState = function(name)
+{
+	$("#" + name + "-state")
+		.insertAfter( $("#" + name) );
+}
+
 // Wrap a checkbox and its label, move them above separator
 Overlay.initCheckbox = function(name)
 {
@@ -120,6 +127,9 @@ Overlay.setError = function(selector, message)
 		.after(
 			$("<div>")
 				.addClass("input-error")
+				.toggleClass("with-state",
+					$(selector).is(".with-state")
+				)
 				.text(message)
 		);
 }

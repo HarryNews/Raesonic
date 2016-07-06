@@ -8,6 +8,10 @@ var Toast =
 			"Not enough reputation to proceed. Sorry!",
 		"exceeded daily activity limit":
 			"Daily activity limit exceeded, please try again later",
+		"email not available":
+			"Email is already in use on another account",
+		"email already verified":
+			"Email is already verified, please refresh the page"
 	},
 	// Toast classes
 	INFO: "info",
@@ -76,12 +80,13 @@ Toast.onRequestError = function(response)
 		var Overlay = require("./Overlay.js");
 		Overlay.destroy();
 
-		Toast.show("Email needs to be verified to proceed, " +
+		Toast.show("Verified email is required to proceed, " +
 			"please review the settings", Toast.ERROR);
 
 		setTimeout(function()
 		{
-			// todo: show email settings window
+			var Account = require("./Account.js");
+			Account.showEmailOverlay();
 		}, 3000);
 
 		return;
