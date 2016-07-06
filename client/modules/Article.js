@@ -95,9 +95,9 @@ Article.destroy = function()
 }
 
 // Called upon clicking the link handler
-Article.onLinkClick = function(e)
+Article.onLinkClick = function(event)
 {
-	e.preventDefault();
+	event.preventDefault();
 
 	var articleId = $(this).data("articleId");
 
@@ -108,8 +108,16 @@ Article.onLinkClick = function(e)
 };
 
 // Called when the mouse is moved during an article view
-Article.onDocumentMouseMove = function()
+Article.onDocumentMouseMove = function(event)
 {
+	// Allow use of the scrollbar
+	if( event.pageX >
+		( $("#article").offset().left + $("#article").width() - 14 ) )
+	{
+		$("#article").removeClass("transparent");
+		return;
+	}
+
 	$("#article").toggleClass("transparent",
 		( $("#article:hover").length == 1 &&
 			$("#article-contents:hover").length == 0 )
