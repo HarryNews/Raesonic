@@ -9,6 +9,9 @@ Overlay.create = function(name, elements, options, done)
 		options = {};
 	}
 
+	var Article = require("./Article.js");
+	Article.destroy();
+
 	var $elements =
 	[
 		$("<button>")
@@ -148,6 +151,9 @@ Overlay.clearErrors = function()
 // Hide the overlay and clear the window
 Overlay.destroy = function()
 {
+	var Article = require("./Article.js");
+	Article.destroy();
+
 	$("#overlay").fadeOut(200, function onOverlayFadeOut()
 	{
 		$(this).addClass("hidden");
