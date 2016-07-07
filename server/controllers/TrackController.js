@@ -156,10 +156,12 @@ module.exports = function(core)
 				return res.status(403).json
 					({ errors: ["exceeded daily activity limit"] });
 
+		var trackId = req.params.trackId;
+
 		// Count amount of content the track is linked with
 		Content.count
 		({
-			where: { trackId: req.params.trackId },
+			where: { trackId: trackId },
 		})
 		.then(function(amount)
 		{
@@ -170,7 +172,7 @@ module.exports = function(core)
 			TrackEdit.findOne
 			({
 				attributes: ["editId", "trackId", "userId"],
-				where: { trackId: req.params.trackId },
+				where: { trackId: trackId },
 				order: [ ["editId", "ASC"] ],
 			})
 			.then(function(trackEdit)
@@ -221,7 +223,7 @@ module.exports = function(core)
 								var ContentController = core.controllers.Content;
 
 								return ContentController.linkContent(req.body.itemId,
-									conflictingTrack, tr, req, res,
+									conflictingTrack, trackId, tr, req, res,
 								function onContentLink(track)
 								{
 									return ReputationController.addActivity(req.user,
@@ -238,15 +240,15 @@ module.exports = function(core)
 							return Track.update
 							(changes,
 							{
-								where: { trackId: req.params.trackId },
+								where: { trackId: trackId },
 								transaction: tr,
 							})
 							.then(function()
 							{
-								var track = { trackId: req.params.trackId };
+								var track = { trackId: trackId };
 
 								changes.userId = req.user.userId;
-								changes.trackId = req.params.trackId;
+								changes.trackId = trackId;
 
 								return TrackEdit.create
 								(changes,
@@ -287,7 +289,7 @@ module.exports = function(core)
 						var ContentController = core.controllers.Content;
 
 						return ContentController.linkContent(req.body.itemId, track,
-							tr, req, res,
+							trackId, tr, req, res,
 						function onContentLink(track)
 						{
 							// Add no track edits if no tracks were created

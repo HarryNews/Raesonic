@@ -96,7 +96,7 @@ module.exports = function(core)
 	}
 
 	// Find content by the itemId, and link it to the track with specified trackId
-	ContentController.linkContent = function(itemId, track, tr, req, res, done)
+	ContentController.linkContent = function(itemId, track, previousTrackId, tr, req, res, done)
 	{
 		return Content.findOne
 		({
@@ -110,12 +110,13 @@ module.exports = function(core)
 		})
 		.then(function(content)
 		{
-			// Already linked, no action required
-			if(track.trackId == content.trackId)
+			// Content is not linked with the previous track
+			if(content.trackId != previousTrackId)
 				return done(track);
 
-			// Store current trackId before it changes
-			var previousTrackId = content.trackId;
+			// Already linked, no action required
+			if(content.trackId == track.trackId)
+				return done(track);
 
 			// Update trackId of the content
 			return content.update
