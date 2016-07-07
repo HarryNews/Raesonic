@@ -60,7 +60,8 @@ Article.setContents = function(articleHtml)
 	$("#article")
 		.hide()
 		.removeClass("hidden")
-		.fadeIn(200);
+		.fadeIn(200)
+		.scrollTop(0);
 
 	// Clear the toast
 	var Toast = require("./Toast.js");
