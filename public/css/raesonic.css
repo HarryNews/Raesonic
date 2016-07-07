@@ -158,6 +158,8 @@ body
 {
 	margin-left: auto;
 	margin-right: auto;
+	width: 50px !important;
+	padding: 0 100px 2px 100px !important;
 }
 #header-right
 {
@@ -922,7 +924,7 @@ body
 {
 	margin-bottom: 20px;
 }
-#window a
+#window p a, #window label a
 {
 	text-decoration: none;
 	display: inline-block;
@@ -935,7 +937,7 @@ body
 	-o-transition: padding-right ease-out 200ms, border-color ease-out 200ms;
 	transition: padding-right ease-out 200ms, border-color ease-out 200ms;
 }
-#window a:hover
+#window p a:hover, #window label a:hover
 {
 	padding-right: 5px;
 	border-bottom: 1px solid rgba(85, 77, 102, 0.6);

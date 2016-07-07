@@ -280,9 +280,6 @@ Account.processUrl = function()
 // Create and show an overlay for authentication
 Account.showLoginOverlay = function()
 {
-	if( Overlay.isActive() )
-		return;
-
 	Overlay.create("Existing account",
 	[{
 		tag: "<input>",
@@ -329,6 +326,58 @@ Account.showLoginOverlay = function()
 	function onOverlayCreate()
 	{
 		Account.updateLoginOverlay();
+	});
+}
+
+// Create and show an overlay for app information
+Account.showAboutOverlay = function()
+{
+	Overlay.create("Raesonic",
+	[{
+		tag: "<p>",
+		html: "Raesonic is an application for discovering music.",
+	},
+	{
+		tag: "<p>",
+		html: "It is currently in development at<br>" +
+			"<a href=\"https://github.com/Fkids/Raesonic\" " +
+			"target=\"_blank\">https://github.com/Fkids/Raesonic</a>",
+	},
+	{
+		tag: "<p>",
+		html: "If you have feedback or questions, let us know!",
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "window-separator",
+		}
+	},
+	{
+		tag: "<a>",
+		attributes:
+		{
+			id: "welcome-close",
+			class: "inner window-link",
+			href: "https://discord.me/Raesonic",
+			target: "_blank",
+		},
+		text: "Join Discord",
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "welcome-close",
+			class: "window-link",
+		},
+		text: "Close",
+		click: Overlay.destroy,
+	}],
+	function onOverlayCreate()
+	{
+
 	});
 }
 
@@ -472,6 +521,15 @@ Account.onHeaderClick = function()
 	Account.authenticated
 		? Account.showAccountOverlay()
 		: Account.showLoginOverlay();
+}
+
+// Called upon clicking the logo
+Account.onLogoClick = function()
+{
+	if( Overlay.isActive() )
+		return Overlay.destroy();
+
+	Account.showAboutOverlay();
 }
 
 // Called upon clicking the login button on the login screen
@@ -732,6 +790,7 @@ Account.init = function(onSync)
 	Account.onSync = onSync;
 	Account.sync();
 
+	$("#header-logo").click(Account.onLogoClick);
 	$("#header-right").click(Account.onHeaderClick);
 }
 
