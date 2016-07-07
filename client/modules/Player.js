@@ -81,9 +81,12 @@ Player.setItem = function($item, isManualSwitch)
 	if(!$item.length)
 		return;
 
-	// Item is already active, bail out
+	// Item is already active, toggle playback and bail out
 	if($item.is(".active"))
+	{
+		Player.toggle();
 		return;
+	}
 
 	var data = $item.data();
 	var artist = $(":nth-child(1)", $item).html();
