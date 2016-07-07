@@ -66,7 +66,8 @@ Item.create = function(sourceId, externalId)
 
 			var Search = require("./Search.js");
 			Search.clear();
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Item.createThrottled = Throttle(2000,
@@ -78,6 +79,8 @@ function(sourceId, externalId)
 // Add item with the specified content to the specified playlist
 Item.copy = function(playlistId, name, access, sourceId, externalId)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/playlists/" + playlistId + "/",
@@ -122,10 +125,10 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 				Playlist.updateSectionCounter(playlistId, access, null, 1);
 			}
 
-			var Toast = require("./Toast.js");
 			Toast.show("\"" + artist + " – " + title + "\"" +
 				" has been added to " + name, Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 Item.copyThrottled = Throttle(2000,
@@ -137,6 +140,8 @@ function(playlistId, name, access, sourceId, externalId)
 // Remove specified item from the playlist
 Item.remove = function(itemId)
 {
+	var Toast = require("./Toast.js");
+
 	$.ajax
 	({
 		url: "/items/" + itemId + "/",
@@ -162,10 +167,10 @@ Item.remove = function(itemId)
 
 			Overlay.destroy();
 
-			var Toast = require("./Toast.js");
 			Toast.show("Item has been removed from the playlist",
 				Toast.INFO);
-		}
+		},
+		error: Toast.onRequestError,
 	});
 }
 
