@@ -314,7 +314,7 @@ Item.updateEditOverlay = function()
 		.find("input")
 		.is(":checked");
 
-	saveAllowed
+	(!trackExists || saveAllowed)
 		? $guidelines
 			.addClass("animated")
 			.slideDown(200, function onDone()
