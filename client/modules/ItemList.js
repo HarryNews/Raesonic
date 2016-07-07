@@ -30,7 +30,9 @@ ItemList.setItems = function(items, useStorage)
 			storage.push( $(this).detach() );
 		});
 		
-		$("#items").data("storage", storage);
+		$("#items")
+			.addClass("search-results")
+			.data("storage", storage);
 
 		var Playlist = require("./Playlist.js");
 
@@ -232,12 +234,16 @@ ItemList.setFilter = function(query)
 		count++;
 	});
 
-	$("#items").scrollTop(0);
+	$("#items")
+		.addClass("filtered")
+		.scrollTop(0);
 }
 
 // Show all items previously hidden by the filter
 ItemList.clearFilter = function()
 {
+	$("#items").removeClass("filtered");
+
 	var hiddenCount = $(".item.hidden").length;
 
 	if(hiddenCount < 1)
@@ -254,7 +260,10 @@ ItemList.restoreStorage = function()
 
 	if(Playlist.active == null)
 	{
-		$("#items").empty();
+		$("#items")
+			.removeClass("search-results")
+			.empty();
+
 		return;
 	}
 
@@ -262,7 +271,10 @@ ItemList.restoreStorage = function()
 		return;
 
 	Playlist.active.hidden = false;
-	$("#items").empty();
+
+	$("#items")
+		.removeClass("search-results")
+		.empty();
 
 	var storage = $("#items").data("storage") || [];
 

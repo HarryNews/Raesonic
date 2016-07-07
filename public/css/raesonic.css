@@ -617,6 +617,26 @@ body
 	height: calc(100% - 38px);
 	position: relative;
 }
+#items:empty::after
+{
+	content: "The playlist is empty, use the input field above to add tracks.";
+	display: block;
+	color: #888198;
+	margin-top: 35vh;
+	text-align: center;
+}
+#items.filtered:empty::after
+{
+	content: "Found no tracks matching the query in the current playlist.";
+}
+#items.no-active-playlist:empty::after
+{
+	content: "No active playlist.";
+}
+#items.search-results:empty::after
+{
+	content: "Found no tracks matching the query in the Raesonic database.";
+}
 
 .item, .item.odd
 {

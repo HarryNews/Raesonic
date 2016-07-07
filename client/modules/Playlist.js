@@ -219,6 +219,8 @@ Playlist.loadMain = function()
 // Set the playlist as active
 Playlist.setActive = function(playlistId, name, access, alias, user, items)
 {
+	$("#items").removeClass("no-active-playlist");
+
 	var accessName = Playlist.PERSONAL_SECTIONS[access - 1];
 
 	Playlist.active =
@@ -326,6 +328,8 @@ Playlist.clearActive = function()
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems( [] );
+
+	$("#items").addClass("no-active-playlist");
 }
 
 // Retrieve the list of all playlists in a section
