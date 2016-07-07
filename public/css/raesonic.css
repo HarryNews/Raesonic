@@ -617,7 +617,7 @@ body
 	height: calc(100% - 38px);
 	position: relative;
 }
-#items:empty::after
+#items:empty::after, #items.filtered.all-hidden::after
 {
 	content: "The playlist is empty, use the input field above to add tracks.";
 	display: block;
@@ -625,7 +625,7 @@ body
 	margin-top: 35vh;
 	text-align: center;
 }
-#items.filtered:empty::after
+#items.filtered:empty::after, #items.filtered.all-hidden::after
 {
 	content: "Found no tracks matching the query in the current playlist.";
 }

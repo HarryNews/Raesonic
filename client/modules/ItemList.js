@@ -32,6 +32,7 @@ ItemList.setItems = function(items, useStorage)
 		
 		$("#items")
 			.addClass("search-results")
+			.removeClass("filtered all-hidden")
 			.data("storage", storage);
 
 		var Playlist = require("./Playlist.js");
@@ -234,15 +235,18 @@ ItemList.setFilter = function(query)
 		count++;
 	});
 
+	var allHidden = ( $(".item:not(.hidden)").length == 0);
+
 	$("#items")
 		.addClass("filtered")
+		.toggleClass("all-hidden", allHidden)
 		.scrollTop(0);
 }
 
 // Show all items previously hidden by the filter
 ItemList.clearFilter = function()
 {
-	$("#items").removeClass("filtered");
+	$("#items").removeClass("filtered all-hidden");
 
 	var hiddenCount = $(".item.hidden").length;
 
