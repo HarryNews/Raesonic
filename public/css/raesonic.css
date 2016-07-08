@@ -1,40 +1,42 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
 .add { width: 26px; height: 26px; background-position: -41px 0; }
 .addlarge { width: 40px; height: 40px; background-position: 0 0; }
-.addsmall { width: 26px; height: 26px; background-position: -119px 0; }
-.arrowleft { width: 40px; height: 40px; background-position: 0 -41px; }
-.arrowup { width: 40px; height: 40px; background-position: -41px -54px; }
-.avatar { width: 43px; height: 43px; background-position: -150px -78px; }
-.checklarge { width: 50px; height: 40px; background-position: -106px -179px; }
-.clock { width: 15px; height: 15px; background-position: -7px -82px; }
-.edit { width: 26px; height: 26px; background-position: -41px -27px; }
-.explorelarge { width: 50px; height: 50px; background-position: -68px 0; }
-.flag { width: 15px; height: 15px; background-position: -23px -82px; }
-.flaglarge { width: 40px; height: 40px; background-position: -82px -54px; }
-.listfavorites { width: 26px; height: 26px; background-position: -119px -27px; }
-.listflags { width: 26px; height: 26px; background-position: -146px -51px; }
-.listplaylists { width: 26px; height: 26px; background-position: -173px -51px; }
-.listrecent { width: 26px; height: 26px; background-position: -123px -78px; }
-.listrelated { width: 26px; height: 26px; background-position: -173px -122px; }
-.listsubcat { width: 26px; height: 26px; background-position: -123px -124px; }
-.logo { width: 50px; height: 50px; background-position: -146px 0; }
-.menusmall { width: 26px; height: 26px; background-position: -173px -149px; }
-.muted { width: 40px; height: 40px; background-position: -41px -95px; }
-.navarrow { width: 6px; height: 14px; background-position: 0 -82px; }
-.pause { width: 40px; height: 40px; background-position: -82px -95px; }
-.play { width: 40px; height: 40px; background-position: 0 -98px; }
-.previous { width: 40px; height: 40px; background-position: -41px -136px; }
-.soundcloud { width: 64px; height: 43px; background-position: -41px -177px; }
-.speakerloud { width: 40px; height: 40px; background-position: -82px -136px; }
-.speakernormal { width: 40px; height: 40px; background-position: 0 -139px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -157px -179px; }
-.speakersilent { width: 40px; height: 40px; background-position: 0 -180px; }
-.subcatexpand { width: 26px; height: 26px; background-position: -123px -151px; }
-.tabcontent { width: 22px; height: 18px; background-position: -123px -54px; }
-.tabcontentlinks { width: 22px; height: 18px; background-position: -123px -105px; }
-.tabhistory { width: 22px; height: 18px; background-position: -150px -122px; }
-.tabrelated { width: 22px; height: 18px; background-position: -150px -141px; }
-.tabtrackedits { width: 22px; height: 18px; background-position: -150px -160px; }
+.addsmall { width: 26px; height: 26px; background-position: -41px -46px; }
+.arrowleft { width: 40px; height: 40px; background-position: -119px 0; }
+.arrowup { width: 40px; height: 40px; background-position: -160px 0; }
+.avatar { width: 43px; height: 43px; background-position: -155px -41px; }
+.checklarge { width: 50px; height: 40px; background-position: -68px 0; }
+.clock { width: 15px; height: 15px; background-position: 0 -41px; }
+.edit { width: 26px; height: 26px; background-position: -119px -69px; }
+.explorelarge { width: 50px; height: 50px; background-position: -68px -41px; }
+.flag { width: 15px; height: 15px; background-position: -146px -85px; }
+.flaglarge { width: 40px; height: 40px; background-position: 0 -60px; }
+.listfavorites { width: 26px; height: 26px; background-position: -41px -73px; }
+.listflags { width: 26px; height: 26px; background-position: -41px -100px; }
+.listplaylists { width: 26px; height: 26px; background-position: -132px -101px; }
+.listrecent { width: 26px; height: 26px; background-position: -133px -128px; }
+.listrelated { width: 26px; height: 26px; background-position: -106px -134px; }
+.listsubcat { width: 26px; height: 26px; background-position: -133px -155px; }
+.logo { width: 50px; height: 50px; background-position: -41px -177px; }
+.loop { width: 35px; height: 19px; background-position: -162px -85px; }
+.menusmall { width: 26px; height: 26px; background-position: -106px -161px; }
+.muted { width: 40px; height: 40px; background-position: -68px -92px; }
+.navarrow { width: 6px; height: 14px; background-position: -146px -69px; }
+.pause { width: 40px; height: 40px; background-position: 0 -101px; }
+.play { width: 40px; height: 40px; background-position: -160px -105px; }
+.previous { width: 40px; height: 40px; background-position: 0 -142px; }
+.shuffle { width: 35px; height: 27px; background-position: -119px -41px; }
+.soundcloud { width: 64px; height: 43px; background-position: -41px -133px; }
+.speakerloud { width: 40px; height: 40px; background-position: -160px -146px; }
+.speakernormal { width: 40px; height: 40px; background-position: 0 -183px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -160px -187px; }
+.speakersilent { width: 40px; height: 40px; background-position: -92px -188px; }
+.subcatexpand { width: 26px; height: 26px; background-position: -133px -182px; }
+.tabcontent { width: 22px; height: 18px; background-position: -41px -27px; }
+.tabcontentlinks { width: 22px; height: 18px; background-position: -16px -41px; }
+.tabhistory { width: 22px; height: 18px; background-position: -109px -96px; }
+.tabrelated { width: 22px; height: 18px; background-position: -109px -115px; }
+.tabtrackedits { width: 22px; height: 18px; background-position: -133px -209px; }
 
 html
 {
@@ -1484,6 +1486,14 @@ a.window-link
 {
 	background-color: #19181D;
 }
+#cover:empty::after
+{
+	content: "Select a track from the left to play it";
+	display: block;
+	color: #717171;
+	text-align: center;
+	padding-top: 27%;
+}
 #cover .content-error
 {
 	height: 100%;
@@ -1549,6 +1559,10 @@ a.window-link
 	padding-left: 8px;
 	flex-shrink: 0;
 	color: #FFF;
+	padding-right: 50px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 #meta-artist
 {
@@ -1573,6 +1587,42 @@ a.window-link
 {
 	opacity: 0.8;
 	font-size: 14px;
+}
+
+#loop, #shuffle
+{
+	position: absolute;
+	right: 5px;
+	opacity: 0.3;
+	cursor: pointer;
+	-webkit-filter: brightness(0.8) sepia(1) hue-rotate(215deg);
+	-webkit-transition: opacity ease-out 200ms, -webkit-filter ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms, -webkit-filter ease-out 200ms;
+	-o-transition: opacity ease-out 200ms, -webkit-filter ease-out 200ms;
+	transition: opacity ease-out 200ms, -webkit-filter ease-out 200ms;
+}
+#loop:hover, #shuffle:hover
+{
+	opacity: 0.6;
+	-webkit-filter: brightness(0.9) sepia(1) hue-rotate(215deg);
+}
+#loop
+{
+	margin-top: -51px;
+}
+#loop.active
+{
+	opacity: 1;
+	-webkit-filter: brightness(0.55) sepia(1) hue-rotate(215deg);
+}
+#shuffle
+{
+	margin-top: -32px;
+}
+#shuffle.active
+{
+	opacity: 1;
+	-webkit-filter: brightness(0.8) sepia(1) hue-rotate(200deg);
 }
 
 #tabs

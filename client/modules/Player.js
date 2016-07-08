@@ -9,6 +9,7 @@ var Player =
 	volume: Local.get("volume", 80), // Playback volume
 	lastVolume: 0, // Playback volume before muting
 	muted: false, // Sound is muted by the user
+	loopEnabled: false, // Loop the current track
 	draggingSeekbar: false, // Seekbar is being dragged
 	freezeSeekbar: false, // Disable seekbar animation
 	draggingVolume: false, // Volume bar is being dragged
@@ -72,6 +73,24 @@ Player.toggle = function()
 	Player.playing
 		? Player.pause()
 		: Player.play();
+}
+
+// Seek to a certain position of the track, accepts number from 0 to 1
+Player.seekTo = function(seek)
+{
+	if(SoundCloud.player)
+	{
+		if(!SoundCloud.player.isPlaying())
+			SoundCloud.player.play();
+
+		SoundCloud.player
+			.seek(seek * SoundCloud.player.options.duration, false);
+
+		return;
+	}
+
+	YouTube.player
+		.seekTo(seek * YouTube.player.getDuration(), true);
 }
 
 // Play specified item
@@ -307,6 +326,9 @@ Player.clearContent = function()
 // Play next/previous item
 Player.switchItem = function(forward, isManualSwitch)
 {
+	if(!isManualSwitch && Player.loopEnabled)
+		return Player.seekTo(0);
+
 	var ItemList = require("./ItemList.js");
 	var $item = ItemList.getSwitchItem(forward, isManualSwitch);
 
@@ -508,16 +530,28 @@ Player.onDocumentMouseUp = function()
 			1
 		);
 
-	if(SoundCloud.player)
-	{
-		if(!SoundCloud.player.isPlaying())
-			SoundCloud.player.play();
+	Player.seekTo(seek);
+}
 
-		SoundCloud.player.seek(seek * SoundCloud.player.options.duration, false);
-		return;
-	}
+// Called upon clicking the loop icon
+Player.onLoopIconClick = function()
+{
+	Player.loopEnabled = !Player.loopEnabled;
 
-	YouTube.player.seekTo(seek * YouTube.player.getDuration(), true);
+	var $icon = $(this);
+	$icon.toggleClass("active", Player.loopEnabled);
+}
+
+// Called upon clicking the shuffle icon
+Player.onShuffleIconClick = function()
+{
+	var ItemList = require("./ItemList.js");
+	ItemList.shuffleEnabled = !ItemList.shuffleEnabled;
+
+	ItemList.setShuffle(ItemList.shuffleEnabled);
+
+	var $icon = $(this);
+	$icon.toggleClass("active", ItemList.shuffleEnabled);
 }
 
 // Called upon clicking the play icon
@@ -672,6 +706,8 @@ Player.init = function()
 	$(document).mousemove(Player.onDocumentMouseMove);
 	$(document).mouseup(Player.onDocumentMouseUp);
 
+	$("#loop").click(Player.onLoopIconClick);
+	$("#shuffle").click(Player.onShuffleIconClick);
 	$("#play").click(Player.onPlayIconClick);
 	$("#pause").click(Player.onPauseIconClick);
 	$("#previous").click(Player.onPreviousIconClick);

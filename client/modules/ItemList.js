@@ -15,6 +15,8 @@ var ItemList =
 	MANUAL_SWITCH: true,
 	// Action on content error
 	SKIP_TRACK: true,
+	// Variables
+	shuffleEnabled: false,
 };
 
 // Set items of the item list
@@ -46,6 +48,8 @@ ItemList.setItems = function(items, useStorage)
 	{
 		ItemList.addItem(item);
 	});
+
+	ItemList.setShuffle(ItemList.shuffleEnabled);
 
 	$("#items").scrollTop(0);
 }
@@ -136,6 +140,44 @@ ItemList.addItem = function(item, prepend, useStorage)
 	prepend
 		? $("#items").prepend($item)
 		: $("#items").append($item);
+}
+
+// Shuffle or restore order of the items
+ItemList.setShuffle = function(shuffle)
+{
+	var $items = $("#items");
+	var $children = $("#items").children();
+
+	if(shuffle)
+	{
+		// Store the order
+		$children.each(function(index)
+		{
+			$(this).attr("data-order", ++index);
+		});
+	}
+
+	$children
+		.sort(function(itemA, itemB)
+		{
+			// Shuffle the items
+			if(shuffle)
+				return ( Math.round( Math.random() ) - 0.5 );
+
+			// Restore the order
+			var orderA = itemA.getAttribute("data-order") || 0;
+			var orderB = itemB.getAttribute("data-order") || 0;
+
+			return (orderA - orderB);
+		})
+		.detach()
+		.appendTo($items);
+
+	if(shuffle)
+		return;
+
+	// Remove the order attribute
+	$children.removeAttr("data-order");
 }
 
 // Return next/previous item
