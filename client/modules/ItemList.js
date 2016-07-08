@@ -186,6 +186,12 @@ ItemList.setShuffle = function(shuffle)
 		.detach()
 		.appendTo($items);
 
+	// Scroll to the active item
+	var $activeItem = $(".item.active");
+
+	if($activeItem.length)
+		ItemList.scrollTo($activeItem);
+
 	if(shuffle)
 		return;
 
