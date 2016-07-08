@@ -195,25 +195,54 @@ History.request = function(historyType, entityId)
 }
 
 // Request actions for each item's entity that changed
-History.updateItemActions = function($item)
+History.updateItemActions = function()
 {
+	var Item = require("./Item.js");
+
 	// No active item, bail out
-	if(!$item.length)
+	if(Item.active == null)
 		return;
 
-	// Update track edit actions if the track changed
-	if($item.data("trackId") != $("#tab-history").data("trackId"))
-	{
-		History.request( History.TYPE_TRACK_EDITS,
-			$item.data("trackId") );
-	}
+	var $section = $("#history-menu > div.active");
 
-	// Update content link actions if the content changed
-	if($item.data("externalId") &&
-		$item.data("externalId") != $("#tab-history").data("externalId"))
+	if(!$section.length)
+		return;
+
+	var sectionType = $section.index() + 1;
+
+	switch(sectionType)
 	{
-		History.request( History.TYPE_CONTENT_LINKS,
-			$item.data("sourceId") + "/" + $item.data("externalId") );
+		case History.TYPE_TRACK_EDITS:
+		{
+			var trackId = Item.active.trackId;
+
+			// Update track edit actions if the track changed
+			if( trackId != $("#tab-history").data("trackId") )
+			{
+				History.request(History.TYPE_TRACK_EDITS, trackId);
+			}
+
+			break;
+		}
+		case History.TYPE_CONTENT_LINKS:
+		{
+			var sourceId = Item.active.sourceId;
+			var externalId = Item.active.externalId;
+
+			// Update content link actions if the content changed
+			if( externalId &&
+				externalId != $("#tab-history").data("externalId") )
+			{
+				History.request( History.TYPE_CONTENT_LINKS,
+					sourceId + "/" + externalId );
+			}
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -239,6 +268,8 @@ History.setActiveSection = function(alias)
 	$("#tab-history .section")
 		.eq( $section.index() )
 		.addClass("active");
+
+	History.updateItemActions();
 }
 
 // Returns a relative date in a readable format
@@ -293,7 +324,7 @@ History.getRelativeDate = function(dateStr)
 // Called when the history tab becomes active
 History.onTabSetActive = function()
 {
-	History.updateItemActions( $(".item.active") );
+	History.updateItemActions();
 }
 
 // Called when an item is made active
@@ -312,7 +343,7 @@ History.onItemChange = function($item, isManualSwitch)
 		return;
 	}
 
-	History.updateItemActions($item);
+	History.updateItemActions();
 }
 
 // Called upon clicking the menu button
