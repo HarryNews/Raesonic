@@ -157,12 +157,25 @@ ItemList.setShuffle = function(shuffle)
 		});
 	}
 
+	// Nothing to restore, bail out
+	if( !shuffle && $(".item[data-order]").length == 0 )
+		return;
+
 	$children
 		.sort(function(itemA, itemB)
 		{
-			// Shuffle the items
 			if(shuffle)
+			{
+				// Always keep the active item on top
+				if( itemA.classList.contains("active") )
+					return -1;
+
+				if( itemB.classList.contains("active") )
+					return 1;
+
+				// Randomly shuffle the rest
 				return ( Math.round( Math.random() ) - 0.5 );
+			}
 
 			// Restore the order
 			var orderA = itemA.getAttribute("data-order") || 0;
