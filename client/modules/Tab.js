@@ -37,7 +37,7 @@ Tab.setActive = function(tab)
 	var $tab = $("#menu-" + tab.ALIAS);
 
 	// Tab is already active, bail out
-	if($tab.is(".active"))
+	if( $tab.is(".active") )
 		return;
 	
 	if(tab.onSetActive)

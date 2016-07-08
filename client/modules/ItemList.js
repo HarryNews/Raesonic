@@ -235,7 +235,7 @@ ItemList.setActiveItem = function($item, isManualSwitch)
 	Item.active.isManualSwitch = isManualSwitch;
 
 	var History = require("./History.js");
-	History.onItemChange($item);
+	History.onItemChange($item, isManualSwitch);
 
 	var Tab = require("./Tab.js");
 	Tab.onItemChange($item);

@@ -297,12 +297,20 @@ History.onTabSetActive = function()
 }
 
 // Called when an item is made active
-History.onItemChange = function($item)
+History.onItemChange = function($item, isManualSwitch)
 {
 	var Tab = require("./Tab.js");
 
-	if(!Tab.isActive(Tab.History))
+	if( !Tab.isActive(Tab.History) )
 		return;
+
+	if(!isManualSwitch)
+	{
+		// Switch to related tab if the item changed automatically
+		// Prevents logs from being requested when they're not needed
+		Tab.setActive(Tab.Related);
+		return;
+	}
 
 	History.updateItemActions($item);
 }
