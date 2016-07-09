@@ -74,15 +74,16 @@ History.request = function(historyType, entityId)
 			if(response.errors)
 				return;
 
-			var $item = $(".item").filterByData(request.field, entityId);
+			var Item = require("./Item.js");
 
-			// Couldn't find the item, bail out
-			if(!$item.length)
+			// No active item, bail out
+			if(Item.active == null)
 				return;
 
-			// Item is no longer active, bail out
-			if(!$item.is(".active"))
-				return;
+			// Item changed, bail out
+			if( Item.active[request.field] &&
+				Item.active[request.field] != entityId )
+					return;
 
 			$("#tab-history").data(request.key, response);
 
