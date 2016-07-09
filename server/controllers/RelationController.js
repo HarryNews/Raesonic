@@ -21,7 +21,6 @@ module.exports = function(core)
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
 	var RelationVote = sequelize.models.RelationVote;
-	var RelationFlag = sequelize.models.RelationFlag;
 
 	// Create a relation between two tracks
 	RelationController.createRelation = function(req, res)
@@ -171,17 +170,10 @@ module.exports = function(core)
 				required: false,
 			});
 
-			include.push
-			({
-				model: RelationFlag,
-				attributes: ["flagId", "resolved", "userId"],
-				where:
-				{
-					userId: req.user.userId,
-					resolved: 0,
-				},
-				required: false,
-			});
+			var FlagController = core.controllers.Flag;
+
+			include = FlagController.includeFlagState
+				(include, Relation, req.user);
 		}
 
 		Relation.all

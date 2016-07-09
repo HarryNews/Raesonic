@@ -191,7 +191,7 @@ module.exports = function(core)
 	}
 
 	// Return flag model for the given entity model
-	FlagController.getFlagModel = function(model, req, res)
+	FlagController.getFlagModel = function(model)
 	{
 		switch(model)
 		{
@@ -206,7 +206,7 @@ module.exports = function(core)
 	FlagController.setFlag = function(entity, entityField, entityId, req, res)
 	{
 		var model =
-			FlagController.getFlagModel(entity.Model, req, res);
+			FlagController.getFlagModel(entity.Model);
 
 		if(model == null)
 			return res.status(500).json({ errors: ["internal error"] });
@@ -274,7 +274,10 @@ module.exports = function(core)
 	FlagController.getFlagCount = function(entity, entityField, entityId, req, res)
 	{
 		var model =
-			FlagController.getFlagModel(entity.Model, req, res);
+			FlagController.getFlagModel(entity.Model);
+
+		if(model == null)
+			return res.status(500).json({ errors: ["internal error"] });
 
 		var params =
 		{
@@ -307,6 +310,38 @@ module.exports = function(core)
 
 			res.json(response);
 		});
+	}
+
+	// Include a flag state in the object, based on the user
+	FlagController.includeFlagState = function(include, entityModel, user)
+	{
+		var flagModel =
+			FlagController.getFlagModel(entityModel);
+
+		if(flagModel == null)
+			return include;
+
+		var params =
+		{
+			resolved: FlagController.FLAG_STATE.UNRESOLVED,
+		};
+
+		var ReputationController = core.controllers.Reputation;
+
+		// Limit active state display to own flags
+		if( !ReputationController.hasPermission(user,
+			ReputationController.PERMISSION.VIEW_FLAGS) )
+				params[userId] = user.userId;
+
+		include.push
+		({
+			model: flagModel,
+			attributes: ["flagId", "resolved", "userId"],
+			where: params,
+			required: false,
+		});
+
+		return include;
 	}
 
 	// Returns true if the relation flag reason id is valid

@@ -11,8 +11,6 @@ module.exports = function(core)
 	var Content = sequelize.models.Content;
 	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
-	var TrackEditFlag = sequelize.models.TrackEditFlag;
-	var ContentLinkFlag = sequelize.models.ContentLinkFlag;
 
 	// Retrieve all track name changes
 	HistoryController.getTrackEdits = function(req, res)
@@ -27,17 +25,8 @@ module.exports = function(core)
 		{
 			var FlagController = core.controllers.Flag;
 
-			include.push
-			({
-				model: TrackEditFlag,
-				attributes: ["flagId", "resolved", "userId"],
-				where:
-				{
-					userId: req.user.userId,
-					resolved: FlagController.FLAG_STATE.UNRESOLVED,
-				},
-				required: false,
-			});
+			include = FlagController.includeFlagState
+				(include, TrackEdit, req.user);
 		}
 
 		TrackEdit.all
@@ -102,17 +91,8 @@ module.exports = function(core)
 			{
 				var FlagController = core.controllers.Flag;
 
-				include.push
-				({
-					model: ContentLinkFlag,
-					attributes: ["flagId", "resolved", "userId"],
-					where:
-					{
-						userId: req.user.userId,
-						resolved: FlagController.FLAG_STATE.UNRESOLVED,
-					},
-					required: false,
-				});
+				include = FlagController.includeFlagState
+					(include, ContentLink, req.user);
 			}
 		
 			ContentLink.all
