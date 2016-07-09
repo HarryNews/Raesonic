@@ -25,6 +25,8 @@ module.exports = function(core)
 
 		if(req.user)
 		{
+			var FlagController = core.controllers.Flag;
+
 			include.push
 			({
 				model: TrackEditFlag,
@@ -32,7 +34,7 @@ module.exports = function(core)
 				where:
 				{
 					userId: req.user.userId,
-					resolved: 0,
+					resolved: FlagController.FLAG_STATE.UNRESOLVED,
 				},
 				required: false,
 			});
@@ -98,6 +100,8 @@ module.exports = function(core)
 
 			if(req.user)
 			{
+				var FlagController = core.controllers.Flag;
+
 				include.push
 				({
 					model: ContentLinkFlag,
@@ -105,7 +109,7 @@ module.exports = function(core)
 					where:
 					{
 						userId: req.user.userId,
-						resolved: 0,
+						resolved: FlagController.FLAG_STATE.UNRESOLVED,
 					},
 					required: false,
 				});
@@ -139,6 +143,46 @@ module.exports = function(core)
 				
 				res.json(response);
 			});
+		});
+	}
+
+	// Obtain a certain track edit of the track
+	HistoryController.getTrackEditFromFields = function(editId, trackId, done)
+	{
+		TrackEdit.findOne
+		({
+			where:
+			{
+				editId: editId,
+				trackId: trackId,
+			},
+		})
+		.then(function(trackEdit)
+		{
+			done(trackEdit, "editId", editId);
+		});
+	}
+
+	// Obtain a certain track edit of the track
+	HistoryController.getContentLinkFromFields = function(linkId, sourceId, externalId, done)
+	{
+		ContentLink.findOne
+		({
+			where: { linkId: linkId },
+			include:
+			[{
+				model: Content,
+				attributes: ["contentId"],
+				where:
+				{
+					sourceId: sourceId,
+					externalId: externalId,
+				},
+			}],
+		})
+		.then(function(contentLink)
+		{
+			done(contentLink, "linkId", linkId);
 		});
 	}
 

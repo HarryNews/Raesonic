@@ -1,6 +1,28 @@
 module.exports = function(core)
 {
-	var FlagController = {};
+	var FlagController =
+	{
+		ENTITY:
+		{
+			USER: 1,
+			PLAYLIST: 2,
+			RELATION: 3,
+			TRACK_EDIT: 4,
+			CONTENT_LINK: 5,
+		},
+		ACTION:
+		{
+			CREATE: 1,
+			COUNT: 2,
+		},
+		FLAG_STATE:
+		{
+			RESOLVED_MALICIOUS: -2,
+			RESOLVED: -1,
+			UNRESOLVED: 0,
+			RESOLVED_HELPFUL: 1,
+		},
+	};
 
 	var app = core.app;
 	var sequelize = core.sequelize;
@@ -15,8 +37,8 @@ module.exports = function(core)
 	var TrackEditFlag = sequelize.models.TrackEditFlag;
 	var ContentLinkFlag = sequelize.models.ContentLinkFlag;
 
-	// Create a flag marking relation as inappropriate
-	FlagController.createRelationFlag = function(req, res)
+	// Route the flag request based on entity and action
+	FlagController.routeRequest = function(actionType, entityType, req, res)
 	{
 		if(!req.user)
 			return res.status(401).json({ errors: ["not authenticated"] });
@@ -26,158 +48,173 @@ module.exports = function(core)
 		if( !UserController.isVerifiedUser(req.user) )
 			return res.status(401).json({ errors: ["email not verified"] });
 
-		var ReputationController = core.controllers.Reputation;
+		if( !FlagController.canPerformAction(actionType, req, res) )
+			return;
 
-		if( !ReputationController.hasPermission(req.user,
-			ReputationController.PERMISSION.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["not enough reputation"] });
-
-		if( !ReputationController.canPerformActivity(req.user,
-			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["exceeded daily activity limit"] });
-
-		Relation.findOne
-		({
-			attributes: ["relationId"],
-			where:
-			{
-				$or:
-				[
-					{
-						trackId: req.params.trackId,
-						linkedId: req.params.linkedId
-					},
-					{
-						trackId: req.params.linkedId,
-						linkedId: req.params.trackId
-					}
-				]
-			}
-		})
-		.then(function(relation)
-		{
-			// Relation doesn't exist, nothing to flag
-			if(!relation)
-				return res.status(404).json({ errors: ["relation not found"] });
-
-			FlagController.setFlag
-			(
-				RelationFlag,
-				"relationId", relation.relationId,
-				req, res
-			);
-		});
+		FlagController.performAction(actionType, entityType, req, res);
 	}
 
-	// Create a flag marking track edit as inappropriate
-	FlagController.createTrackEditFlag = function(req, res)
+	// Return true if the user can perform an action
+	FlagController.canPerformAction = function(actionType, req, res)
 	{
-		if(!req.user)
-			return res.status(401).json({ errors: ["not authenticated"] });
-
-		var UserController = core.controllers.User;
-
-		if( !UserController.isVerifiedUser(req.user) )
-			return res.status(401).json({ errors: ["email not verified"] });
-
 		var ReputationController = core.controllers.Reputation;
 
-		if( !ReputationController.hasPermission(req.user,
-			ReputationController.PERMISSION.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["not enough reputation"] });
-
-		if( !ReputationController.canPerformActivity(req.user,
-			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["exceeded daily activity limit"] });
-
-		TrackEdit.findOne
-		({
-			attributes: ["editId"],
-			where:
-			{
-				editId: req.params.editId,
-				trackId: req.params.trackId,
-			},
-		})
-		.then(function(trackEdit)
+		switch(actionType)
 		{
-			// Track edit not found, nothing to flag
-			if(!trackEdit)
-				return res.status(404).json({ errors: ["track edit not found"] });
-
-			FlagController.setFlag
-			(
-				TrackEditFlag,
-				"editId", trackEdit.editId,
-				req, res
-			);
-		});
-	}
-
-	// Create a flag marking content link as inappropriate
-	FlagController.createContentLinkFlag = function(req, res)
-	{
-		if(!req.user)
-			return res.status(401).json({ errors: ["not authenticated"] });
-
-		var UserController = core.controllers.User;
-
-		if( !UserController.isVerifiedUser(req.user) )
-			return res.status(401).json({ errors: ["email not verified"] });
-
-		var ReputationController = core.controllers.Reputation;
-
-		if( !ReputationController.hasPermission(req.user,
-			ReputationController.PERMISSION.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["not enough reputation"] });
-
-		if( !ReputationController.canPerformActivity(req.user,
-			ReputationController.ACTIVITY.SUBMIT_FLAGS) )
-				return res.status(403).json
-					({ errors: ["exceeded daily activity limit"] });
-
-		ContentLink.findOne
-		({
-			attributes: ["linkId"],
-			where: { linkId: req.params.linkId },
-			include:
-			[{
-				model: Content,
-				attributes: ["contentId"],
-				where:
+			case FlagController.ACTION.CREATE:
+			{
+				if( !ReputationController.hasPermission(req.user,
+					ReputationController.PERMISSION.SUBMIT_FLAGS) )
 				{
-					sourceId: req.params.sourceId,
-					externalId: req.params.externalId,
-				},
-			}],
-		})
-		.then(function(contentLink)
-		{
-			// Content link not found, nothing to flag
-			if(!contentLink)
-				return res.status(404).json({ errors: ["content link not found"] });
+						res.status(403).json
+							({ errors: ["not enough reputation"] });
 
-			FlagController.setFlag
-			(
-				ContentLinkFlag,
-				"linkId", contentLink.linkId,
-				req, res
-			);
-		});
+						return false;
+				}
+
+				if( !ReputationController.canPerformActivity(req.user,
+					ReputationController.ACTIVITY.SUBMIT_FLAGS) )
+				{
+						res.status(403).json
+							({ errors: ["exceeded daily activity limit"] });
+
+						return false;
+				}
+
+				return true;
+			}
+			case FlagController.ACTION.COUNT:
+			{
+				if( !ReputationController.hasPermission(req.user,
+					ReputationController.PERMISSION.VIEW_FLAG_COUNT) )
+				{
+						res.status(403).json
+							({ errors: ["not enough reputation"] });
+
+						return false;
+				}
+
+				return true;
+			}
+			default:
+			{
+				res.status(500).json({ errors: ["internal error"] });
+
+				return true;
+			}
+		}
+	}
+
+	// Obtain an entity and perform an action with it
+	FlagController.performAction = function(actionType, entityType, req, res)
+	{
+		switch(entityType)
+		{
+			case FlagController.ENTITY.RELATION:
+			{
+				var RelationController = core.controllers.Relation;
+
+				RelationController.getRelationFromTracks(
+					req.params.trackId, req.params.linkedId,
+				function onEntityResolve(entity, entityField, entityId)
+				{
+					FlagController.performActionWith
+						(entity, entityField, entityId, actionType, req, res);
+				});
+
+				break;
+			}
+			case FlagController.ENTITY.TRACK_EDIT:
+			{
+				var HistoryController = core.controllers.History;
+
+				HistoryController.getTrackEditFromFields(
+					req.params.editId, req.params.trackId,
+				function onEntityResolve(entity, entityField, entityId)
+				{
+					FlagController.performActionWith
+						(entity, entityField, entityId, actionType, req, res);
+				});
+
+				break;
+			}
+			case FlagController.ENTITY.CONTENT_LINK:
+			{
+				var HistoryController = core.controllers.History;
+
+				HistoryController.getContentLinkFromFields(
+					req.params.linkId,
+					req.params.sourceId, req.params.externalId,
+				function onEntityResolve(entity, entityField, entityId)
+				{
+					FlagController.performActionWith
+						(entity, entityField, entityId, actionType, req, res);
+				});
+
+				break;
+			}
+			default:
+			{
+				return res.status(500).json({ errors: ["internal error"] });
+			}
+		}
+	}
+
+	// Perform an action with the entity
+	FlagController.performActionWith = function(entity, entityField, entityId, actionType, req, res)
+	{
+		// Entity doesn't exist, nothing to perform action on
+		if(!entity)
+			return res.status(404).json({ errors: ["entity not found"] });
+
+		switch(actionType)
+		{
+			case FlagController.ACTION.CREATE:
+			{
+				FlagController.setFlag
+					(entity, entityField, entityId, req, res);
+
+				break;
+			}
+			case FlagController.ACTION.COUNT:
+			{
+				FlagController.getFlagCount
+					(entity, entityField, entityId, req, res);
+
+				break;
+			}
+			default:
+			{
+				return res.status(500).json({ errors: ["internal error"] });
+			}
+		}
+	}
+
+	// Return flag model for the given entity model
+	FlagController.getFlagModel = function(model, req, res)
+	{
+		switch(model)
+		{
+			case Relation: { return RelationFlag; }
+			case TrackEdit: { return TrackEditFlag; }
+			case ContentLink: { return ContentLinkFlag; }
+			default: { return null; }
+		}
 	}
 
 	// Update or create a flag for the specified entity
-	FlagController.setFlag = function(model, entityField, entityId, req, res)
+	FlagController.setFlag = function(entity, entityField, entityId, req, res)
 	{
+		var model =
+			FlagController.getFlagModel(entity.Model, req, res);
+
+		if(model == null)
+			return res.status(500).json({ errors: ["internal error"] });
+
 		var params =
 		{
 			userId: req.user.userId,
-			resolved: 0,
+			resolved: FlagController.FLAG_STATE.UNRESOLVED,
 		};
 
 		params[entityField] = entityId;
@@ -231,7 +268,46 @@ module.exports = function(core)
 		{
 			return res.status(500).json({ errors: ["internal error"] });
 		});
-	};
+	}
+
+	// Return flag count on each reason for the specified entity
+	FlagController.getFlagCount = function(entity, entityField, entityId, req, res)
+	{
+		var model =
+			FlagController.getFlagModel(entity.Model, req, res);
+
+		var params =
+		{
+			resolved: FlagController.FLAG_STATE.UNRESOLVED,
+		};
+
+		params[entityField] = entityId;
+
+		return model.all
+		({
+			attributes:
+			[
+				"reasonId",
+				[
+					sequelize.fn( "COUNT", sequelize.col(entityField) ),
+					"flags",
+				],
+			],
+			where: params,
+			group: ["reasonId"],
+		})
+		.then(function(counts)
+		{
+			var response = {};
+
+			counts.forEach(function(count)
+			{
+				response[ count.get("reasonId") ] = count.get("flags");
+			});
+
+			res.json(response);
+		});
+	}
 
 	// Returns true if the relation flag reason id is valid
 	FlagController.validateRelationReasonId = function(reasonId)
@@ -258,21 +334,72 @@ module.exports = function(core)
 			({
 				reasonId: paperwork.all(Number, FlagController.validateRelationReasonId),
 			}),
-			FlagController.createRelationFlag);
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.CREATE,
+					FlagController.ENTITY.RELATION,
+					req, res
+				);
+			});
 
 		app.post("/tracks/:trackId(\\d+)/edits/:editId(\\d+)/flags",
 			paperwork.accept
 			({
 				reasonId: paperwork.all(Number, FlagController.validateTrackEditReasonId),
 			}),
-			FlagController.createTrackEditFlag);
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.CREATE,
+					FlagController.ENTITY.TRACK_EDIT,
+					req, res
+				);
+			});
 
 		app.post("/content/:sourceId(\\d+)/:externalId/links/:linkId(\\d+)/flags",
 			paperwork.accept
 			({
 				reasonId: paperwork.all(Number, FlagController.validateContentLinkReasonId),
 			}),
-			FlagController.createContentLinkFlag);
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.CREATE,
+					FlagController.ENTITY.CONTENT_LINK,
+					req, res
+				);
+			});
+
+		app.get("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.COUNT,
+					FlagController.ENTITY.RELATION,
+					req, res
+				);
+			});
+
+		app.get("/tracks/:trackId(\\d+)/edits/:editId(\\d+)/flags",
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.COUNT,
+					FlagController.ENTITY.TRACK_EDIT,
+					req, res
+				);
+			});
+
+		app.get("/content/:sourceId(\\d+)/:externalId/links/:linkId(\\d+)/flags",
+			function(req, res)
+			{
+				FlagController.routeRequest(
+					FlagController.ACTION.COUNT,
+					FlagController.ENTITY.CONTENT_LINK,
+					req, res
+				);
+			});
 	}
 
 	return FlagController;

@@ -34,46 +34,13 @@ Flag.REASONS[Flag.ENTITY.CONTENT_LINK] =
 // Flag specified entity as inappropriate
 Flag.create = function(entityType, entityId, secondId, reasonId, $flag)
 {
-	var flagUrl;
-
-	switch(entityType)
-	{
-		case Flag.ENTITY.USER:
-		{
-			flagUrl = "/users/" + entityId + "/flags/";
-			break;
-		}
-		case Flag.ENTITY.PLAYLIST:
-		{
-			flagUrl = "/playlists/" + entityId + "/flags/";
-			break;
-		}
-		case Flag.ENTITY.RELATION:
-		{
-			flagUrl = "/tracks/" + entityId + "/relations/" + secondId + "/flags/";
-			break;
-		}
-		case Flag.ENTITY.TRACK_EDIT:
-		{
-			flagUrl = "/tracks/" + entityId + "/edits/" + secondId + "/flags/";
-			break;
-		}
-		case Flag.ENTITY.CONTENT_LINK:
-		{
-			flagUrl = "/content/" + entityId + "/links/" + secondId + "/flags/";
-			break;
-		}
-		default:
-		{
-			return;
-		}
-	}
-
 	var Toast = require("./Toast.js");
+
+	var requestUrl = Flag.getRequestUrl(entityType, entityId, secondId);
 
 	$.ajax
 	({
-		url: flagUrl,
+		url: requestUrl,
 		type: "POST",
 		data: JSON.stringify({ reasonId: reasonId }),
 		contentType: "application/json",
@@ -98,8 +65,85 @@ function(entityType, entityId, secondId, reasonId, $flag)
 	Flag.create(entityType, entityId, secondId, reasonId, $flag);
 });
 
+// Request flag count for the item
+Flag.requestCount = function(entityType, entityId, secondId)
+{
+	var Toast = require("./Toast.js");
+
+	var requestUrl = Flag.getRequestUrl(entityType, entityId, secondId);
+
+	$.ajax
+	({
+		url: requestUrl,
+		type: "GET",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+			
+			if( !Overlay.isActive() )
+				return;
+
+			var flags = response;
+
+			Flag.REASONS[entityType].forEach(function(reason, reasonId)
+			{
+				var count = flags[++reasonId];
+
+				if(!count)
+					return;
+
+				var $counter = $("<span>")
+					.text(count);
+
+				var $icon = $("<span>")
+					.addClass("flag icon");
+
+				$("#window label[for=\"" + reason[1] + "\"]")
+					.append($counter, $icon);
+			});
+		},
+		error: Toast.onRequestError,
+	});
+}
+
+// Return a request URL for the specified entity type
+Flag.getRequestUrl = function(entityType, entityId, secondId)
+{
+	switch(entityType)
+	{
+		case Flag.ENTITY.USER:
+		{
+			return ( "/users/" + entityId + "/flags/" );
+		}
+		case Flag.ENTITY.PLAYLIST:
+		{
+			return ( "/playlists/" + entityId + "/flags/" );
+		}
+		case Flag.ENTITY.RELATION:
+		{
+			return ( "/tracks/" + entityId + "/relations/" +
+				secondId + "/flags/" );
+		}
+		case Flag.ENTITY.TRACK_EDIT:
+		{
+			return ( "/tracks/" + entityId + "/edits/" +
+				secondId + "/flags/" );
+		}
+		case Flag.ENTITY.CONTENT_LINK:
+		{
+			return ( "/content/" + entityId + "/links/" +
+				secondId + "/flags/" );
+		}
+		default:
+		{
+			return null;
+		}
+	}
+}
+
 // Called once upon creating a flag overlay
-Flag.initOverlay = function(entityType)
+Flag.initOverlay = function(entityType, entityId, secondId)
 {
 	Flag.REASONS[entityType].forEach(function(reason)
 	{
@@ -129,6 +173,14 @@ Flag.initOverlay = function(entityType)
 			.before($radio)
 			.before($label);
 	});
+
+	var Reputation = require("./Reputation.js");
+
+	if( !Reputation.hasPermission(
+		Reputation.PERMISSION.VIEW_FLAG_COUNT ) )
+			return;
+
+	Flag.requestCount(entityType, entityId, secondId);
 }
 
 // Show flag creation overlay
@@ -264,7 +316,7 @@ Flag.showFlagOverlay = function(data, $flag)
 	elements,
 	function onOverlayCreate()
 	{
-		Flag.initOverlay(entityType);
+		Flag.initOverlay(entityType, data.entityId, data.secondId);
 	});
 }
 

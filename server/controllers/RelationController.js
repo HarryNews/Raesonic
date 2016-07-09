@@ -252,25 +252,9 @@ module.exports = function(core)
 		if( !ReputationController.hasPermission(req.user, votePermission) )
 			return res.status(403).json({ errors: ["not enough reputation"] });
 
-		Relation.findOne
-		({
-			attributes: ["relationId", "trust", "doubt"],
-			where:
-			{
-				$or:
-				[
-					{
-						trackId: req.params.trackId,
-						linkedId: req.params.linkedId
-					},
-					{
-						trackId: req.params.linkedId,
-						linkedId: req.params.trackId
-					}
-				]
-			}
-		})
-		.then(function(relation)
+		RelationController.getRelationFromTracks(
+			req.params.trackId, req.params.linkedId,
+		function onDone(relation)
 		{
 			// Relation doesn't exist, nothing to vote on
 			if(!relation)
@@ -278,6 +262,32 @@ module.exports = function(core)
 
 			RelationController.setRelationVote(relation, req.body.vote, req, res,
 				RelationController.MODE_UPDATE_VOTE);
+		});
+	}
+
+	// Obtain a relation linking two tracks
+	RelationController.getRelationFromTracks = function(trackId, linkedId, done)
+	{
+		Relation.findOne
+		({
+			where:
+			{
+				$or:
+				[
+					{
+						trackId: trackId,
+						linkedId: linkedId
+					},
+					{
+						trackId: linkedId,
+						linkedId: trackId
+					},
+				],
+			},
+		})
+		.then(function(relation)
+		{
+			done(relation, "relationId", relation.relationId);
 		});
 	}
 

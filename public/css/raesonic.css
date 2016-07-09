@@ -918,7 +918,11 @@ body
 {
 	margin-left: 2px;
 }
-#flag-subject .removed
+#window p.subject span.added
+{
+	opacity: 1;
+}
+#window p.subject span.removed
 {
 	display: none;
 }
@@ -1172,6 +1176,19 @@ body
 #window label:last-of-type
 {
 	margin-bottom: 20px;
+}
+#window label span
+{
+	margin-left: 7px;
+	opacity: 0.6;
+}
+#window label .flag.icon
+{
+	display: inline-block;
+	-webkit-filter: brightness(0.15) sepia(1) hue-rotate(200deg);
+	opacity: 0.25;
+	margin-left: 2px;
+	vertical-align: -2px;
 }
 #window .checkbox-container label
 {
