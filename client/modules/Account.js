@@ -10,6 +10,10 @@ var Account =
 // Create a new user account
 Account.create = function(username, password)
 {
+	// Already logged in, bail out
+	if(Account.authenticated)
+		return;
+
 	$.ajax
 	({
 		url: "/signup/",
@@ -22,6 +26,10 @@ Account.create = function(username, password)
 		contentType: "application/json",
 		success: function(response)
 		{
+			// Already logged in, bail out
+			if(Account.authenticated)
+				return;
+
 			if(response.errors)
 				return;
 
@@ -32,6 +40,10 @@ Account.create = function(username, password)
 		},
 		error: function(response)
 		{
+			// Already logged in, bail out
+			if(Account.authenticated)
+				return;
+
 			var json = response.responseJSON;
 
 			if(!json || !json.errors)
@@ -65,6 +77,10 @@ function(username, password)
 // Login into an existing account
 Account.login = function(username, password)
 {
+	// Already logged in, bail out
+	if(Account.authenticated)
+		return;
+
 	$.ajax
 	({
 		url: "/login/",
@@ -77,6 +93,10 @@ Account.login = function(username, password)
 		contentType: "application/json",
 		success: function(response)
 		{
+			// Already logged in, bail out
+			if(Account.authenticated)
+				return;
+
 			if(response.errors)
 				return;
 
@@ -84,6 +104,10 @@ Account.login = function(username, password)
 		},
 		error: function(response)
 		{
+			// Already logged in, bail out
+			if(Account.authenticated)
+				return;
+
 			var json = response.responseJSON;
 
 			if(!json || !json.errors)
@@ -108,6 +132,10 @@ function(username, password)
 // Send email with a link to reset password
 Account.restore = function(username)
 {
+	// Already logged in, bail out
+	if(Account.authenticated)
+		return;
+
 	$.ajax
 	({
 		url: "/restore/",
@@ -116,6 +144,10 @@ Account.restore = function(username)
 		contentType: "application/json",
 		success: function(response)
 		{
+			// Already logged in, bail out
+			if(Account.authenticated)
+				return;
+
 			if(response.errors)
 				return;
 
@@ -133,12 +165,20 @@ Throttle(5000, function(username)
 // Logout from the account
 Account.logout = function()
 {
+	// Already logged out, bail out
+	if(!Account.authenticated)
+		return;
+
 	$.ajax
 	({
 		url: "/logout/",
 		type: "POST",
 		success: function(response)
 		{
+			// Already logged out, bail out
+			if(!Account.authenticated)
+				return;
+
 			if(response.errors)
 				return;
 
