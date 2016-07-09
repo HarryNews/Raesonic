@@ -918,6 +918,10 @@ body
 {
 	margin-left: 2px;
 }
+#flag-subject .removed
+{
+	display: none;
+}
 #window p.extra.subject
 {
 	margin-top: 3px;
