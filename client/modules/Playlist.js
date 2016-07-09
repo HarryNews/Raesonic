@@ -1015,7 +1015,8 @@ Playlist.onAccountSync = function()
 	var Account = require("./Account.js");
 
 	// Remove playlist creator data if it's the same user
-	if( Playlist.active &&
+	if( Account.authenticated &&
+		Playlist.active &&
 		Playlist.active.user &&
 		Playlist.active.user[0] == Account.own.username )
 	{
