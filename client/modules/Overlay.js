@@ -81,15 +81,17 @@ Overlay.initState = function(name)
 }
 
 // Wrap a checkbox and its label, move them above separator
-Overlay.initCheckbox = function(name)
+Overlay.initCheckbox = function(name, before)
 {
+	var $before = $( before || "#window-separator" );
+
 	$("#" + name + "-agree, #" + name + "-label")
 		.appendTo(
 			$("<div>")
 				.attr("id", name + "-container")
 				.addClass("checkbox-container")
 				.hide()
-				.insertBefore( $("#window-separator") )
+				.insertBefore($before)
 		);
 }
 

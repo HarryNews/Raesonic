@@ -85,6 +85,7 @@ Flag.requestCount = function(entityType, entityId, secondId)
 				return;
 
 			var flags = response;
+			var hasFlags = false;
 
 			Flag.REASONS[entityType].forEach(function(reason, reasonId)
 			{
@@ -92,6 +93,8 @@ Flag.requestCount = function(entityType, entityId, secondId)
 
 				if(!count)
 					return;
+
+				hasFlags = true;
 
 				var $counter = $("<span>")
 					.text(count);
@@ -102,10 +105,58 @@ Flag.requestCount = function(entityType, entityId, secondId)
 				$("#window label[for=\"" + reason[1] + "\"]")
 					.append($counter, $icon);
 			});
+
+			// Enable the "None of above" option, if available
+			if(hasFlags)
+			{
+				$("#reason-none").prop("disabled", false);
+
+				$("#window label[for=\"reason-none\"]")
+					.removeClass("disabled");
+			}
 		},
 		error: Toast.onRequestError,
 	});
 }
+
+// Process decision on the specified entity
+Flag.process = function(entityType, entityId, secondId, reasonId, $flag)
+{
+	var Toast = require("./Toast.js");
+
+	var requestUrl =
+		Flag.getRequestUrl(entityType, entityId, secondId) +
+		"process/";
+
+	$.ajax
+	({
+		url: requestUrl,
+		type: "POST",
+		data: JSON.stringify({ reasonId: reasonId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+			
+			$flag.removeClass("active");
+
+			Overlay.destroy();
+
+			if(reasonId > 0)
+				return Flag.onEntityProcess(entityType);
+
+			Toast.show("All associated reports have been closed",
+				Toast.INFO);
+		},
+		error: Toast.onRequestError,
+	});
+}
+Flag.processThrottled = Throttle(5000,
+function(entityType, entityId, secondId, reasonId, $flag)
+{
+	Flag.process(entityType, entityId, secondId, reasonId, $flag);
+});
 
 // Return a request URL for the specified entity type
 Flag.getRequestUrl = function(entityType, entityId, secondId)
@@ -145,7 +196,23 @@ Flag.getRequestUrl = function(entityType, entityId, secondId)
 // Called once upon creating a flag overlay
 Flag.initOverlay = function(entityType, entityId, secondId)
 {
-	Flag.REASONS[entityType].forEach(function(reason)
+	// Make a copy of the flag reasons array
+	var options = Flag.REASONS[entityType].slice();
+
+	var Reputation = require("./Reputation.js");
+
+	var canProcessFlags = Reputation.hasPermission(
+		Reputation.PERMISSION.PROCESS_FLAGS
+	);
+
+	if(canProcessFlags)
+	{
+		options.push(
+			[0, "reason-none", "None of above, close all reports"]
+		);
+	}
+
+	options.forEach(function(reason)
 	{
 		var $radio = Overlay.createElement
 		({
@@ -156,7 +223,8 @@ Flag.initOverlay = function(entityType, entityId, secondId)
 				type: "radio",
 				name: "flag-reason",
 			},
-			data: { "reasonId": reason[0] }
+			change: Flag.updateFlagOverlay,
+			data: { "reasonId": reason[0] },
 		});
 
 		var $label = Overlay.createElement
@@ -174,21 +242,41 @@ Flag.initOverlay = function(entityType, entityId, secondId)
 			.before($label);
 	});
 
-	var Reputation = require("./Reputation.js");
-
 	if( !Reputation.hasPermission(
 		Reputation.PERMISSION.VIEW_FLAG_COUNT ) )
 			return;
 
 	Flag.requestCount(entityType, entityId, secondId);
+
+	if(!canProcessFlags)
+		return;
+
+	$("#reason-none").prop("disabled", true);
+
+	$("#window label[for=\"reason-none\"]")
+		.addClass("disabled");
+
+	Overlay.initCheckbox
+		("flag-malicious", "#flag-submit");
 }
 
 // Show flag creation overlay
 Flag.showFlagOverlay = function(data, $flag)
 {
+	var Reputation = require("./Reputation.js");
+
+	var canProcessFlags = Reputation.hasPermission(
+		Reputation.PERMISSION.PROCESS_FLAGS
+	);
+
+	var action = (canProcessFlags)
+		? "reviewing"
+		: "reporting";
+
 	var summary;
 	var subject;
 	var extraSubject;
+	var entityName;
 
 	var entityType = data.entityType;
 
@@ -196,7 +284,8 @@ Flag.showFlagOverlay = function(data, $flag)
 	{
 		case Flag.ENTITY.RELATION:
 		{
-			summary = "You are reporting the following recommendation:";
+			entityName = "Recommendation";
+			summary = "You are " + action + " the following recommendation:";
 			subject = data.artist + "<br>" + data.title;
 			extraSubject = data.secondArtist + "<br>" + data.secondTitle;
 
@@ -204,7 +293,8 @@ Flag.showFlagOverlay = function(data, $flag)
 		}
 		case Flag.ENTITY.TRACK_EDIT:
 		{
-			summary = "You are reporting the following track name:";
+			entityName = "Track name";
+			summary = "You are " + action + " the following track name:";
 			subject = data.artist + "<br>" + data.title;
 			
 			break;
@@ -217,7 +307,8 @@ Flag.showFlagOverlay = function(data, $flag)
 			var externalId = data.entityId.substring(2);
 			var sourceName = Content.SOURCE_NAMES[sourceId];
 
-			summary = "You are reporting the following association:";
+			entityName = "Content association";
+			summary = "You are " + action + " the following association:";
 			subject = sourceName + " <br>" + "#" + externalId;
 			extraSubject = data.artist + "<br>" + data.title;
 
@@ -289,7 +380,9 @@ Flag.showFlagOverlay = function(data, $flag)
 	elements.push
 	({
 		tag: "<p>",
-		text: "Please select one of the reasons below:",
+		text: (canProcessFlags)
+			? "Select the correct statement:"
+			: "Please select one of the reasons below:",
 	},
 	{
 		tag: "<div>",
@@ -298,8 +391,12 @@ Flag.showFlagOverlay = function(data, $flag)
 			id: "flag-submit",
 			class: "inner window-link",
 		},
-		text: "Submit Report",
-		click: Flag.onReportSubmitClick,
+		text: (canProcessFlags)
+			? "Confirm"
+			: "Submit Report",
+		click: (canProcessFlags)
+		? Flag.onReviewConfirmClick
+		: Flag.onReportSubmitClick,
 	},
 	{
 		tag: "<div>",
@@ -312,12 +409,65 @@ Flag.showFlagOverlay = function(data, $flag)
 		click: Overlay.destroy,
 	});
 
-	Overlay.create("Flag for moderator attention",
+	if(canProcessFlags)
+	{
+		elements.push
+		({
+			tag: "<input>",
+			attributes:
+			{
+				id: "flag-malicious-agree",
+				type: "checkbox",
+			},
+		},
+		{
+			tag: "<label>",
+			attributes:
+			{
+				id: "flag-malicious-label",
+				for: "flag-malicious-agree",
+			},
+			text: "Mark reports as malicious",
+		});
+	}
+
+	Overlay.create(canProcessFlags
+		? (entityName + " review")
+		: "Flag for moderator attention",
 	elements,
+	{ noSpacer: true },
 	function onOverlayCreate()
 	{
 		Flag.initOverlay(entityType, data.entityId, data.secondId);
 	});
+}
+
+// Update the flag overlay
+Flag.updateFlagOverlay = function()
+{
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+		return;
+
+	var reasonId = $radio.data("reasonId");
+
+	var $malicious =
+		$("#flag-malicious-container");
+
+	(reasonId == 0)
+		? $malicious
+			.addClass("animated")
+			.slideDown(200, function onDone()
+			{
+				$(this).removeClass("animated")
+			})
+		: $malicious
+			.addClass("animated")
+			.slideUp(200, function onDone()
+			{
+				$(this).removeClass("animated")
+			});
 }
 
 // Called when the user account status has changed
@@ -379,6 +529,93 @@ Flag.onReportSubmitClick = function()
 
 	Flag.createThrottled(data.entityType, data.entityId,
 		data.secondId, reasonId, data.flag);
+}
+
+// Called when the confirm review button is pressed
+Flag.onReviewConfirmClick = function()
+{
+	var $radio = Overlay.getActiveRadioButton();
+
+	if(!$radio.length)
+		return Overlay.shakeLabels();
+
+	var reasonId = $radio.data("reasonId");
+	var data = $("#flag-subject").data();
+	
+	if( reasonId == 0 &&
+		$("#flag-malicious-agree").is(":checked") )
+			reasonId = -1;
+
+	Flag.processThrottled(data.entityType, data.entityId,
+		data.secondId, reasonId, data.flag);
+}
+
+// Called when the entity has been dealt with
+Flag.onEntityProcess = function(entityType)
+{
+	var Toast = require("./Toast.js");
+
+	switch(entityType)
+	{
+		case Flag.ENTITY.USER:
+		{
+			Toast.show("User has been banned",
+				Toast.INFO);
+
+			break;
+		}
+		case Flag.ENTITY.PLAYLIST:
+		{
+			var Playlist = require("./Playlist.js");
+			Playlist.clearActive();
+
+			Toast.show("Playlist has been deleted",
+				Toast.INFO);
+
+			break;
+		}
+		case Flag.ENTITY.RELATION:
+		{
+			var Relation = require("./Relation.js");
+
+			if(Relation.active != null)
+			{
+				var $item = $(".item").filterByData("trackId", entityId);
+
+				if($item.length)
+					$item.remove();
+			}
+
+			Toast.show("Recommendation has been deleted",
+				Toast.INFO);
+
+			break;
+		}
+		case Flag.ENTITY.TRACK_EDIT:
+		{
+			var History = require("./History.js");
+			History.forceUpdate();
+
+			Toast.show("Track name change has been deleted",
+				Toast.INFO);
+
+			break;
+		}
+		case Flag.ENTITY.CONTENT_LINK:
+		{
+			var History = require("./History.js");
+			History.forceUpdate();
+
+			Toast.show("Content association has been deleted",
+				Toast.INFO);
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
 }
 
 module.exports = Flag;

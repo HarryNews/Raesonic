@@ -247,6 +247,19 @@ History.updateItemActions = function()
 	}
 }
 
+// Wipe the storage, request new data and switch the tab
+History.forceUpdate = function()
+{
+	History.clearStorage();
+
+	var Tab = require("./Tab.js");
+
+	// Show history tab with updated entries
+	Tab.isActive(Tab.History)
+		? History.updateItemActions()
+		: Tab.setActive(Tab.History);
+}
+
 // Clear storage variables
 History.clearStorage = function()
 {

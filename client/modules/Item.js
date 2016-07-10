@@ -236,14 +236,7 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				Item.active.title = title;
 
 				var History = require("./History.js");
-				History.clearStorage();
-
-				var Tab = require("./Tab.js");
-
-				// Show history tab with updated entries
-				Tab.isActive(Tab.History)
-					? History.updateItemActions($item)
-					: Tab.setActive(Tab.History);
+				History.forceUpdate();
 				
 				setTimeout(function()
 				{
