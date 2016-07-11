@@ -14,6 +14,7 @@ module.exports = function(core)
 		{
 			CREATE: 1,
 			COUNT: 2,
+			PROCESS: 3,
 		},
 		FLAG_STATE:
 		{
@@ -21,6 +22,11 @@ module.exports = function(core)
 			RESOLVED: -1,
 			UNRESOLVED: 0,
 			RESOLVED_HELPFUL: 1,
+		},
+		REASON:
+		{
+			CLOSE_AND_MARK_MALICIOUS: -1,
+			CLOSE_ALL: 0,
 		},
 	};
 
@@ -90,6 +96,28 @@ module.exports = function(core)
 				{
 						res.status(403).json
 							({ errors: ["not enough reputation"] });
+
+						return false;
+				}
+
+				return true;
+			}
+			case FlagController.ACTION.PROCESS:
+			{
+				if( !ReputationController.hasPermission(req.user,
+					ReputationController.PERMISSION.PROCESS_FLAGS) )
+				{
+						res.status(403).json
+							({ errors: ["not enough reputation"] });
+
+						return false;
+				}
+
+				if( !ReputationController.canPerformActivity(req.user,
+					ReputationController.ACTIVITY.PROCESS_FLAGS) )
+				{
+						res.status(403).json
+							({ errors: ["exceeded daily activity limit"] });
 
 						return false;
 				}
@@ -179,6 +207,13 @@ module.exports = function(core)
 			case FlagController.ACTION.COUNT:
 			{
 				FlagController.getFlagCount
+					(entity, entityField, entityId, req, res);
+
+				break;
+			}
+			case FlagController.ACTION.PROCESS:
+			{
+				FlagController.processFlags
 					(entity, entityField, entityId, req, res);
 
 				break;
@@ -312,6 +347,112 @@ module.exports = function(core)
 		});
 	}
 
+	// Process flags of the specified entity, and alter the latter
+	FlagController.processFlags = function(entity, entityField, entityId, req, res)
+	{
+		var model =
+			FlagController.getFlagModel(entity.Model);
+
+		if(model == null)
+			return res.status(500).json({ errors: ["internal error"] });
+
+		var params =
+		{
+			resolved: FlagController.FLAG_STATE.UNRESOLVED,
+		};
+
+		params[entityField] = entityId;
+
+		var ReputationController = core.controllers.Reputation;
+		var reasonId = req.body.reasonId;
+
+		sequelize.transaction(function(tr)
+		{
+			return ReputationController.addActivity(req.user,
+				ReputationController.ACTIVITY.PROCESS_FLAGS,
+				tr,
+			function onDone()
+			{
+				if(reasonId < 1)
+				{
+					// Close the flags without altering the entity
+					if( reasonId ==
+						FlagController.REASON.CLOSE_ALL )
+					{
+						// Flags are not considered malicious, close them
+						return model.update
+						({
+							resolved:
+								FlagController.FLAG_STATE.RESOLVED,
+							resolverId: req.user.userId,
+						},
+						{
+							where: params,
+							transaction: tr,
+						});
+					}
+
+					// Flags are considered malicious, before closing them,
+					// adjust reputation of the users who created them
+					return model.all
+					({
+						where: params,
+						include:
+						[{
+							model: User,
+							as: "User",
+							attributes: ["userId", "reputation", "reputationToday"],
+						}],
+						transaction: tr,
+					})
+					.then(function(flags)
+					{
+						var users = [];
+
+						flags.forEach(function(flag)
+						{
+							users.push(flag.User);
+						});
+
+						var reputationChange =
+							ReputationController.MALICIOUS_FLAG_PENALTY;
+
+						return ReputationController.bulkUpdateReputation
+						(users, reputationChange, tr)
+						.then(function()
+						{
+							return model.update
+							({
+								resolved:
+									FlagController.FLAG_STATE.RESOLVED_MALICIOUS,
+								resolverId: req.user.userId,
+							},
+							{
+								where: params,
+								transaction: tr,
+							});
+						})
+					});
+				}
+
+				// Close the flags, and alter the entity
+
+				// Selection of associated flags with any state
+				// var paramsWithResolved = {};
+				// paramsWithResolved[entityField] = entityId;
+			});
+		})
+		.then(function()
+		{
+			res.json( [] );
+		})
+		.catch(function(err)
+		{
+			throw err;
+			return res.status(500).json({ errors: ["internal error"] });
+		});
+	}
+
 	// Include a flag state in the object, based on the user
 	FlagController.includeFlagState = function(include, entityModel, user)
 	{
@@ -362,79 +503,82 @@ module.exports = function(core)
 		return (reasonId == 1 || reasonId == 2 || reasonId == 3);
 	}
 
+	// Returns true if the review reason id is valid
+	FlagController.validateReviewReasonId = function(reasonId)
+	{
+		return (reasonId == -1 || reasonId == 0);
+	}
+
 	FlagController.init = function()
 	{
-		app.post("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
-			paperwork.accept
-			({
-				reasonId: paperwork.all(Number, FlagController.validateRelationReasonId),
-			}),
-			function(req, res)
-			{
-				FlagController.routeRequest(
-					FlagController.ACTION.CREATE,
-					FlagController.ENTITY.RELATION,
-					req, res
-				);
-			});
+		var reasonIdValidators = {};
+		reasonIdValidators[FlagController.ENTITY.RELATION] =
+			FlagController.validateRelationReasonId;
+		reasonIdValidators[FlagController.ENTITY.TRACK_EDIT] =
+				FlagController.validateTrackEditReasonId;
+		reasonIdValidators[FlagController.ENTITY.CONTENT_LINK] =
+				FlagController.validateContentLinkReasonId;
 
-		app.post("/tracks/:trackId(\\d+)/edits/:editId(\\d+)/flags",
-			paperwork.accept
-			({
-				reasonId: paperwork.all(Number, FlagController.validateTrackEditReasonId),
-			}),
-			function(req, res)
-			{
-				FlagController.routeRequest(
-					FlagController.ACTION.CREATE,
-					FlagController.ENTITY.TRACK_EDIT,
-					req, res
-				);
-			});
+		var endpoints = {};
+		endpoints[FlagController.ENTITY.RELATION] =
+			"/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags";
+		endpoints[FlagController.ENTITY.TRACK_EDIT] =
+			"/tracks/:trackId(\\d+)/edits/:editId(\\d+)/flags";
+		endpoints[FlagController.ENTITY.CONTENT_LINK] =
+			"/content/:sourceId(\\d+)/:externalId/links/:linkId(\\d+)/flags";
 
-		app.post("/content/:sourceId(\\d+)/:externalId/links/:linkId(\\d+)/flags",
-			paperwork.accept
-			({
-				reasonId: paperwork.all(Number, FlagController.validateContentLinkReasonId),
-			}),
-			function(req, res)
-			{
-				FlagController.routeRequest(
-					FlagController.ACTION.CREATE,
-					FlagController.ENTITY.CONTENT_LINK,
-					req, res
-				);
-			});
+		Object.keys(FlagController.ENTITY)
+		.forEach(function(entityTypeId)
+		{
+			var entityType = FlagController.ENTITY[entityTypeId];
+			var endpoint = endpoints[entityType];
 
-		app.get("/tracks/:trackId(\\d+)/relations/:linkedId(\\d+)/flags",
+			if(!endpoint)
+				return;
+
+			var reasonIdValidator = reasonIdValidators[entityType];
+
+			app.post(endpoint,
+				paperwork.accept
+				({
+					reasonId: paperwork.all(Number, reasonIdValidator),
+				}),
+				function(req, res)
+				{
+					FlagController.routeRequest(
+						FlagController.ACTION.CREATE,
+						entityType, req, res
+					);
+				});
+
+		app.get(endpoint,
 			function(req, res)
 			{
 				FlagController.routeRequest(
 					FlagController.ACTION.COUNT,
-					FlagController.ENTITY.RELATION,
-					req, res
+					entityType, req, res
 				);
 			});
 
-		app.get("/tracks/:trackId(\\d+)/edits/:editId(\\d+)/flags",
+		app.post(endpoint + "/process",
+			paperwork.accept
+			({
+				reasonId: paperwork.all(
+					Number,
+					paperwork.any(
+						reasonIdValidator,
+						FlagController.validateReviewReasonId
+					)
+				),
+			}),
 			function(req, res)
 			{
 				FlagController.routeRequest(
-					FlagController.ACTION.COUNT,
-					FlagController.ENTITY.TRACK_EDIT,
-					req, res
+					FlagController.ACTION.PROCESS,
+					entityType, req, res
 				);
 			});
-
-		app.get("/content/:sourceId(\\d+)/:externalId/links/:linkId(\\d+)/flags",
-			function(req, res)
-			{
-				FlagController.routeRequest(
-					FlagController.ACTION.COUNT,
-					FlagController.ENTITY.CONTENT_LINK,
-					req, res
-				);
-			});
+		});
 	}
 
 	return FlagController;
