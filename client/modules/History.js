@@ -6,6 +6,8 @@ var History =
 	// History action types
 	TYPE_TRACK_EDITS: 1,
 	TYPE_CONTENT_LINKS: 2,
+	// Action on force update
+	SWITCH_TAB: true,
 };
 
 // Request a type of history actions for the specified entity
@@ -248,16 +250,26 @@ History.updateItemActions = function()
 }
 
 // Wipe the storage, request new data and switch the tab
-History.forceUpdate = function()
+History.forceUpdate = function(switchTab, sectionType)
 {
 	History.clearStorage();
+	History.updateItemActions();
+
+	if(!switchTab)
+		return;
 
 	var Tab = require("./Tab.js");
+	Tab.setActive(Tab.History);
 
-	// Show history tab with updated entries
-	Tab.isActive(Tab.History)
-		? History.updateItemActions()
-		: Tab.setActive(Tab.History);
+	if(!sectionType)
+		return;
+
+	var sectionAlias = History.getSectionAlias(sectionType);
+
+	if(sectionAlias == null)
+		return;
+
+	History.setActiveSection(sectionAlias);
 }
 
 // Clear storage variables
@@ -284,6 +296,20 @@ History.setActiveSection = function(alias)
 		.addClass("active");
 
 	History.updateItemActions();
+}
+
+// Obtain section alias for the specified type
+History.getSectionAlias = function(sectionType)
+{
+	switch(sectionType)
+	{
+		case History.TYPE_TRACK_EDITS:
+			return "track-edits";
+		case History.TYPE_CONTENT_LINKS:
+			return "content-links";
+		default:
+			return null;
+	}
 }
 
 // Returns a relative date in a readable format
@@ -334,6 +360,16 @@ History.getRelativeDate = function(dateStr)
 		return r;
 }
 
+// Called when the user account status has changed
+History.onAccountSync = function()
+{
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return;
+
+	History.forceUpdate();
+}
 
 // Called when the history tab becomes active
 History.onTabSetActive = function()

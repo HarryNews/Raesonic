@@ -198,6 +198,7 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 		};
 
 	var Toast = require("./Toast.js");
+	var previousTrackId = trackId;
 
 	$.ajax
 	({
@@ -236,7 +237,10 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				Item.active.title = title;
 
 				var History = require("./History.js");
-				History.forceUpdate();
+				History.forceUpdate(History.SWITCH_TAB,
+					(previousTrackId == -1 || trackId == previousTrackId)
+						? History.TYPE_TRACK_EDITS
+						: History.TYPE_CONTENT_LINKS);
 				
 				setTimeout(function()
 				{
