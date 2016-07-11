@@ -56,6 +56,12 @@ module.exports = function(core)
 			"500": 2,
 			"1500": 3,
 		},
+		DISMISSAL_PENALTY:
+		{
+			RELATION: -2,
+			TRACK_EDIT: -2,
+			CONTENT_LINK: -2,
+		},
 		DAILY_LIMIT: 2,
 		EMAIL_VALIDATION_REWARD: 20,
 		MALICIOUS_FLAG_PENALTY: -2,
@@ -136,7 +142,9 @@ module.exports = function(core)
 				sequelize.fn(least,
 					sequelize.literal(reputationChange),
 					sequelize.condition(
-						ReputationController.DAILY_LIMIT,
+						sequelize.literal(
+							ReputationController.DAILY_LIMIT
+						),
 						"-",
 						sequelize.col("reputationToday")
 					)

@@ -144,7 +144,7 @@ Flag.process = function(entityType, entityId, secondId, reasonId, $flag)
 			Overlay.destroy();
 
 			if(reasonId > 0)
-				return Flag.onEntityProcess(entityType);
+				return Flag.onEntityDismiss(entityType, entityId);
 
 			Toast.show("All associated reports have been closed",
 				Toast.INFO);
@@ -550,8 +550,8 @@ Flag.onReviewConfirmClick = function()
 		data.secondId, reasonId, data.flag);
 }
 
-// Called when the entity has been dealt with
-Flag.onEntityProcess = function(entityType)
+// Called when the entity has been dismissed
+Flag.onEntityDismiss = function(entityType, entityId)
 {
 	var Toast = require("./Toast.js");
 
@@ -578,12 +578,17 @@ Flag.onEntityProcess = function(entityType)
 		{
 			var Relation = require("./Relation.js");
 
-			if(Relation.active != null)
+			if(Relation.active)
 			{
 				var $item = $(".item").filterByData("trackId", entityId);
 
 				if($item.length)
+				{
 					$item.remove();
+
+					if( !$(".item").length )
+						Relation.clearView();
+				}
 			}
 
 			Toast.show("Recommendation has been deleted",

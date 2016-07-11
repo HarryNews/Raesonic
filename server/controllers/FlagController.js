@@ -347,7 +347,7 @@ module.exports = function(core)
 		});
 	}
 
-	// Process flags of the specified entity, and alter the latter
+	// Process flags of the specified entity, and dismiss the latter
 	FlagController.processFlags = function(entity, entityField, entityId, req, res)
 	{
 		var model =
@@ -375,7 +375,7 @@ module.exports = function(core)
 			{
 				if(reasonId < 1)
 				{
-					// Close the flags without altering the entity
+					// Close the flags without dismissing the entity
 					if( reasonId ==
 						FlagController.REASON.CLOSE_ALL )
 					{
@@ -384,7 +384,7 @@ module.exports = function(core)
 						({
 							resolved:
 								FlagController.FLAG_STATE.RESOLVED,
-							resolverId: req.user.userId,
+							reviewerId: req.user.userId,
 						},
 						{
 							where: params,
@@ -393,7 +393,7 @@ module.exports = function(core)
 					}
 
 					// Flags are considered malicious, before closing them,
-					// adjust reputation of the users who created them
+					// adjust reputation of the users who created the flags
 					return model.all
 					({
 						where: params,
@@ -407,6 +407,9 @@ module.exports = function(core)
 					})
 					.then(function(flags)
 					{
+						if(!flags)
+							return res.status(404).json({ errors: ["flags not found"] });
+
 						var users = [];
 
 						flags.forEach(function(flag)
@@ -425,7 +428,7 @@ module.exports = function(core)
 							({
 								resolved:
 									FlagController.FLAG_STATE.RESOLVED_MALICIOUS,
-								resolverId: req.user.userId,
+								reviewerId: req.user.userId,
 							},
 							{
 								where: params,
@@ -435,11 +438,80 @@ module.exports = function(core)
 					});
 				}
 
-				// Close the flags, and alter the entity
+				// Adjust reputation of users who created the flags
+				// with the correct reason, close flags and dismiss the entity
+				var paramsWithReason =
+				{
+					resolved: params.resolved,
+					reasonId: reasonId,
+				};
+				paramsWithReason[entityField] = entityId;
 
-				// Selection of associated flags with any state
-				// var paramsWithResolved = {};
-				// paramsWithResolved[entityField] = entityId;
+				return model.all
+				({
+					where: paramsWithReason,
+					include:
+					[{
+						model: User,
+						as: "User",
+						attributes: ["userId", "reputation", "reputationToday"],
+					}],
+					transaction: tr,
+				})
+				.then(function(flags)
+				{
+					if(flags.length == 0)
+					{
+						return FlagController.dismissEntity
+							(entity, entityField, entityId, model, tr, req, res);
+					}
+
+					var users = [];
+
+					flags.forEach(function(flag)
+					{
+						users.push(flag.User);
+					});
+
+					var reputationChange =
+						ReputationController.HELPFUL_FLAG_REWARD;
+
+					return ReputationController.bulkUpdateReputation
+					(users, reputationChange, tr)
+					.then(function()
+					{
+						// Close the correct flags and mark them as helpful
+						return model.update
+						({
+							resolved:
+								FlagController.FLAG_STATE.RESOLVED_HELPFUL,
+							reviewerId: req.user.userId,
+						},
+						{
+							where: paramsWithReason,
+							transaction: tr,
+						})
+						.then(function()
+						{
+							// Close the remaining flags
+							return model.update
+							({
+								resolved:
+									FlagController.FLAG_STATE.RESOLVED,
+								reviewerId: req.user.userId,
+							},
+							{
+								where: params,
+								transaction: tr,
+							})
+							.then(function()
+							{
+								return FlagController.dismissEntity
+									(entity, entityField, entityId, model, tr, req, res);
+							});
+						});
+					})
+				});
 			});
 		})
 		.then(function()
@@ -450,6 +522,40 @@ module.exports = function(core)
 		{
 			throw err;
 			return res.status(500).json({ errors: ["internal error"] });
+		});
+	}
+
+	// Re-assign the flags and route the entity dismissal request
+	FlagController.dismissEntity = function(entity, entityField, entityId, flagModel, tr, req, res)
+	{
+		var params = {};
+		params[entityField] = null;
+
+		var where = {};
+		where[entityField] = entityId;
+
+		return flagModel.update
+		(params,
+		{
+			where: where,
+			transaction: tr,
+		})
+		.then(function()
+		{
+			switch(entity.Model)
+			{
+				case Relation:
+				{
+					var RelationController = core.controllers.Relation;
+
+					return RelationController.dismissRelation
+						(entity, tr);
+				}
+				default:
+				{
+					return res.status(500).json({ errors: ["internal error"] });
+				}
+			}
 		});
 	}
 
