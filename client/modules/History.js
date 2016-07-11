@@ -313,7 +313,7 @@ History.getSectionAlias = function(sectionType)
 }
 
 // Returns a relative date in a readable format
-// (c) John Resig & Faiz
+// Based on a snippet by John Resig & Faiz
 History.getRelativeDate = function(dateStr)
 {
 	var date = new Date(
@@ -333,31 +333,33 @@ History.getRelativeDate = function(dateStr)
 	var month = date.getMonth() + 1;
 	var day = date.getDate();
 
-	if (isNaN(dayDiff) || dayDiff < 0 || dayDiff >= 31)
+	if( isNaN(dayDiff) || dayDiff >= 31 )
+	{
 		return (
 			( (day < 10) ? "0" + day.toString() : day.toString() ) + "." +
 			( (month < 10) ? "0" + month.toString() : month.toString() ) + "." +
 			year.toString()
 		);
+	}
 
-		var r =
-		( 
+	var r =
+	( 
+		(
+			dayDiff < 1 && 
 			(
-				dayDiff == 0 && 
-				(
-					(diff < 60 && "just now")
-						|| (diff < 120 && "1 minute ago")
-						|| (diff < 3600 && Math.floor(diff / 60) + " minutes ago")
-						|| (diff < 7200 && "1 hour ago")
-						|| (diff < 86400 && Math.floor(diff / 3600) + " hours ago")
-				)
+				(diff < 60 && "just now")
+					|| (diff < 120 && "1 minute ago")
+					|| (diff < 3600 && Math.floor(diff / 60) + " minutes ago")
+					|| (diff < 7200 && "1 hour ago")
+					|| (diff < 86400 && Math.floor(diff / 3600) + " hours ago")
 			)
-			|| (dayDiff == 1 && "Yesterday")
-			|| (dayDiff < 7 && dayDiff + " days ago")
-			|| (dayDiff < 31 && Math.ceil(dayDiff / 7) + " weeks ago")
-		);
+		)
+		|| (dayDiff == 1 && "Yesterday")
+		|| (dayDiff < 7 && dayDiff + " days ago")
+		|| (dayDiff < 31 && Math.ceil(dayDiff / 7) + " weeks ago")
+	);
 
-		return r;
+	return r;
 }
 
 // Called when the user account status has changed
