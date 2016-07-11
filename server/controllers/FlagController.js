@@ -331,7 +331,7 @@ module.exports = function(core)
 		// Limit active state display to own flags
 		if( !ReputationController.hasPermission(user,
 			ReputationController.PERMISSION.VIEW_FLAGS) )
-				params[userId] = user.userId;
+				params.userId = user.userId;
 
 		include.push
 		({
