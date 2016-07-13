@@ -228,17 +228,25 @@ ItemList.getSwitchItem = function(forward, manual)
 ItemList.setActiveItem = function($item, isManualSwitch)
 {
 	$item.addClass("active");
-	
-	Item.active = $item.data();
+
+	Item.active = {};
+	var itemData = $item.data();
+
+	// Make a copy of existing values
+	for(var key in itemData)
+	{
+		Item.active[key] = itemData[key];
+	}
+
 	Item.active.artist = $("#meta-artist").html();
 	Item.active.title = $("#meta-title").html();
 	Item.active.isManualSwitch = isManualSwitch;
 
 	var History = require("./History.js");
-	History.onItemChange($item, isManualSwitch);
+	History.onItemChange();
 
 	var Tab = require("./Tab.js");
-	Tab.onItemChange($item);
+	Tab.onItemChange();
 }
 
 // Scroll to the specified item

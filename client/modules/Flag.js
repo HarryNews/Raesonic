@@ -144,7 +144,7 @@ Flag.process = function(entityType, entityId, secondId, reasonId, $flag)
 			Overlay.destroy();
 
 			if(reasonId > 0)
-				return Flag.onEntityDismiss(entityType, entityId);
+				return Flag.onEntityDismiss(entityType, entityId, response);
 
 			Toast.show("All associated reports have been closed",
 				Toast.INFO);
@@ -551,7 +551,7 @@ Flag.onReviewConfirmClick = function()
 }
 
 // Called when the entity has been dismissed
-Flag.onEntityDismiss = function(entityType, entityId)
+Flag.onEntityDismiss = function(entityType, entityId, response)
 {
 	var Toast = require("./Toast.js");
 
@@ -598,11 +598,24 @@ Flag.onEntityDismiss = function(entityType, entityId)
 		}
 		case Flag.ENTITY.TRACK_EDIT:
 		{
-			var History = require("./History.js");
-			History.forceUpdate();
-
 			Toast.show("Track name change has been deleted",
 				Toast.INFO);
+
+			var Item = require("./Item.js");
+
+			if(!Item.active)
+				return;
+
+			var previousTrackId = Item.active.trackId;
+			var match = { key: "trackId", value: previousTrackId };
+
+			var track = response;
+			var trackId = track[0];
+			var artist = track[1];
+			var title = track[2];
+
+			Item.onItemRename
+				(match, previousTrackId, trackId, artist, title);
 
 			break;
 		}

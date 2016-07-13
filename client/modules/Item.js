@@ -217,40 +217,11 @@ Item.rename = function(itemId, trackId, artist, title, artistChanged, titleChang
 				.filterByData("itemId", itemId)
 				.data("externalId");
 
-			var $item = $(".item")
-				.filterByData("externalId", externalId);
+			var match = { key: "externalId", value: externalId };
 
-			artist = Item.formatArtist(artist);
-			title = Item.formatTitle(title);
+			Item.onItemRename
+				(match, previousTrackId, trackId, artist, title);
 
-			$(":nth-child(1)", $item).html(artist);
-			$(":nth-child(2)", $item).html(title);
-
-			// Update meta and history if the item is active
-			if($item.is(".active"))
-			{
-				$("#meta-artist").html(artist);
-				$("#meta-title").html(title);
-
-				Item.active.trackId = trackId;
-				Item.active.artist = artist;
-				Item.active.title = title;
-
-				var History = require("./History.js");
-				History.forceUpdate(History.SWITCH_TAB,
-					(previousTrackId == -1 || trackId == previousTrackId)
-						? History.TYPE_TRACK_EDITS
-						: History.TYPE_CONTENT_LINKS);
-				
-				setTimeout(function()
-				{
-					// Allow tab interaction if a track is attached
-					var Tab = require("./Tab.js");
-					Tab.onItemChange($item);
-				}, 1000);
-			}
-
-			$item.data("trackId", trackId);
 			Overlay.destroy();
 
 			Toast.show("Track information saved successfully",
@@ -406,6 +377,54 @@ Item.getScrollOffset = function($item, offset)
 				.index($item) +
 					(offset || 0)
 		)
+}
+
+// Called when the item has been renamed
+Item.onItemRename = function(match, previousTrackId, trackId, artist, title)
+{
+	artist = Item.formatArtist(artist);
+	title = Item.formatTitle(title);
+
+	var $item = $(".item")
+		.filterByData(match.key, match.value);
+
+	if( $item.length )
+	{
+		$(":nth-child(1)", $item).html(artist);
+		$(":nth-child(2)", $item).html(title);
+
+		$item.data("trackId", trackId);
+	}
+
+	// Update meta and history if the item is active
+	if(Item.active &&
+		Item.active[match.key] == match.value)
+	{
+		$("#meta-artist").html(artist);
+		$("#meta-title").html(title);
+
+		Item.active.trackId = trackId;
+		Item.active.artist = artist;
+		Item.active.title = title;
+
+		var History = require("./History.js");
+		
+		// Switch to appropriate section unless the track was unassigned
+		var sectionId = (trackId != -1)
+			? (previousTrackId == -1 || trackId == previousTrackId)
+				? History.TYPE_TRACK_EDITS
+				: History.TYPE_CONTENT_LINKS
+			: null;
+
+		History.forceUpdate(History.SWITCH_TAB, sectionId);
+		
+		setTimeout(function()
+		{
+			// Toggle interaction based on whether a track is attached
+			var Tab = require("./Tab.js");
+			Tab.onItemChange();
+		}, 1000);
+	}
 }
 
 // Called upon clicking the item's artist or title element

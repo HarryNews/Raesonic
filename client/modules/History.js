@@ -26,6 +26,7 @@ History.request = function(historyType, entityId)
 				field: "trackId",
 				diff: true,
 				entityType: Flag.ENTITY.TRACK_EDIT,
+				name: "track name change",
 			};
 
 			break;
@@ -38,6 +39,7 @@ History.request = function(historyType, entityId)
 				key: "content-links",
 				field: "externalId",
 				entityType: Flag.ENTITY.CONTENT_LINK,
+				name: "content association",
 			};
 
 			break;
@@ -96,6 +98,16 @@ History.request = function(historyType, entityId)
 			var canSubmitFlags = Reputation.hasPermission(
 				Reputation.PERMISSION.SUBMIT_FLAGS, true
 			);
+
+			var canProcessFlags = Reputation.hasPermission(
+				Reputation.PERMISSION.PROCESS_FLAGS
+			);
+
+			var flagTitle = canSubmitFlags
+				? canProcessFlags
+					? ("Review " + request.name)
+					: "Flag for moderator attention"
+				: "Not enough reputation";
 
 			response.forEach(function addAction(action)
 			{
@@ -163,10 +175,7 @@ History.request = function(historyType, entityId)
 									.addClass("flag icon")
 									.toggleClass("active", active)
 									.toggleClass("disabled", !canSubmitFlags)
-									.attr("title", canSubmitFlags
-										? "Flag for moderator attention"
-										: "Not enough reputation"
-									)
+									.attr("title", flagTitle)
 									.data
 									({
 										entityType: request.entityType,
@@ -183,7 +192,7 @@ History.request = function(historyType, entityId)
 							.append(
 								$("<div>")
 									.addClass("clock icon")
-									.attr("title", new Date(date).toString())
+									.attr( "title", new Date(date).toString() )
 							)
 					);
 
@@ -380,14 +389,16 @@ History.onTabSetActive = function()
 }
 
 // Called when an item is made active
-History.onItemChange = function($item, isManualSwitch)
+History.onItemChange = function()
 {
 	var Tab = require("./Tab.js");
 
 	if( !Tab.isActive(Tab.History) )
 		return;
 
-	if(!isManualSwitch)
+	var Item = require("./Item.js");
+
+	if(!Item.active.isManualSwitch)
 	{
 		// Switch to related tab if the item changed automatically
 		// Prevents logs from being requested when they're not needed

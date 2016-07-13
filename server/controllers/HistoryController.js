@@ -9,6 +9,7 @@ module.exports = function(core)
 	var User = sequelize.models.User;
 	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
+	var Relation = sequelize.models.Relation;
 	var TrackEdit = sequelize.models.TrackEdit;
 	var ContentLink = sequelize.models.ContentLink;
 
@@ -163,6 +164,171 @@ module.exports = function(core)
 		.then(function(contentLink)
 		{
 			done(contentLink, "linkId", linkId);
+		});
+	}
+
+	// Dismiss the specified track edit
+	HistoryController.dismissTrackEdit = function(trackEdit, isMalicious, tr)
+	{
+		return Track.findOne
+		({
+			attributes: ["trackId", "artist", "title"],
+			include:
+			[{
+				model: TrackEdit,
+				where: { editId: trackEdit.editId },
+			}],
+			transaction: tr,
+		})
+		.then(function(track)
+		{
+			if(!track)
+				return res.status(404).json({ errors: ["track not found"] });
+
+			return TrackEdit.all
+			({
+				attributes: ["editId", "artist", "title", "trackId"],
+				where: { trackId: track.trackId },
+				order: [ ["editId", "DESC"] ],
+				transaction: tr,
+			})
+			.then(function(trackEdits)
+			{
+				var ReputationController = core.controllers.Reputation;
+
+				return trackEdit
+				.getUser()
+				.then(function(user)
+				{
+					if(!user)
+						return res.status(404).json({ errors: ["user not found"] });
+
+					var users = [ user ];
+
+					var reputationChange =
+						ReputationController.DISMISSAL_PENALTY.RELATION;
+
+					if(trackEdits.length < 2)
+					{
+						// The track edit is the only one that exists, remove all
+						// track references, then remove the track itself
+						var TrackController = core.controllers.Track;
+
+						return TrackController
+						.dismissTrack(track, isMalicious, tr)
+						.then(function()
+						{
+							if(!isMalicious)
+								return TrackController.UNKNOWN_TRACK;
+
+							return ReputationController.bulkUpdateReputation
+							(users, reputationChange, tr)
+							.then(function()
+							{
+								return TrackController.UNKNOWN_TRACK;
+							});
+						});
+					}
+
+					var latestTrackEdit = trackEdits[0];
+
+					if(latestTrackEdit.editId == trackEdit.editId)
+					{
+						// The track edit is the latest change, revert the track
+						// name to the data from the previous changes
+						var artist = null;
+						var title = null;
+
+						for(var index = 1; index < trackEdits.length; index++)
+						{
+							var historyArtist = trackEdits[index].artist;
+							var historyTitle = trackEdits[index].title;
+
+							artist = artist || historyArtist;
+							title = title || historyTitle;
+
+							if(artist != null && title != null)
+								break;
+						}
+
+						if(artist == null || title == null)
+							return res.status(404).json
+								({ errors: ["rollback data not found"] });
+
+						return track.update
+						({
+							artist: artist,
+							title: title,
+						},
+						{ transaction: tr })
+						.then(function()
+						{
+							return trackEdit
+							.destroy({ transaction: tr })
+							.then(function()
+							{
+								if(!isMalicious)
+									return track;
+
+								return ReputationController.bulkUpdateReputation
+								(users, reputationChange, tr)
+								.then(function()
+								{
+									return track;
+								});
+							});
+						});
+					}
+
+					// Removing a change that's nor the last, nor the only one
+					// Move its data to the missing fields of a newer change
+					for(var index = trackEdits.length - 1; index >= 0; index--)
+					{
+						if( trackEdits[index].editId <= trackEdit.editId )
+							continue;
+
+						var artist = trackEdit.artist;
+						var title = trackEdit.title;
+
+						var newerArtist = trackEdits[index].artist;
+						var newerTitle = trackEdits[index].title;
+
+						var params =
+						{
+							artist: newerArtist || artist,
+							title: newerTitle || title,
+						};
+
+						// Update the newer track edit
+						return TrackEdit
+						.update(params,
+						{
+							where: { editId: trackEdits[index].editId },
+							transaction: tr,
+						})
+						.then(function()
+						{
+							// Remove dismissed track edit
+							return trackEdit
+							.destroy({ transaction: tr })
+							.then(function()
+							{
+								if(!isMalicious)
+									return track;
+
+								return ReputationController.bulkUpdateReputation
+								(users, reputationChange, tr)
+								.then(function()
+								{
+									return track;
+								});
+							});
+						});
+					}
+
+					return res.status(500).json({ errors: ["internal error"] });
+				});
+			});
 		});
 	}
 

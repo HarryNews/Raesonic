@@ -36,6 +36,7 @@ module.exports = function(core)
 	var paperwork = core.paperwork;
 
 	var User = sequelize.models.User;
+	var Track = sequelize.models.Track;
 	var Content = sequelize.models.Content;
 	var Relation = sequelize.models.Relation;
 	var TrackEdit = sequelize.models.TrackEdit;
@@ -517,9 +518,27 @@ module.exports = function(core)
 				});
 			});
 		})
-		.then(function()
+		.then(function(entity)
 		{
-			res.json( [] );
+			if(!entity)
+				return res.json( [] );
+
+			switch(entity.Model)
+			{
+				case Track:
+				{
+					return res.json
+					([
+						entity.trackId,
+						entity.artist,
+						entity.title,
+					]);
+				}
+				default:
+				{
+					return res.json( [] );
+				}
+			}
 		})
 		.catch(function(err)
 		{
@@ -555,6 +574,13 @@ module.exports = function(core)
 					var RelationController = core.controllers.Relation;
 
 					return RelationController.dismissRelation
+						(entity, isMalicious, tr);
+				}
+				case TrackEdit:
+				{
+					var HistoryController = core.controllers.History;
+
+					return HistoryController.dismissTrackEdit
 						(entity, isMalicious, tr);
 				}
 				default:

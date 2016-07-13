@@ -374,6 +374,42 @@ module.exports = function(core)
 		});
 	}
 
+	// Dismiss the track and all references of the track
+	TrackController.dismissTrack = function(track, isMalicious, tr)
+	{
+		// Unassign all content linked with the track
+		return Content.update
+		({
+			trackId: -1,
+		},
+		{
+			where: { trackId: track.trackId },
+			transaction: tr,
+		})
+		.then(function()
+		{
+			// Remove all associated relations
+			return Relation.destroy
+			({
+				where:
+				{
+					$or:
+					[
+						{ trackId: track.trackId, },
+						{ linkedId: track.trackId },
+					],
+				},
+				transaction: tr,
+			})
+			.then(function()
+			{
+				// Delete the track and its track edits (cascade)
+				return track
+				.destroy({ transaction: tr });
+			});
+		});
+	}
+
 	// Returns true if the id is in valid range
 	TrackController.validateId = function(id)
 	{
@@ -419,6 +455,13 @@ module.exports = function(core)
 				},
 			}),
 			TrackController.editTrack);
+
+		TrackController.UNKNOWN_TRACK = Track.build
+		({
+			trackId: -1,
+			artist: "Unknown Artist",
+			title: "Unknown Track",
+		});
 	}
 
 	return TrackController;

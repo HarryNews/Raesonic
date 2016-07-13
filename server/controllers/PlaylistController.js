@@ -371,22 +371,21 @@ module.exports = function(core)
 						{ transaction: tr })
 						.then(function()
 						{
-							// Default values if no track is attached
-							return (!created)
-								?
-								[
-									content.Track.trackId,
-									content.Track.artist,
-									content.Track.title,
-									item.itemId,
-								]
-								:
-								[
-									-1,
-									"Unknown Artist",
-									"Unknown Track",
-									item.itemId,
-								];
+							var TrackController = core.controllers.Track;
+
+							var track = created
+								? TrackController.UNKNOWN_TRACK
+								: content.Track;
+
+							var response =
+							[
+								track.trackId,
+								track.artist,
+								track.title,
+								item.itemId,
+							];
+
+							return response;
 						})
 					});
 				})
