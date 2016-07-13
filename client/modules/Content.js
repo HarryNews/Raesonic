@@ -276,7 +276,7 @@ Content.updateReplaceIconState = function($item, overrideContent)
 	var initialContent = $item.data("initial");
 
 	// No content or itemId, hide icon and return false
-	if(initialContent == null || $item.data("itemId") == null)
+	if( initialContent == null || !$item.data("itemId") )
 	{
 		$("#content-replace").addClass("hidden");
 		return false;

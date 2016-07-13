@@ -45,6 +45,127 @@ module.exports = function(core)
 	var TrackEditFlag = sequelize.models.TrackEditFlag;
 	var ContentLinkFlag = sequelize.models.ContentLinkFlag;
 
+	// Retrieve playlist with flagged items of specified type
+	FlagController.getFlagsPlaylist = function(alias, name, params, req, res)
+	{
+		if(!req.user)
+			return res.status(403).json({ errors: ["no access"] });
+
+		var ReputationController = core.controllers.Reputation;
+
+		if( !ReputationController.hasPermission(req.user,
+			ReputationController.PERMISSION.VIEW_FLAGS) )
+				res.status(403).json({ errors: ["no access"] });
+
+		var PlaylistController = core.controllers.Playlist;
+
+		Content.all
+		(params)
+		.then(function(content)
+		{
+			var playlistData =
+			[
+				0,
+				name,
+				PlaylistController.ACCESS.PUBLIC,
+				alias,
+			];
+
+			var responseItems = [];
+
+			if(content.length != 0)
+			{
+				for(var index in content)
+				{
+					responseItems.push
+					([
+						content[index].Track.trackId,
+						content[index].Track.artist,
+						content[index].Track.title,
+						0, // itemId
+						content[index].sourceId,
+						content[index].externalId
+					]);
+				}
+			}
+
+			var response =
+			[
+				playlistData,
+				responseItems,
+			];
+
+			res.json(response);
+		});
+	}
+
+	// Retrieve playlist with tracks that have flagged track edits
+	FlagController.getTrackEditPlaylist = function(req, res)
+	{
+		var name = "Track Name Flags";
+		var alias = "track-name-flags";
+
+		var params =
+		{
+			attributes: ["sourceId", "externalId", "trackId"],
+			limit: 100,
+			include:
+			[{
+				model: Track,
+				attributes: ["trackId", "artist", "title"],
+				include:
+				[{
+					model: TrackEdit,
+					attributes: ["editId"],
+					include:
+					[{
+						model: TrackEditFlag,
+						attributes: ["flagId", "resolved"],
+						where:
+						{
+							resolved: FlagController.FLAG_STATE.UNRESOLVED,
+						},
+					}],
+				}],
+			}],
+		}
+
+		FlagController.getFlagsPlaylist(alias, name, params, req, res);
+	}
+
+	// Retrieve playlist with tracks that have flagged content links
+	FlagController.getContentLinkPlaylist = function(req, res)
+	{
+		var name = "Content Association Flags";
+		var alias = "content-association-flags";
+
+		var params =
+		{
+			attributes: ["sourceId", "externalId", "trackId"],
+			limit: 100,
+			include:
+			[{
+				model: Track,
+				attributes: ["trackId", "artist", "title"],
+			},
+			{
+				model: ContentLink,
+				attributes: ["linkId"],
+				include:
+				[{
+					model: ContentLinkFlag,
+					attributes: ["flagId", "resolved"],
+					where:
+					{
+						resolved: FlagController.FLAG_STATE.UNRESOLVED,
+					},
+				}],
+			}],
+		}
+
+		FlagController.getFlagsPlaylist(alias, name, params, req, res);
+	}
+
 	// Route the flag request based on entity and action
 	FlagController.routeRequest = function(actionType, entityType, req, res)
 	{

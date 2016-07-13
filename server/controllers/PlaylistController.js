@@ -114,9 +114,6 @@ module.exports = function(core)
 			})
 			.then(function(playlist)
 			{
-				if(!playlist)
-					return res.json( [] );
-
 				var playlistData =
 				[
 					playlist.playlistId,
@@ -527,6 +524,14 @@ module.exports = function(core)
 				access: paperwork.all(Number, PlaylistController.validateAccess),
 			}),
 			PlaylistController.createPlaylist);
+
+		var FlagController = core.controllers.Flag;
+
+		app.get("/playlists/track-name-flags",
+			FlagController.getTrackEditPlaylist);
+
+		app.get("/playlists/content-association-flags",
+			FlagController.getContentLinkPlaylist);
 
 		app.get("/playlists/:alias",
 			PlaylistController.getPlaylist);

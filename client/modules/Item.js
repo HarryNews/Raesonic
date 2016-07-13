@@ -23,7 +23,7 @@ Item.create = function(sourceId, externalId)
 		return;
 	}
 
-	if(Playlist.active.user != null)
+	if(Playlist.active.user != null || Playlist.active.playlistId < 1)
 	{
 		Toast.show("Playlist belongs to another user", Toast.ERROR);
 		return;

@@ -391,7 +391,43 @@ History.onTabSetActive = function()
 // Called when an item is made active
 History.onItemChange = function()
 {
+	var Playlist = require("./Playlist.js");
 	var Tab = require("./Tab.js");
+
+	if(Playlist.active && Playlist.active.flags)
+	{
+		var Flag = require("./Flag.js");
+
+		Tab.setActive(Tab.History);
+
+		var sectionType = null;
+
+		switch(Playlist.active.flags)
+		{
+			case Flag.ENTITY.TRACK_EDIT:
+			{
+				sectionType = History.TYPE_TRACK_EDITS;
+				break;
+			}
+			case Flag.ENTITY.CONTENT_LINK:
+			{
+				sectionType = History.TYPE_CONTENT_LINKS;
+				break;
+			}
+			default:
+			{
+				return;
+			}
+		}
+
+		var sectionAlias = History.getSectionAlias(sectionType);
+
+		if(sectionAlias == null)
+			return;
+
+		History.setActiveSection(sectionAlias);
+		return;
+	}
 
 	if( !Tab.isActive(Tab.History) )
 		return;
