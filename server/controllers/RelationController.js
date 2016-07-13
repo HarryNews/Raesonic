@@ -443,7 +443,7 @@ module.exports = function(core)
 	}
 
 	// Dismiss the specified relation
-	RelationController.dismissRelation = function(relation, tr)
+	RelationController.dismissRelation = function(relation, isMalicious, tr)
 	{
 		var trackId = relation.trackId;
 		var linkedId = relation.linkedId;
@@ -481,6 +481,9 @@ module.exports = function(core)
 					(linkedId, tr,
 					function onDone()
 					{
+						if(!isMalicious)
+							return;
+
 						var users = [ relation.RelationVotes[0].User ];
 
 						var reputationChange =

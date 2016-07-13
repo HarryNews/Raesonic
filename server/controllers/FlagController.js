@@ -28,6 +28,7 @@ module.exports = function(core)
 			CLOSE_AND_MARK_MALICIOUS: -1,
 			CLOSE_ALL: 0,
 		},
+		INTENTIONALLY_INCORRECT: 2,
 	};
 
 	var app = core.app;
@@ -463,7 +464,8 @@ module.exports = function(core)
 					if(flags.length == 0)
 					{
 						return FlagController.dismissEntity
-							(entity, entityField, entityId, model, tr, req, res);
+							(entity, entityField, entityId,
+								model, reasonId, tr, req, res);
 					}
 
 					var users = [];
@@ -507,7 +509,8 @@ module.exports = function(core)
 							.then(function()
 							{
 								return FlagController.dismissEntity
-									(entity, entityField, entityId, model, tr, req, res);
+									(entity, entityField, entityId,
+										model, reasonId, tr, req, res);
 							});
 						});
 					})
@@ -526,13 +529,16 @@ module.exports = function(core)
 	}
 
 	// Re-assign the flags and route the entity dismissal request
-	FlagController.dismissEntity = function(entity, entityField, entityId, flagModel, tr, req, res)
+	FlagController.dismissEntity = function(entity, entityField, entityId, flagModel, reasonId, tr, req, res)
 	{
 		var params = {};
 		params[entityField] = null;
 
 		var where = {};
 		where[entityField] = entityId;
+
+		var isMalicious =
+			(reasonId == FlagController.INTENTIONALLY_INCORRECT);
 
 		return flagModel.update
 		(params,
@@ -549,7 +555,7 @@ module.exports = function(core)
 					var RelationController = core.controllers.Relation;
 
 					return RelationController.dismissRelation
-						(entity, tr);
+						(entity, isMalicious, tr);
 				}
 				default:
 				{
