@@ -271,6 +271,10 @@ Relation.onRelationItemChange = function($item, artist, title)
 		Reputation.PERMISSION.SUBMIT_FLAGS, true
 	);
 
+	var canProcessFlags = Reputation.hasPermission(
+		Reputation.PERMISSION.PROCESS_FLAGS
+	);
+
 	var Flag = require("./Flag.js");
 
 	$("#related-flag")
@@ -287,7 +291,9 @@ Relation.onRelationItemChange = function($item, artist, title)
 		.toggleClass( "active", $item.data("flagged") )
 		.toggleClass("disabled", !canSubmitFlags)
 		.attr("title", canSubmitFlags
-			? "Flag for moderator attention"
+			? canProcessFlags
+				? "Review recommendation"
+				: "Flag for moderator attention"
 			: "Not enough reputation"
 		);
 }

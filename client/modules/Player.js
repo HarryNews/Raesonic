@@ -179,8 +179,8 @@ Player.setItem = function($item, isManualSwitch)
 		if(data.rating != null)
 			$("#related-first-image").html( $("#content-image").html() );
 
-		$("#content-name").text("#" + externalId);
-		$("#content-author").text("–");
+		$("#content-name").text("Video #" + externalId);
+		$("#content-author").text("YouTube");
 
 		return;
 	}

@@ -10,6 +10,7 @@ var Playlist =
 		PUBLIC: 3,
 		FAVORITES: 4,
 		RECENT: 5,
+		FLAGS: 6,
 	},
 	ACCESS:
 	{
@@ -187,11 +188,11 @@ function(playlistId)
 });
 
 // Retrieve playlist tracks and metadata
-Playlist.load = function(playlistId)
+Playlist.load = function(playlistAlias)
 {
 	$.ajax
 	({
-		url: "/playlists/" + playlistId + "/",
+		url: "/playlists/" + playlistAlias + "/",
 		type: "GET",
 		success: Playlist.onLoadResponse,
 		error: Playlist.onLoadError,
@@ -277,11 +278,39 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 	}
 	else
 	{
-		// Own playlist, switch the section to match it
-		var sectionAlias =
-			Playlist.PERSONAL_SECTIONS[access - 1];
+		if(playlistId != 0)
+		{
+			// Own playlist, switch the section to match it
+			var sectionAlias =
+				Playlist.PERSONAL_SECTIONS[access - 1];
 
-		Playlist.setActiveSection(sectionAlias);
+			Playlist.setActiveSection(sectionAlias);
+		}
+		else
+		{
+			var Flag = require("./Flag.js");
+
+			// Flagged entity playlists
+			switch(alias)
+			{
+				case "track-name-flags":
+				{
+					Playlist.active.flags = Flag.ENTITY.TRACK_EDIT;
+					break;
+				}
+				case "content-association-flags":
+				{
+					Playlist.active.flags = Flag.ENTITY.CONTENT_LINK;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			};
+
+			Playlist.setActiveSection("FLAGS");
+		}
 	}
 
 	var Relation = require("./Relation.js");
@@ -335,39 +364,51 @@ Playlist.clearActive = function()
 // Retrieve the list of all playlists in a section
 Playlist.loadSection = function(sectionId, sectionAlias)
 {
-	// todo: retrieve from local storage
-	if(sectionId == Playlist.SECTION.RECENT)
-		return;
+	switch(sectionId)
+	{
+		case Playlist.SECTION.RECENT:
+		{
+			// todo: retrieve from local storage
+			return;
+		}
+		case Playlist.SECTION.FLAGS:
+		{
+			var playlists =
+			[
+				[
+					0,
+					"Track Name Flags",
+					Playlist.ACCESS.PUBLIC,
+					"track-name-flags",
+					"view associated",
+				],
+				[
+					0,
+					"Content Association Flags",
+					Playlist.ACCESS.PUBLIC,
+					"content-association-flags",
+					"view associated",
+				],
+			];
+
+			Playlist.setSectionPlaylists(playlists, sectionAlias);
+			return;
+		}
+		default:
+		{
+			break;
+		}
+	}
 
 	$.ajax
 	({
 		url: "/own/playlists/" + sectionAlias.toLowerCase() + "/",
 		type: "GET",
-		success: function(playlists)
+		success: function(response)
 		{
-			if(playlists)
-			{
-				playlists.forEach(Playlist.addSectionPlaylist);
-			}
-
-			var storage = [];
-
-			$(".playlist").each(function()
-			{
-				storage.push( $(this).clone(true) );
-			});
-
-			Playlist.highlightActivePlaylist();
-
-			$("#playlists")
-				.data(sectionAlias.toLowerCase(), storage)
-				.animate({ scrollTop: 0, }, 0);
-
-			$(".playlist")
-				.hide()
-				.delay(200)
-				.fadeIn(400);
-		}
+			var playlists = response;
+			Playlist.setSectionPlaylists(playlists, sectionAlias);
+		},
 	});
 }
 
@@ -423,7 +464,7 @@ Playlist.highlightActivePlaylist = function()
 		return;
 	
 	$(".playlist")
-		.filterByData("playlistId", Playlist.active.playlistId)
+		.filterByData("alias", Playlist.active.alias)
 		.addClass("active");
 }
 
@@ -708,6 +749,33 @@ Playlist.setActiveSection = function(alias)
 	$section.addClass("active");
 	
 	Playlist.updateSection(previousAlias);
+}
+
+// Set the playlists of the active section
+Playlist.setSectionPlaylists = function(playlists, sectionAlias)
+{
+	if(playlists)
+	{
+		playlists.forEach(Playlist.addSectionPlaylist);
+	}
+
+	var storage = [];
+
+	$(".playlist").each(function()
+	{
+		storage.push( $(this).clone(true) );
+	});
+
+	Playlist.highlightActivePlaylist();
+
+	$("#playlists")
+		.data(sectionAlias.toLowerCase(), storage)
+		.animate({ scrollTop: 0, }, 0);
+
+	$(".playlist")
+		.hide()
+		.delay(200)
+		.fadeIn(400);
 }
 
 // Set track counter to specified value
@@ -1262,7 +1330,16 @@ Playlist.onPlaylistClick = function()
 	if(Relation.active)
 		Relation.clearView();
 
-	Playlist.load( $playlist.data("playlistId") );
+	var isPublicPlaylist =
+		( $playlist.data("access") == Playlist.ACCESS.PUBLIC );
+
+	var playlistAlias = $playlist.data(
+		isPublicPlaylist
+			? "alias"
+			: "playlistId"
+	);
+
+	Playlist.load(playlistAlias);
 }
 
 // Called when the pencil icon is clicked

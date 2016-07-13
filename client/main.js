@@ -38,6 +38,7 @@ $(document).ready(function()
 		Playlist.onAccountSync();
 		ItemList.onAccountSync();
 		Relation.onAccountSync();
+		History.onAccountSync();
 		Flag.onAccountSync();
 
 		Overlay.destroy();

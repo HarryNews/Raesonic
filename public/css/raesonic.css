@@ -997,6 +997,10 @@ body
 	height: 46px;
 	overflow: hidden;
 }
+#flag-malicious-container
+{
+	margin: -21px 0px 20px 1px;
+}
 #window input[type="checkbox"]
 {
 	width: 25px;

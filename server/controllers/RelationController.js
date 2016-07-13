@@ -18,6 +18,7 @@ module.exports = function(core)
 	var sequelize = core.sequelize;
 	var paperwork = core.paperwork;
 
+	var User = sequelize.models.User;
 	var Track = sequelize.models.Track;
 	var Relation = sequelize.models.Relation;
 	var RelationVote = sequelize.models.RelationVote;
@@ -439,6 +440,62 @@ module.exports = function(core)
 			doubt: relation.doubt
 		},
 		{ transaction: tr });
+	}
+
+	// Dismiss the specified relation
+	RelationController.dismissRelation = function(relation, isMalicious, tr)
+	{
+		var trackId = relation.trackId;
+		var linkedId = relation.linkedId;
+
+		return Relation.findOne
+		({
+			attributes: ["relationId"],
+			where: { relationId: relation.relationId },
+			order: [ [RelationVote, "voteId", "ASC"] ],
+			include:
+			[{
+				model: RelationVote,
+				attributes: ["userId"],
+				include:
+				[{
+					model: User,
+				}]
+			}],
+			transaction: tr,
+		})
+		.then(function(relation)
+		{
+			return relation
+			.destroy({ transaction: tr })
+			.then(function()
+			{
+				var TrackController = core.controllers.Track;
+				var ReputationController = core.controllers.Reputation;
+
+				return TrackController.removeUnusedTrack
+				(trackId, tr,
+				function onDone()
+				{
+					return TrackController.removeUnusedTrack
+					(linkedId, tr,
+					function onDone()
+					{
+						if(!isMalicious)
+							return;
+
+						var users = [ relation.RelationVotes[0].User ];
+
+						var reputationChange =
+							ReputationController
+								.DISMISSAL_PENALTY.RELATION;
+
+						return ReputationController.bulkUpdateReputation
+							(users, reputationChange, tr);
+					});
+				});
+			});
+		});
 	}
 
 	// Returns true if the id is in valid range

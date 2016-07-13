@@ -61,10 +61,12 @@ Tab.isActive = function(tab)
 }
 
 // Called upon active item change
-Tab.onItemChange = function($item)
+Tab.onItemChange = function()
 {
+	var Item = require("./Item.js");
+
 	// Allow tab interaction if a track is linked to the item
-	($item.data("trackId") == -1)
+	(Item.active.trackId == -1)
 		? $("#tabs-overlay").addClass("visible")
 		: $("#tabs-overlay.visible").removeClass("visible");
 }

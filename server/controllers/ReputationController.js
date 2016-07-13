@@ -32,6 +32,11 @@ module.exports = function(core)
 				COST: 1,
 				REWARD: 1,
 			},
+			PROCESS_FLAGS:
+			{
+				COST: 1,
+				REWARD: 1,
+			},
 		},
 		ACTIVITY_LIMIT:
 		{
@@ -51,18 +56,31 @@ module.exports = function(core)
 			"500": 2,
 			"1500": 3,
 		},
+		DISMISSAL_PENALTY:
+		{
+			RELATION: -2,
+			TRACK_EDIT: -2,
+			CONTENT_LINK: -2,
+		},
 		DAILY_LIMIT: 2,
 		EMAIL_VALIDATION_REWARD: 20,
+		MALICIOUS_FLAG_PENALTY: -2,
+		HELPFUL_FLAG_REWARD: 1,
 	};
 
 	var app = core.app;
 	var sequelize = core.sequelize;
 	var config = core.config;
 
+	var User = sequelize.models.User;
 	var Item = sequelize.models.Item;
 
 	var isReputationEnabled = config.auth.reputation;
 	var isDailyLimitEnabled = config.auth.limits;
+
+	var least = (config.database.dialect == "postgres")
+		? "LEAST"
+		: "MIN";
 
 	// Returns true if the user has permission for specified action
 	ReputationController.hasPermission = function(user, action)
@@ -109,6 +127,77 @@ module.exports = function(core)
 				return done();
 			});
 		});
+	}
+
+	// Adjust reputation of every user, up to the value specified
+	ReputationController.bulkUpdateReputation = function(users, reputationChange, tr)
+	{
+		var params = {};
+		var isPositiveChange = (reputationChange > 0);
+
+		if(isPositiveChange)
+		{
+			// Approach daily limit but don't go above
+			var limitedReputationChange =
+				sequelize.fn(least,
+					sequelize.literal(reputationChange),
+					sequelize.condition(
+						sequelize.literal(
+							ReputationController.DAILY_LIMIT
+						),
+						"-",
+						sequelize.col("reputationToday")
+					)
+				);
+
+			params =
+			{
+				reputation: sequelize.condition(
+					sequelize.col("reputation"),
+					"+",
+					limitedReputationChange
+				),
+				reputationToday: sequelize.condition(
+					sequelize.col("reputationToday"),
+					"+",
+					limitedReputationChange
+				),
+			};
+		}
+		else
+		{
+			// Approach zero but don't go below
+			var limitedReputationChange =
+				sequelize.fn(least,
+					sequelize.literal(-reputationChange),
+					sequelize.col("reputation")
+				);
+
+			params =
+			{
+				reputation: sequelize.condition(
+					sequelize.col("reputation"),
+					"-",
+					limitedReputationChange
+				),
+			};
+		}
+
+		var promises = [];
+
+		users.forEach(function(user)
+		{
+			promises.push(
+				User.update
+					(params,
+					{
+						where: { userId: user.userId },
+						transaction: tr,
+					})
+			);
+		});
+
+		return sequelize.Promise.all(promises);
 	}
 
 	// Returns day activity limit for the user specified

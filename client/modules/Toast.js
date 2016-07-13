@@ -11,7 +11,9 @@ var Toast =
 		"email not available":
 			"Email is already in use on another account",
 		"email already verified":
-			"Email is already verified, please refresh the page"
+			"Email is already verified, please refresh the page",
+		"track not found":
+			"Track no longer exists",
 	},
 	// Toast classes
 	INFO: "info",
@@ -70,6 +72,8 @@ Toast.onRequestError = function(response)
 		{
 			var Account = require("./Account.js");
 			Account.sync();
+
+			setTimeout(Account.showLoginOverlay, 500);
 		}, 3000);
 
 		return;

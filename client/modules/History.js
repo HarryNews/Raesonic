@@ -6,6 +6,8 @@ var History =
 	// History action types
 	TYPE_TRACK_EDITS: 1,
 	TYPE_CONTENT_LINKS: 2,
+	// Action on force update
+	SWITCH_TAB: true,
 };
 
 // Request a type of history actions for the specified entity
@@ -24,6 +26,7 @@ History.request = function(historyType, entityId)
 				field: "trackId",
 				diff: true,
 				entityType: Flag.ENTITY.TRACK_EDIT,
+				name: "track name change",
 			};
 
 			break;
@@ -36,6 +39,7 @@ History.request = function(historyType, entityId)
 				key: "content-links",
 				field: "externalId",
 				entityType: Flag.ENTITY.CONTENT_LINK,
+				name: "content association",
 			};
 
 			break;
@@ -94,6 +98,16 @@ History.request = function(historyType, entityId)
 			var canSubmitFlags = Reputation.hasPermission(
 				Reputation.PERMISSION.SUBMIT_FLAGS, true
 			);
+
+			var canProcessFlags = Reputation.hasPermission(
+				Reputation.PERMISSION.PROCESS_FLAGS
+			);
+
+			var flagTitle = canSubmitFlags
+				? canProcessFlags
+					? ("Review " + request.name)
+					: "Flag for moderator attention"
+				: "Not enough reputation";
 
 			response.forEach(function addAction(action)
 			{
@@ -161,10 +175,7 @@ History.request = function(historyType, entityId)
 									.addClass("flag icon")
 									.toggleClass("active", active)
 									.toggleClass("disabled", !canSubmitFlags)
-									.attr("title", canSubmitFlags
-										? "Flag for moderator attention"
-										: "Not enough reputation"
-									)
+									.attr("title", flagTitle)
 									.data
 									({
 										entityType: request.entityType,
@@ -181,7 +192,7 @@ History.request = function(historyType, entityId)
 							.append(
 								$("<div>")
 									.addClass("clock icon")
-									.attr("title", new Date(date).toString())
+									.attr( "title", new Date(date).toString() )
 							)
 					);
 
@@ -247,6 +258,29 @@ History.updateItemActions = function()
 	}
 }
 
+// Wipe the storage, request new data and switch the tab
+History.forceUpdate = function(switchTab, sectionType)
+{
+	History.clearStorage();
+	History.updateItemActions();
+
+	if(!switchTab)
+		return;
+
+	var Tab = require("./Tab.js");
+	Tab.setActive(Tab.History);
+
+	if(!sectionType)
+		return;
+
+	var sectionAlias = History.getSectionAlias(sectionType);
+
+	if(sectionAlias == null)
+		return;
+
+	History.setActiveSection(sectionAlias);
+}
+
 // Clear storage variables
 History.clearStorage = function()
 {
@@ -273,8 +307,22 @@ History.setActiveSection = function(alias)
 	History.updateItemActions();
 }
 
+// Obtain section alias for the specified type
+History.getSectionAlias = function(sectionType)
+{
+	switch(sectionType)
+	{
+		case History.TYPE_TRACK_EDITS:
+			return "track-edits";
+		case History.TYPE_CONTENT_LINKS:
+			return "content-links";
+		default:
+			return null;
+	}
+}
+
 // Returns a relative date in a readable format
-// (c) John Resig & Faiz
+// Based on a snippet by John Resig & Faiz
 History.getRelativeDate = function(dateStr)
 {
 	var date = new Date(
@@ -294,33 +342,45 @@ History.getRelativeDate = function(dateStr)
 	var month = date.getMonth() + 1;
 	var day = date.getDate();
 
-	if (isNaN(dayDiff) || dayDiff < 0 || dayDiff >= 31)
+	if( isNaN(dayDiff) || dayDiff >= 31 )
+	{
 		return (
 			( (day < 10) ? "0" + day.toString() : day.toString() ) + "." +
 			( (month < 10) ? "0" + month.toString() : month.toString() ) + "." +
 			year.toString()
 		);
+	}
 
-		var r =
-		( 
+	var r =
+	( 
+		(
+			dayDiff < 1 && 
 			(
-				dayDiff == 0 && 
-				(
-					(diff < 60 && "just now")
-						|| (diff < 120 && "1 minute ago")
-						|| (diff < 3600 && Math.floor(diff / 60) + " minutes ago")
-						|| (diff < 7200 && "1 hour ago")
-						|| (diff < 86400 && Math.floor(diff / 3600) + " hours ago")
-				)
+				(diff < 60 && "just now")
+					|| (diff < 120 && "1 minute ago")
+					|| (diff < 3600 && Math.floor(diff / 60) + " minutes ago")
+					|| (diff < 7200 && "1 hour ago")
+					|| (diff < 86400 && Math.floor(diff / 3600) + " hours ago")
 			)
-			|| (dayDiff == 1 && "Yesterday")
-			|| (dayDiff < 7 && dayDiff + " days ago")
-			|| (dayDiff < 31 && Math.ceil(dayDiff / 7) + " weeks ago")
-		);
+		)
+		|| (dayDiff == 1 && "Yesterday")
+		|| (dayDiff < 7 && dayDiff + " days ago")
+		|| (dayDiff < 31 && Math.ceil(dayDiff / 7) + " weeks ago")
+	);
 
-		return r;
+	return r;
 }
 
+// Called when the user account status has changed
+History.onAccountSync = function()
+{
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return;
+
+	History.forceUpdate();
+}
 
 // Called when the history tab becomes active
 History.onTabSetActive = function()
@@ -329,14 +389,52 @@ History.onTabSetActive = function()
 }
 
 // Called when an item is made active
-History.onItemChange = function($item, isManualSwitch)
+History.onItemChange = function()
 {
+	var Playlist = require("./Playlist.js");
 	var Tab = require("./Tab.js");
+
+	if(Playlist.active && Playlist.active.flags)
+	{
+		var Flag = require("./Flag.js");
+
+		Tab.setActive(Tab.History);
+
+		var sectionType = null;
+
+		switch(Playlist.active.flags)
+		{
+			case Flag.ENTITY.TRACK_EDIT:
+			{
+				sectionType = History.TYPE_TRACK_EDITS;
+				break;
+			}
+			case Flag.ENTITY.CONTENT_LINK:
+			{
+				sectionType = History.TYPE_CONTENT_LINKS;
+				break;
+			}
+			default:
+			{
+				return;
+			}
+		}
+
+		var sectionAlias = History.getSectionAlias(sectionType);
+
+		if(sectionAlias == null)
+			return;
+
+		History.setActiveSection(sectionAlias);
+		return;
+	}
 
 	if( !Tab.isActive(Tab.History) )
 		return;
 
-	if(!isManualSwitch)
+	var Item = require("./Item.js");
+
+	if(!Item.active.isManualSwitch)
 	{
 		// Switch to related tab if the item changed automatically
 		// Prevents logs from being requested when they're not needed

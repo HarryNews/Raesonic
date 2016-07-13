@@ -78,7 +78,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.data("trackId", item[0]);
 
 	// If the itemId is known, store extra values
-	if(item[3] != null)
+	if( item[3] != null )
 	{
 		var Reputation = require("./Reputation.js");
 
@@ -86,13 +86,17 @@ ItemList.addItem = function(item, prepend, useStorage)
 			Reputation.PERMISSION.EDIT_OWN_TRACKS, true
 		);
 
+		var hasItemId = ( item[3] != 0 );
+
 		var $edit = $("<div>")
 			.addClass("edit icon")
-			.toggleClass("disabled", !isEditingAllowed)
+			.toggleClass("disabled", !isEditingAllowed || !hasItemId)
 			.click(Item.onEditIconClick);
 
 		if(!isEditingAllowed)
 			$edit.attr("title", "Not enough reputation");
+		else if(!hasItemId)
+			$edit.attr("title", "Not available in current mode");
 
 		$item
 			.data
@@ -110,7 +114,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 	}
 
 	// If the relation rating is known, store relation values
-	if(item[6] != null)
+	if( item[6] != null )
 	{
 		$item.data
 		({
@@ -228,17 +232,25 @@ ItemList.getSwitchItem = function(forward, manual)
 ItemList.setActiveItem = function($item, isManualSwitch)
 {
 	$item.addClass("active");
-	
-	Item.active = $item.data();
+
+	Item.active = {};
+	var itemData = $item.data();
+
+	// Make a copy of existing values
+	for(var key in itemData)
+	{
+		Item.active[key] = itemData[key];
+	}
+
 	Item.active.artist = $("#meta-artist").html();
 	Item.active.title = $("#meta-title").html();
 	Item.active.isManualSwitch = isManualSwitch;
 
 	var History = require("./History.js");
-	History.onItemChange($item, isManualSwitch);
+	History.onItemChange();
 
 	var Tab = require("./Tab.js");
-	Tab.onItemChange($item);
+	Tab.onItemChange();
 }
 
 // Scroll to the specified item

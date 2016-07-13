@@ -80,14 +80,14 @@ function onSequelizeSync()
 	var Track = sequelize.models.Track;
 	var Playlist = sequelize.models.Playlist;
 
-	// Create a track that newly created content is linked with
+	// Create a track that the newly created content is linked with
 	Track.findOrCreate
 	({
 		where:
 		{
 			trackId: -1,
 			artist: "Unknown Artist",
-			title: "Unknown Track"
+			title: "Unknown Track",
 		}
 	});
 
