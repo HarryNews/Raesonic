@@ -206,7 +206,7 @@ module.exports = function(core)
 					var users = [ user ];
 
 					var reputationChange =
-						ReputationController.DISMISSAL_PENALTY.RELATION;
+						ReputationController.DISMISSAL_PENALTY.TRACK_EDIT;
 
 					if(trackEdits.length < 2)
 					{
@@ -232,7 +232,7 @@ module.exports = function(core)
 
 					var latestTrackEdit = trackEdits[0];
 
-					if(latestTrackEdit.editId == trackEdit.editId)
+					if(trackEdit.editId == latestTrackEdit.editId)
 					{
 						// The track edit is the latest change, revert the track
 						// name to the data from the previous changes
@@ -327,6 +327,153 @@ module.exports = function(core)
 					}
 
 					return res.status(500).json({ errors: ["internal error"] });
+				});
+			});
+		});
+	}
+
+	// Dismiss the specified content link
+	HistoryController.dismissContentLink = function(contentLink, isMalicious, tr)
+	{
+		return Content.findOne
+		({
+			attributes: ["contentId", "trackId"],
+			include:
+			[{
+				model: ContentLink,
+				where: { linkId: contentLink.linkId },
+			}],
+			transaction: tr,
+		})
+		.then(function(content)
+		{
+			if(!content)
+				return res.status(404).json({ errors: ["content not found"] });
+
+			var trackId = contentLink.trackId;
+
+			return ContentLink.all
+			({
+				attributes: ["linkId", "contentId", "trackId"],
+				where: { contentId: content.contentId },
+				order: [ ["linkId", "DESC"] ],
+				transaction: tr,
+			})
+			.then(function(contentLinks)
+			{
+				var ReputationController = core.controllers.Reputation;
+				var TrackController = core.controllers.Track;
+
+				return contentLink
+				.getUser()
+				.then(function(user)
+				{
+					if(!user)
+						return res.status(404).json({ errors: ["user not found"] });
+
+					var users = [ user ];
+
+					var reputationChange =
+						ReputationController.DISMISSAL_PENALTY.CONTENT_LINK;
+
+					if(contentLinks.length < 2)
+					{
+						// The association is the only existing one, unassign track
+						// from the content, and remove the track unless it has references
+						return content.update
+						({
+							trackId: -1,
+						},
+						{ transaction: tr })
+						.then(function()
+						{
+							return contentLink
+							.destroy
+							({ transaction: tr })
+							.then(function()
+							{
+								return TrackController.removeUnusedTrack
+								(trackId, tr,
+								function onDone()
+								{
+									if(!isMalicious)
+										return TrackController.UNKNOWN_TRACK;
+
+									return ReputationController.bulkUpdateReputation
+									(users, reputationChange, tr)
+									.then(function()
+									{
+										return TrackController.UNKNOWN_TRACK;
+									});
+								});
+							});
+						});
+					}
+
+					var latestContentLink = contentLinks[0];
+
+					if(contentLink.linkId == latestContentLink.linkId)
+					{
+						// The subject is the most recent track association, revert to a
+						// previously associated track, that differs from the current one
+						var associatedTrackId = latestContentLink.trackId;
+						var historyTrackId = null;
+
+						for(var index = 1; index < contentLinks.length; index++)
+						{
+							historyTrackId = contentLinks[index].trackId;
+
+							if(historyTrackId != associatedTrackId)
+								break;
+						}
+
+						return content.update
+						({
+							trackId: historyTrackId,
+						},
+						{ transaction: tr })
+						.then(function()
+						{
+							return contentLink
+							.destroy
+							({ transaction: tr })
+							.then(function()
+							{
+								return TrackController.removeUnusedTrack
+								(trackId, tr,
+								function onDone()
+								{
+									if(!isMalicious)
+										return content.getTrack({ transaction: tr });
+
+									return ReputationController.bulkUpdateReputation
+									(users, reputationChange, tr)
+									.then(function()
+									{
+										return content.getTrack({ transaction: tr });
+									});
+								});
+							});
+						});
+					}
+
+					// Removing an association with the track that's not
+					// currently in use, destroy it without altering the content
+					return contentLink
+					.destroy
+					({ transaction: tr })
+					.then(function()
+					{
+						if(!isMalicious)
+							return content.getTrack({ transaction: tr });
+
+						return ReputationController.bulkUpdateReputation
+						(users, reputationChange, tr)
+						.then(function()
+						{
+							return content.getTrack({ transaction: tr });
+						});
+					});
 				});
 			});
 		});

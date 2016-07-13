@@ -621,11 +621,25 @@ Flag.onEntityDismiss = function(entityType, entityId, response)
 		}
 		case Flag.ENTITY.CONTENT_LINK:
 		{
-			var History = require("./History.js");
-			History.forceUpdate();
-
 			Toast.show("Content association has been deleted",
 				Toast.INFO);
+
+			var Item = require("./Item.js");
+
+			if(!Item.active)
+				return;
+
+			var previousTrackId = Item.active.trackId;
+			var externalId = Item.active.externalId;
+			var match = { key: "externalId", value: externalId };
+
+			var track = response;
+			var trackId = track[0];
+			var artist = track[1];
+			var title = track[2];
+
+			Item.onItemRename
+				(match, previousTrackId, trackId, artist, title);
 
 			break;
 		}

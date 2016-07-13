@@ -583,6 +583,13 @@ module.exports = function(core)
 					return HistoryController.dismissTrackEdit
 						(entity, isMalicious, tr);
 				}
+				case ContentLink:
+				{
+					var HistoryController = core.controllers.History;
+
+					return HistoryController.dismissContentLink
+						(entity, isMalicious, tr);
+				}
 				default:
 				{
 					return res.status(500).json({ errors: ["internal error"] });

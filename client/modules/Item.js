@@ -403,14 +403,21 @@ Item.onItemRename = function(match, previousTrackId, trackId, artist, title)
 		$("#meta-artist").html(artist);
 		$("#meta-title").html(title);
 
+		var hasNameChanged = 
+			( Item.active.artist != artist ||
+			Item.active.title != title );
+
+		var switchSection =
+			(trackId != -1 && hasNameChanged);
+
 		Item.active.trackId = trackId;
 		Item.active.artist = artist;
 		Item.active.title = title;
 
 		var History = require("./History.js");
 		
-		// Switch to appropriate section unless the track was unassigned
-		var sectionId = (trackId != -1)
+		// Switch to the appropriate section or keep the current one
+		var sectionId = switchSection
 			? (previousTrackId == -1 || trackId == previousTrackId)
 				? History.TYPE_TRACK_EDITS
 				: History.TYPE_CONTENT_LINKS
