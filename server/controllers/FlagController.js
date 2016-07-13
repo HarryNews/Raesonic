@@ -585,9 +585,23 @@ module.exports = function(core)
 				{
 					if(flags.length == 0)
 					{
-						return FlagController.dismissEntity
-							(entity, entityField, entityId,
-								model, reasonId, tr, req, res);
+						// No correct flags, close all of them
+						return model.update
+						({
+							resolved:
+								FlagController.FLAG_STATE.RESOLVED,
+							reviewerId: req.user.userId,
+						},
+						{
+							where: params,
+							transaction: tr,
+						})
+						.then(function()
+						{
+							return FlagController.dismissEntity
+								(entity, entityField, entityId,
+									model, reasonId, tr, req, res);
+						});
 					}
 
 					var users = [];
