@@ -72,6 +72,8 @@ Toast.onRequestError = function(response)
 		{
 			var Account = require("./Account.js");
 			Account.sync();
+
+			setTimeout(Account.showLoginOverlay, 500);
 		}, 3000);
 
 		return;
