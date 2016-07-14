@@ -370,7 +370,7 @@ body
 }
 #playlists-dropdown .dropdown-category:last-of-type
 {
-	border-bottom: none;
+	margin-bottom: 0;
 }
 #playlists-dropdown .dropdown-subcat .subcatexpand
 {
@@ -410,6 +410,14 @@ body
 {
 	height: calc(100% - 78px);
 	overflow-y: scroll;
+}
+#playlists:empty::after
+{
+	content: "No playlists.";
+	display: block;
+	color: #7A7A7A;
+	margin-top: 34vh;
+	text-align: center;
 }
 #playlists::-webkit-scrollbar
 {
