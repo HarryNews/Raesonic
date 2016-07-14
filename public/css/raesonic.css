@@ -414,10 +414,11 @@ body
 #playlists:empty::after
 {
 	content: "No playlists.";
-	display: block;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	color: #7A7A7A;
-	margin-top: 34vh;
-	text-align: center;
 }
 #playlists::-webkit-scrollbar
 {
@@ -641,10 +642,11 @@ body
 #items:empty::after, #items.filtered.all-hidden::after
 {
 	content: "The playlist is empty, use the input field above to add tracks.";
-	display: block;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	color: #888198;
-	margin-top: 35vh;
-	text-align: center;
 }
 #items.filtered:empty::after, #items.filtered.all-hidden::after
 {
@@ -1533,10 +1535,11 @@ a.window-link
 #cover:empty::after
 {
 	content: "Select a track from the left to play it";
-	display: block;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	color: #717171;
-	text-align: center;
-	padding-top: 27%;
 }
 #cover .content-error
 {
@@ -2059,6 +2062,22 @@ a.window-link
 	flex-direction: column;
 	position: absolute !important;
 	width: 100%;
+}
+#tab-history .section:empty::after
+{
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #7A7A7A;
+}
+#history-track-edits:empty::after
+{
+	content: "No track name changes.";
+}
+#history-content-links:empty::after
+{
+	content: "No content associations.";
 }
 
 
