@@ -703,16 +703,22 @@ Playlist.toggleSidebar = function()
 
 	if(hidingSidebar)
 	{
-		$("body").unbind("mousedown",
-			Playlist.onDocumentMouseDown);
+		$("body")
+			.unbind("mousemove",
+				Playlist.onDocumentMouseMove)
+			.unbind("mousedown",
+				Playlist.onDocumentMouseDown);
 
 		return;
 	}
 
 	Playlist.updateSection();
 
-	$("body").bind("mousedown",
-		Playlist.onDocumentMouseDown);
+	$("body")
+		.bind("mousemove",
+			Playlist.onDocumentMouseMove)
+		.bind("mousedown",
+			Playlist.onDocumentMouseDown);
 }
 
 // Set active section by alias
@@ -1154,6 +1160,24 @@ Playlist.onLoadError = function(response)
 	Toast.onRequestError(response);
 }
 
+// Called upon movement of the mouse cursor
+Playlist.onDocumentMouseMove = function(event)
+{
+	var $dropdown = $("#playlists-dropdown");
+
+	// Toggled by click, no action required
+	if( $dropdown.is(".manual") )
+		return;
+
+	$dropdown.toggleClass("visible",
+		$dropdown.is(".visible")
+			? ( event.pageX < $("#sidebar").width() )
+			: ( event.pageX < 5 &&
+				$("#sidebar").is(":hover") &&
+				!$dropdown.is(":hover") )
+	);
+}
+
 // Called when the mouse is pressed somewhere
 Playlist.onDocumentMouseDown = function(event)
 {
@@ -1194,9 +1218,12 @@ Playlist.onActivePlaylistClick = function()
 {
 	var $dropdown = $("#playlists-dropdown");
 
-	$dropdown.is(":visible")
-		? $dropdown.slideUp(200)
-		: $dropdown.slideDown(200);
+	// Inversed since we need the value after toggle
+	var isDropdownVisible = !$dropdown.is(".visible");
+
+	$dropdown
+		.toggleClass("visible")
+		.toggleClass("manual", isDropdownVisible);
 }
 
 // Called upon clicking on the subcategory header in a dropdown
@@ -1215,7 +1242,8 @@ Playlist.onDropdownItemClick = function()
 	var alias = $(this).data("alias");
 	Playlist.setActiveSection(alias);
 
-	$("#playlists-dropdown").slideUp(200);
+	$("#playlists-dropdown")
+		.removeClass("visible manual");
 }
 
 // Called upon clicking on the new playlist button

@@ -318,11 +318,20 @@ body
 	top: 37px;
 	z-index: 2;
 	background-color: #E2E2E2;
-	width: 100%;
+	width: 0;
 	height: calc(100vh - 139px);
+	overflow-x: hidden;
 	overflow-y: scroll !important;
+	white-space: nowrap;
 	border-top: 1px solid #4A4554;
-	display: none;
+	-webkit-transition: width ease-out 200ms;
+	-moz-transition: width ease-out 200ms;
+	-o-transition: width ease-out 200ms;
+	transition: width ease-out 200ms;
+}
+#playlists-dropdown.visible
+{
+	width: 100%;
 }
 #playlists-dropdown::-webkit-scrollbar
 {
@@ -357,7 +366,7 @@ body
 }
 #playlists-dropdown .dropdown-category
 {
-	border-bottom: 1px solid #CCC;
+	margin-bottom: 10px;
 }
 #playlists-dropdown .dropdown-category:last-of-type
 {
