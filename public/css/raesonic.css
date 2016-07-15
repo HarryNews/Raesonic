@@ -99,7 +99,7 @@ body
 	user-select: none;
 	cursor: default;
 }
-#content-right > .meta, #tabs .column .meta, #tab-content .content-info, #tabs .action .changes, #article-contents
+#content-right > .meta, #tabs .column .meta, #tab-content .content-info, #tabs .action .changes, #window p, #article-contents
 {
 	-webkit-touch-callout: text;
 	-webkit-user-select: text;
@@ -203,11 +203,19 @@ body
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+#playlist-name:empty::after
+{
+	content: "No active playlist" !important;
+}
 #playlist-access
 {
 	font-size: 13px;
 	margin-left: 4px;
 	color: #7A738C;
+}
+#playlist-details:empty::after
+{
+	content: "–";
 }
 #playlist-details-user
 {
@@ -457,9 +465,11 @@ body
 {
 	opacity: 0.95;
 }
-#playlist-new .label
+#playlist-new .label::after
 {
-	margin-bottom: 1px;
+	content: "create new playlist";
+	display: block;
+	height: 18px;
 }
 .playlist 
 {
@@ -617,8 +627,11 @@ body
 	background-color: #E2E2E2;
 }
 
-#search-clear
+#search-clear::after
 {
+	content: "✕";
+	width: 11px;
+	height: 18px;
 	position: absolute;
 	right: 5px;
 	top: 4px;
@@ -626,11 +639,11 @@ body
 	font-size: 13px;
 	color: #AAA;
 	cursor: pointer;
-	display: none;
+	display: block;
 }
-#search-clear.visible
+#search-clear.visible::after
 {
-	display: block !important;
+	content: "";
 }
 
 #items
@@ -907,11 +920,25 @@ body
 	color: #EBEBEB;
 	font-size: 17px;
 }
+#window-header h2
+{
+	margin: 0;
+	font-size: 17px;
+	font-weight: normal;
+}
 #window p
 {
 	padding: 20px 20px 0 20px;
 	line-height: 15px;
 	font-size: 14px;
+}
+#window p.semitext
+{
+	line-height: 17px;
+}
+#window p.text
+{
+	line-height: 20px;
 }
 #window p.subject
 {
@@ -970,6 +997,41 @@ body
 {
 	padding-right: 5px;
 	border-bottom: 1px solid rgba(85, 77, 102, 0.6);
+}
+#window p a.inline:hover, #window label a.inline:hover
+{
+	padding-right: 0 !important;
+}
+#window a.block
+{
+	background-color: #555;
+	color: #F7F7F7;
+	padding: 4px 5px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+	-webkit-transition: border-color ease-out 200ms, background-color ease-out 200ms;
+	-moz-transition: border-color ease-out 200ms, background-color ease-out 200ms;
+	-o-transition: border-color ease-out 200ms, background-color ease-out 200ms;
+	transition: border-color ease-out 200ms, background-color ease-out 200ms;
+}
+#window a.block:hover
+{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+}
+#window a.block.discord
+{
+	background-color: #7289DA;
+}
+#window a.block.discord:hover
+{
+	background-color: #6279CA;
+}
+#window a.block.twitter
+{
+	background-color: #55ACEE;
+}
+#window a.block.twitter:hover
+{
+	background-color: #459CDE;
 }
 #window .content-thumbnail
 {
@@ -1305,10 +1367,6 @@ a.window-link
 	margin: 0 !important;
 	opacity: 1 !important;
 }
-#signup-terms-service:hover
-{
-	padding-right: 0 !important;
-}
 
 #article
 {
@@ -1503,8 +1561,9 @@ a.window-link
 	min-height: 270px;
 }
 
-#hd
+#hd::after
 {
+	content: "HD";
 	position: absolute;
 	left: 14px;
 	bottom: 12px;
@@ -1513,15 +1572,15 @@ a.window-link
 	font-size: 32px;
 	font-weight: bold;
 	cursor: pointer;
-	display: none;
+	display: block;
 }
-#hd:hover { color: rgba(255, 255, 255, 0.8); }
-#hd.disabled
+#hd:hover::after { color: rgba(255, 255, 255, 0.8); }
+#hd.disabled::after
 {
 	color: rgba(255, 255, 255, 0.15);
 	text-shadow: rgba(0, 0, 0, 0.02) 1px 1px 0px;
 }
-#hd.disabled:hover { color: rgba(255, 255, 255, 0.4); }
+#hd.disabled:hover::after { color: rgba(255, 255, 255, 0.4); }
 
 #cover
 {
@@ -1618,6 +1677,10 @@ a.window-link
 	border-top: 1px solid rgba(41, 37, 49, 0.5);
 	color: #ABA1CE !important;
 }
+#meta-artist:empty::after
+{
+	content: "No active track";
+}
 #meta-title
 {
 	height: 27px;
@@ -1625,6 +1688,10 @@ a.window-link
 	padding-bottom: 4px;
 	border-bottom: 1px solid rgba(41, 37, 49, 0.5);
 	color: #E5E0FA !important;
+}
+#meta-title:empty::after
+{
+	content: "–";
 }
 #meta-artist span
 {
@@ -1708,8 +1775,9 @@ a.window-link
 	background-color: #3F394C;
 	cursor: default;
 }
-#tabs-menu > div .label, #tabs .section-menu > div .label
+#tabs-menu > div .label::after, #tabs .section-menu > div .label::after
 {
+	display: block;
 	width: 0;
 	font-size: 14px;
 	margin-left: 0;
@@ -1720,12 +1788,25 @@ a.window-link
 	-o-transition: opacity ease-out 200ms, margin-left ease-out 200ms;
 	transition: opacity ease-out 200ms, margin-left ease-out 200ms;
 }
-#tabs-menu > div.active .label, #tabs-menu > div:hover .label,
-#tabs .section-menu > div.active .label, #tabs .section-menu > div:hover .label
+#tabs-menu > div.active .label::after, #tabs-menu > div:hover .label::after,
+#tabs .section-menu > div.active .label::after, #tabs .section-menu > div:hover .label::after
 {
 	margin-left: 8px;
 	width: initial;
 	opacity: 0.7;
+}
+
+#menu-related .label::after
+{
+	content: "Related";
+}
+#menu-content .label::after
+{
+	content: "Content";
+}
+#menu-history .label::after
+{
+	content: "History";
 }
 
 #tabs-overlay
@@ -2010,8 +2091,9 @@ a.window-link
 {
 	font-size: 60px;
 }
-#tabs .tab-overlay > .label
+#tabs .tab-overlay > .label::after
 {
+	display: block;
 	font-size: 18px;
 	margin-top: 10px;
 	color: #3D3749;
@@ -2030,6 +2112,10 @@ a.window-link
 	width: 100%;
 	display: flex;
 	justify-content: center;
+}
+#related-overlay .label::after
+{
+	content: "View recommendations";
 }
 
 #tab-content .column-item.icon
@@ -2078,6 +2164,14 @@ a.window-link
 #history-content-links:empty::after
 {
 	content: "No content associations.";
+}
+#history-menu-track-edits .label::after
+{
+	content: "Track name changes";
+}
+#history-menu-content-links .label::after
+{
+	content: "Content associations";
 }
 
 
@@ -2130,6 +2224,10 @@ a.window-link
 	margin: 0 10px 3px 10px;
 	font-size: 14px;
 	color: #BDBCBF;
+}
+#controls .time:empty::after
+{
+	content: "00:00";
 }
 
 .bar
@@ -2198,6 +2296,10 @@ a.window-link
 {
 	opacity: 1;
 }
+#seekbar-tip:empty::after
+{
+	content: "00:00";
+}
 #volume
 {
 	width: 15%;
@@ -2206,6 +2308,10 @@ a.window-link
 #volume-on
 {
 	width: 100%;
+}
+#volume-tip:empty::after
+{
+	content: "80%";
 }
 
 #speaker

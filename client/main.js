@@ -12,6 +12,7 @@ $(document).ready(function()
 	var History = require("./modules/History.js");
 	var Flag = require("./modules/Flag.js");
 	var Search = require("./modules/Search.js");
+	var Local = require("./modules/Local.js");
 	var Tab = require("./modules/Tab.js");
 	var Overlay = require("./modules/Overlay.js");
 	var Article = require("./modules/Article.js");
@@ -41,10 +42,19 @@ $(document).ready(function()
 		History.onAccountSync();
 		Flag.onAccountSync();
 
-		Overlay.destroy();
+		var seenAbout = Local.get("seenAbout", false);
 
+		// Mark the about window as seen
+		if(!seenAbout)
+			Local.set("seenAbout", true);
+
+		// Hide auth window and bail out
 		if(!Preloader.visible)
-			return;
+			return Overlay.destroy();
+
+		// Hide about window, seen it before
+		if(seenAbout)
+			Overlay.destroy();
 
 		setTimeout(Preloader.onLoad, 2000);
 	}

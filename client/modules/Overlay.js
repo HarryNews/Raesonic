@@ -3,14 +3,35 @@ var Overlay = {};
 // Create and show an overlay
 Overlay.create = function(name, elements, options, done)
 {
+	var Article = require("./Article.js");
+	Article.destroy();
+
+	if(typeof elements == "undefined")
+	{
+		// Create an overlay from html
+		var html = name;
+
+		// Set html of the window
+		$("#window").html(html);
+
+		// Display the overlay
+		$("#overlay")
+			.hide()
+			.removeClass("hidden")
+			.fadeIn(200);
+
+		// Clear the toast
+		var Toast = require("./Toast.js");
+		Toast.clear();
+
+		return;
+	}
+
 	if(typeof done == "undefined")
 	{
 		done = options;
 		options = {};
 	}
-
-	var Article = require("./Article.js");
-	Article.destroy();
 
 	var $elements =
 	[

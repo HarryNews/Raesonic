@@ -114,7 +114,9 @@ YouTube.init = function()
 	$("#video").hover(YouTube.onVideoHoverIn,
 		YouTube.onVideoHoverOut);
 
-	$("#hd").click(YouTube.togglePlaybackQuality);
+	$("#hd")
+		.hide()
+		.click(YouTube.togglePlaybackQuality);
 }
 
 module.exports = YouTube;

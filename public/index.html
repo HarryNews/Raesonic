@@ -5,6 +5,7 @@
 <head>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Raesonic</title>
+	<meta name="description" content="Raesonic is an application for listening to your favorite tracks on YouTube and SoundCloud®, with the ability to discover and share music through community-oriented features.">
 	<link href="http://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet" type="text/css">
 	<link href="/css/raesonic.css" rel="stylesheet" type="text/css">
 	<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
@@ -39,45 +40,63 @@
 			</div>
 			<div id="playlist-new">
 				<div class="addsmall icon"></div>
-				<div class="label">create new playlist</div>
+				<div class="label"></div>
 			</div>
 			<div id="playlists"></div>
 		</div>
 		<div id="content-left" class="side">
-			<input id="search" type="text" maxlength="150">
-			<div id="search-clear">✕</div>
-			<div id="items"></div>
-			<div id="overlay" class="hidden">
-				<div id="window"></div>
-			</div>
 			<div id="article" class="hidden"></div>
+			<div id="overlay">
+				<div id="window">
+					<button id="window-button"></button>
+					<div id="window-header">
+						<h2>Welcome to Raesonic!</h2>
+					</div>
+					<p class="text">
+						Raesonic allows you to listen to your favorite tracks on YouTube and SoundCloud®, with the ability to discover and share music through community-oriented features.
+					</p>
+					<p class="semitext">
+						We're actively working on new features at<br>
+						<a href="https://github.com/Fkids/Raesonic" target="_blank">https://github.com/Fkids/Raesonic</a>
+					</p>
+					<p>
+						If you have feedback or questions, let us know!<br>
+						Find us on <a href="https://discord.me/Raesonic" target="_blank" class="discord block">Discord</a> <a href="https://twitter.com/Raesonic" target="_blank" class="twitter block">Twitter</a> or <a href="mailto:support@raesonic.com" target="_blank">send an email</a>
+					</p>
+					<div id="window-separator"></div>
+					<div id="welcome-close" class="window-link">Close</div>
+				</div>
+			</div>
+			<input id="search" type="text" maxlength="150">
+			<div id="search-clear"></div>
+			<div id="items"></div>
 			<div id="toast"></div>
 		</div>
 		<div id="content-right" class="side">
 			<div id="media">
 				<div id="video">
 					<div id="video-iframe"></div>
-					<div id="hd">HD</div>
+					<div id="hd"></div>
 				</div>
 				<div id="cover"></div>
 			</div>
-			<div id="meta-artist" class="meta">No active track</div>
-			<div id="meta-title" class="meta">–</div>
+			<div id="meta-artist" class="meta"></div>
+			<div id="meta-title" class="meta"></div>
 			<div id="loop" class="loop icon"></div>
 			<div id="shuffle" class="shuffle icon"></div>
 			<div id="tabs">
 				<div id="tabs-menu">
 					<div id="menu-related" class="active">
 						<div class="tabrelated icon"></div>
-						<div class="label">Related</div>
+						<div class="label"></div>
 					</div>
 					<div id="menu-content">
 						<div class="tabcontent icon"></div>
-						<div class="label">Content</div>
+						<div class="label"></div>
 					</div>
 					<div id="menu-history">
 						<div class="tabhistory icon"></div>
-						<div class="label">History</div>
+						<div class="label"></div>
 					</div>
 				</div>
 				<div id="tab-related" class="tab-contents active">
@@ -110,7 +129,7 @@
 					</div>
 					<div id="related-overlay" class="tab-overlay">
 						<div class="explorelarge icon"></div>
-						<div class="label">View recommendations</div>
+						<div class="label"></div>
 					</div>
 				</div>
 				<div id="tab-content" class="tab-contents">
@@ -139,11 +158,11 @@
 					<div id="history-menu" class="section-menu">
 						<div id="history-menu-track-edits" class="active">
 							<div class="tabtrackedits icon"></div>
-							<div class="label">Track name changes</div>
+							<div class="label"></div>
 						</div>
 						<div id="history-menu-content-links">
 							<div class="tabcontentlinks icon"></div>
-							<div class="label">Content associations</div>
+							<div class="label"></div>
 						</div>
 					</div>
 				</div>
@@ -156,15 +175,15 @@
 		<div id="play" class="play icon"></div>
 		<div id="pause" class="pause icon"></div>
 		<div id="next" class="previous icon h-flip"></div>
-		<div id="current-time" class="time">00:00</div>
+		<div id="current-time" class="time"></div>
 		<div id="seekbar" class="bar">
 			<div id="seekbar-back" class="back"></div>
 			<div id="seekbar-buffer" class="buffer"></div>
 			<div id="seekbar-fill" class="fill">
-				<div id="seekbar-tip" class="tip">00:00</div>
+				<div id="seekbar-tip" class="tip"></div>
 			</div>
 		</div>
-		<div id="total-time" class="time">00:00</div>
+		<div id="total-time" class="time"></div>
 		<div id="speaker" class="speakerloud icon">
 			<div id="muted" class="muted icon"></div>
 		</div>
@@ -172,7 +191,7 @@
 			<div id="volume-back" class="back"></div>
 			<div id="volume-on" class="buffer"></div>
 			<div id="volume-fill" class="fill">
-				<div id="volume-tip" class="tip">80%</div>
+				<div id="volume-tip" class="tip"></div>
 			</div>
 		</div>
 	</div>
