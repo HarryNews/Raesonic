@@ -19,7 +19,10 @@ Overlay.create = function(name, elements, options, done)
 			.click(Overlay.onActionClick),
 		$("<div>")
 			.attr("id", "window-header")
-			.text(name),
+			.append(
+				$("<h2>")
+					.text(name)
+			),
 	];
 
 	for(var index in elements)
