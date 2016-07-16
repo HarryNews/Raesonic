@@ -10,6 +10,9 @@ var cookieParser = require("cookie-parser");
 var session = require("express-session")
 var config = require("./config.js");
 
+// Initialize sequelize with session store
+var SequelizeStore = require("connect-session-sequelize")(session.Store);
+
 // Create the database controller
 var sequelize = require("./server/controllers/SequelizeController.js")(config);
 
@@ -25,8 +28,14 @@ app.use(cookieParser());
 app.use(session
 ({
 	secret: config.session.secret,
+	store: new SequelizeStore
+	({
+		db: sequelize,
+		checkExpirationInterval: config.session.check,
+		expiration: config.session.expiration,
+	}),
 	resave: false,
-	saveUninitialized: true
+	saveUninitialized: true,
 }))
 
 // Initialize passport and restore session if available
