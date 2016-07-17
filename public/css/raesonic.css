@@ -640,10 +640,17 @@ body
 	color: #AAA;
 	cursor: pointer;
 	display: block;
+	pointer-events: none;
+	opacity: 0;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
 }
 #search-clear.visible::after
 {
-	content: "";
+	pointer-events: all;
+	opacity: 1;
 }
 
 #items

@@ -15,7 +15,7 @@ var Search =
 Search.clear = function()
 {
 	$("#search").val("");
-	$("#search-clear").hide();
+	$("#search-clear").removeClass("visible");
 }
 
 // Update search placeholder
@@ -27,8 +27,9 @@ Search.updatePlaceholder = function()
 
 	if(Relation.active)
 	{
-		placeholder = "Viewing recommendations for " +
-			Relation.active.name;
+		placeholder = "Viewing recommendations for \"" +
+			Relation.active.name + "\"";
+
 		Search.restricted = true;
 	}
 	else
@@ -59,7 +60,7 @@ Search.locally = function(query)
 			return;
 		}
 
-		$("#search-clear").fadeIn(200);
+		$("#search-clear").addClass("visible");
 		return;
 	}
 
@@ -73,7 +74,7 @@ Search.locally = function(query)
 		return;
 	}
 
-	$("#search-clear").fadeIn(200);
+	$("#search-clear").addClass("visible");
 
 	var storage = $("#items").data("storage");
 
@@ -87,6 +88,9 @@ Search.locally = function(query)
 // Search database for the query
 Search.globally = function(query)
 {
+	$("#search").val(query);
+	$("#search-clear").addClass("visible");
+
 	$.ajax
 	({
 		url: "/search/",
