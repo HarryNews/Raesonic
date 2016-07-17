@@ -306,10 +306,12 @@ Item.updateEditOverlay = function()
 			Item.onItemRemoveClickThrottled);
 }
 
-// Replace &+ with <span>&amp;</span>
+// Wrap each artist in a <span>
 Item.formatArtist = function(artist)
 {
-	return artist.replace(/&\+/g, "<span>&</span>");
+	return "<span>" +
+		artist.replace(/\s&\+\s/g, "</span> & <span>") +
+	"</span>";
 }
 
 // Replace  (...) with <span>(...)</span>
@@ -318,14 +320,15 @@ Item.formatTitle = function(title)
 	return title.replace(/\((.+)\)/g, "<span>$1</span>");
 }
 
-// Replace <span>&amp;</span> with &+ / &, &amp; with &
+// Unwrap artists, replace &amp; with &
 Item.restoreArtist = function(artist, clean)
 {
 	artist = artist
-		.replace(/<span>&amp;<\/span>/g,
+		.replace(/<\/span>\s&amp;\s<span>/g,
 			clean
-				? "&"
-				: "&+")
+				? " & "
+				: " &+ ")
+		.replace(/<\/?span>/g, "")
 		.replace(/&amp;/g, "&");
 
 	return artist;
@@ -390,8 +393,8 @@ Item.onItemRename = function(match, previousTrackId, trackId, artist, title)
 
 	if( $item.length )
 	{
-		$(":nth-child(1)", $item).html(artist);
-		$(":nth-child(2)", $item).html(title);
+		$(".artist", $item).html(artist);
+		$(".title", $item).html(title);
 
 		$item.data("trackId", trackId);
 	}
@@ -471,9 +474,9 @@ Item.onEditIconClick = function()
 	if(trackExists)
 	{
 		Item.editing.artist =
-			Item.restoreArtist( $(":nth-child(1)", $item).html() );
+			Item.restoreArtist( $(".artist", $item).html() );
 		Item.editing.title =
-			Item.restoreTitle( $(":nth-child(2)", $item).html() );
+			Item.restoreTitle( $(".title", $item).html() );
 	}
 	
 	Overlay.create("Edit track",
@@ -737,8 +740,8 @@ Item.onRelationElementClick = function()
 	var trackName = Item.active.artist + "<br>" +
 		Item.padSpans(Item.active.title);
 
-	var linkedName = $(":nth-child(1)", $item).html() + "<br>" +
-		Item.padSpans( $(":nth-child(2)", $item).html() );
+	var linkedName = $(".artist", $item).html() + "<br>" +
+		Item.padSpans( $(".title", $item).html() );
 
 	Overlay.create("Create new recommendation",
 	[{

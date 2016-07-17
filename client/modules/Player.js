@@ -134,8 +134,8 @@ Player.setItem = function($item, isManualSwitch)
 	}
 
 	var data = $item.data();
-	var artist = $(":nth-child(1)", $item).html();
-	var title = $(":nth-child(2)", $item).html();
+	var artist = $(".artist", $item).html();
+	var title = $(".title", $item).html();
 
 	$("#meta-artist").html(artist);
 	$("#meta-title").html(title);
@@ -649,6 +649,69 @@ Player.onDocumentKeyDown = function(event)
 	}
 }
 
+// Called upon clicking the active track artist
+Player.onMetaArtistClick = function(event)
+{
+	// The click was not on the inner span
+	if(event.target == this)
+		return;
+
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	if(Item.active.trackId == -1)
+	{
+		var Toast = require("./Toast.js");
+		Toast.show("No artist name to search for", Toast.ERROR)
+		return;
+	}
+
+	var $artist = $(event.target);
+	var artist = $artist.text();
+	var artist = Item.restoreArtist(artist, true);
+
+	var Search = require("./Search.js");
+	Search.globally("artist: " + artist);
+}
+
+// Called upon clicking the active track title
+Player.onMetaTitleClick = function()
+{
+	var Item = require("./Item.js");
+
+	if(!Item.active)
+		return;
+
+	if(Item.active.trackId == -1)
+	{
+		var Toast = require("./Toast.js");
+		Toast.show("No track name to search for", Toast.ERROR)
+		return;
+	}
+
+	var title = Item
+		.restoreTitle(Item.active.title);
+
+	var Search = require("./Search.js");
+
+	if( title.indexOf(" Cover)") != -1)
+	{
+		// Look up the original track
+		var artistIndex = title.lastIndexOf("(") + 1;
+		var artist = title.slice(artistIndex, -7);
+		title = title.slice(0, artistIndex - 2);
+		Search.globally(artist + " – " + title);
+		return;
+	}
+
+	// Look up the alternate versions
+	var artist = Item.restoreArtist(Item.active.artist, true);
+	title = title.replace(/\s\(.+\)/g, "");
+	Search.globally(artist + " – " + title);
+}
+
 // Called upon clicking the loop icon
 Player.onLoopIconClick = function()
 {
@@ -809,6 +872,8 @@ Player.init = function()
 	$(document).mouseup(Player.onDocumentMouseUp);
 	$(document).keydown(Player.onDocumentKeyDown);
 
+	$("#meta-artist").click(Player.onMetaArtistClick);
+	$("#meta-title").click(Player.onMetaTitleClick);
 	$("#loop").click(Player.onLoopIconClick);
 	$("#shuffle").click(Player.onShuffleIconClick);
 	$("#play").click(Player.onPlayIconClick);

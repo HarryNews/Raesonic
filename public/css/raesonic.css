@@ -715,6 +715,14 @@ body
 	background-color: #D8C7FF !important;
 	color: #3A3745 !important;
 }
+.item.active .artist, .item.active .title span
+{
+	color: rgba(58, 55, 69, 0.5) !important
+}
+.item.active .artist span
+{
+	color: #3A3745 !important;
+}
 .item.active > .icon
 {
 	-webkit-filter: brightness(0.15) sepia(1) hue-rotate(200deg);
@@ -732,6 +740,7 @@ body
 {
 	width: calc(44% - 70px);
 	cursor: pointer;
+	color: rgba(232, 232, 232, 0.8);
 }
 .item .title
 {
@@ -748,17 +757,14 @@ body
 	text-overflow: ellipsis;
 }
 /* Artist/title formatting */
-.item div span
+.item .artist span
 {
-	opacity: 0.8;
-}
-.item.active div span
-{
-	opacity: 0.5;
+	color: #E8E8E8;
 }
 .item .title span
 {
 	margin-left: 5px;
+	color: rgba(232, 232, 232, 0.8);
 }
 .item > .icon
 {
@@ -956,17 +962,10 @@ body
 {
 	padding-left: 77px;
 }
-#window p.subject span
-{
-	opacity: 0.8;
-}
 #window p.subject span.padded
 {
 	margin-left: 2px;
-}
-#window p.subject span.added
-{
-	opacity: 1;
+	opacity: 0.8;
 }
 #window p.subject span.removed
 {
@@ -1675,12 +1674,23 @@ a.window-link
 	height: 20px;
 	padding-top: 4px;
 	border-top: 1px solid rgba(41, 37, 49, 0.5);
-	color: #ABA1CE !important;
+	color: rgba(171, 161, 206, 0.5) !important;
 }
 #meta-artist:empty::after
 {
 	content: "No active track";
+	color: #ABA1CE !important;
 }
+#meta-artist span
+{
+	cursor: pointer;
+	color: #ABA1CE !important;
+	-webkit-transition: color ease-out 200ms;
+	-moz-transition: color ease-out 200ms;
+	-o-transition: color ease-out 200ms;
+	transition: color ease-out 200ms;
+}
+#meta-artist span:hover { color: #BBB1DE !important; }
 #meta-title
 {
 	height: 27px;
@@ -1688,15 +1698,16 @@ a.window-link
 	padding-bottom: 4px;
 	border-bottom: 1px solid rgba(41, 37, 49, 0.5);
 	color: #E5E0FA !important;
+	cursor: pointer;
+	-webkit-transition: color ease-out 200ms;
+	-moz-transition: color ease-out 200ms;
+	-o-transition: color ease-out 200ms;
+	transition: color ease-out 200ms;
 }
-#meta-title:empty::after
-{
-	content: "–";
-}
-#meta-artist span
-{
-	opacity: 0.5;
-}
+#meta-title:hover { color: #F5F0FF !important; }
+#meta-title:empty { cursor: default; }
+#meta-title:empty:hover { color: #E5E0FA !important; }
+#meta-title:empty::after { content: "–"; }
 #meta-title span
 {
 	opacity: 0.8;
@@ -1945,19 +1956,22 @@ a.window-link
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
+	color: #000;
 }
 #tabs .column .meta-artist
 {
 	font-size: 16px;
+	color: rgba(0, 0, 0, 0.8);
 }
 /* Artist/title formatting */
-#tabs .column .meta span
-{
-	opacity: 0.8;
-}
 #tabs .column .meta-title span
 {
 	margin-left: 2px;
+	color: rgba(0, 0, 0, 0.8);
+}
+#tabs .column .meta-artist span
+{
+	color: #000;
 }
 #tabs .section
 {

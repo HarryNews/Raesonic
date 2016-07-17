@@ -273,6 +273,16 @@ Flag.showFlagOverlay = function(data, $flag)
 		? "reviewing"
 		: "reporting";
 
+	// Pad track title spans
+	if(data.title != null)
+	{
+		var Item = require("./Item.js");
+		data.title = Item.padSpans(data.title);
+
+		if(data.secondTitle != null)
+			data.secondTitle = Item.padSpans(data.secondTitle);
+	}
+
 	var summary;
 	var subject;
 	var extraSubject;
