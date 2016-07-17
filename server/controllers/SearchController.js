@@ -16,25 +16,77 @@ module.exports = function(core)
 	// Search for tracks matching the query
 	SearchController.getResults = function(req, res)
 	{
-		var query = "%" + req.body.query.replace(/%/g, "/%") + "%";
-
+		var query = req.body.query.replace(/%/g, "/%");
+		var where = { trackId: { $ne: -1 } };
 		var params = {};
-		params[like] = query;
+
+		if(query.slice(0, 8) == "artist: ")
+		{
+			// Exact artist name as one of the artists
+			var artist = query.slice(8);
+
+			where["$or"] =
+			[
+				{ artist: artist },
+			];
+
+			params[like] = "%" + artist + " &+ %";
+			where["$or"][1] = { artist: params }
+
+			var altParams = {};
+			altParams[like] = "% &+ " + artist + "%";
+			where["$or"][2] = { artist: altParams }
+		}
+		else if(query.slice(0, 7) == "title: ")
+		{
+			// Case-insensitive title start
+			params[like] = query.slice(7) + "%";
+			where.title = params;
+		}
+		else
+		{
+			var parts = query.split(/\s(-|–)\s/g);
+
+			if(parts.length > 1)
+			{
+				// Exact name of one or multiple artists
+				var artist = parts[0];
+
+				if(artist.indexOf(" & ") != -1)
+				{
+					where["$or"] =
+					[
+						{ artist: artist },
+						{ artist: artist.replace(/\s&\s/g, " &+ ") },
+					];
+				}
+				else
+				{
+					where.artist = artist;
+				}
+
+				// Case-insensitive title start
+				params[like] = parts[2] + "%";
+				where.title = params;
+			}
+			else
+			{
+				// Part of either artist or title
+				params[like] = "%" + query + "%";
+
+				where["$or"] =
+				[
+					{ artist: params },
+					{ title: params },
+				];
+			}
+		}
 
 		Track.all
 		({
 			attributes: ["trackId", "artist", "title"],
 			limit: 100,
-			where:
-			{
-				trackId: { $ne: -1 },
-				$or:
-				[
-					// todo: add combined search
-					{ artist: params },
-					{ title: params },
-				]
-			}
+			where: where,
 		})
 		.then(function(tracks)
 		{
