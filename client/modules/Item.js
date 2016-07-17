@@ -820,7 +820,7 @@ Item.onDocumentMouseDown = function(event)
 	Item.fadeRemoveDropdown();
 }
 
-// Called when the key is pressed somewhere
+// Called when a key is pressed somewhere
 Item.onDocumentKeyDown = function(event)
 {
 	// Ignore keys that do not change the scroll

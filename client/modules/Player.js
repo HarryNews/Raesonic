@@ -14,6 +14,7 @@ var Player =
 	freezeSeekbar: false, // Disable seekbar animation
 	draggingVolume: false, // Volume bar is being dragged
 	mouseX: 0, // Horizontal position of the mouse cursor
+	RELATIVE_SEEK: true,
 }
 
 // Start track playback
@@ -76,12 +77,37 @@ Player.toggle = function()
 }
 
 // Seek to a certain position of the track, accepts number from 0 to 1
-Player.seekTo = function(seek)
+Player.seekTo = function(seek, isRelative)
 {
+	if(isRelative)
+	{
+		if( !SoundCloud.player &&
+			( !YouTube.loaded || YouTube.player.getPlayerState() == 5 ) )
+				return;
+
+		seek =
+			Math.max(
+				Math.min(
+					$("#seekbar-fill").width() /
+					$("#seekbar").width() + seek,
+					1),
+				0);
+
+		$("#seekbar-fill")
+			.stop(true, true)
+			.width( $("#seekbar").width() * seek );
+
+		Player.freezeSeekbar = true;
+		setTimeout(Player.unfreezeSeekbar, 500);
+	}
+
 	if(SoundCloud.player)
 	{
-		if(!SoundCloud.player.isPlaying())
+		if( !SoundCloud.player.isPlaying() )
 			SoundCloud.player.play();
+
+		if(seek == 1)
+			return SoundCloud.onPlayerStateChange("ended");
 
 		SoundCloud.player
 			.seek(seek * SoundCloud.player.options.duration, false);
@@ -346,6 +372,25 @@ Player.unfreezeSeekbar = function()
 	Player.freezeSeekbar = false;
 }
 
+// Mute or unmute the player volume
+Player.toggleMute = function()
+{
+	if(Player.muted && Player.volume < 1)
+	{
+		Player.volume = Player.lastVolume;
+		$("#volume-fill").width( Player.volume / 100 * $("#volume").width() );
+		Player.muted = false;
+		Player.updateVolume();
+		return;
+	}
+
+	Player.lastVolume = Player.volume;
+	Player.volume = 0;
+	$("#volume-fill").width(0);
+	Player.muted = true;
+	Player.updateVolume();
+}
+
 // Update volume of the external players and the volume bar elements
 Player.updateVolume = function()
 {
@@ -533,6 +578,77 @@ Player.onDocumentMouseUp = function()
 	Player.seekTo(seek);
 }
 
+// Called when a key is pressed somewhere
+Player.onDocumentKeyDown = function(event)
+{
+	// Focus is on the input field, bail out
+	if( $("input:focus, textarea:focus").length )
+		return;
+
+	switch(event.keyCode)
+	{
+		case 13: // Enter
+		case 32: // Space
+		{
+			Player.toggle();
+			return;
+		}
+		case 37: // Arrow Left
+		{
+			if(!event.shiftKey)
+			{
+				Player.seekTo(-0.05, Player.RELATIVE_SEEK);
+				return;
+			}
+
+			var ItemList = require("./ItemList.js");
+			Player.switchItem(ItemList.PREVIOUS_ITEM, ItemList.MANUAL_SWITCH);
+			return;
+		}
+		case 39: // Arrow Right
+		{
+			if(!event.shiftKey)
+			{
+				Player.seekTo(0.05, Player.RELATIVE_SEEK);
+				return;
+			}
+
+			var ItemList = require("./ItemList.js");
+			Player.switchItem(ItemList.NEXT_ITEM, ItemList.MANUAL_SWITCH);
+			return;
+		}
+		case 38: // Arrow Up
+		{
+			if(!event.shiftKey)
+				return;
+
+			Player.volume = Math.min(Player.volume + 5, 100);
+			Local.set( "volume", Math.round(Player.volume).toString() );
+			Player.updateVolume();
+			return;
+		}
+		case 40: // Arrow Down
+		{
+			if(!event.shiftKey)
+				return;
+
+			Player.volume = Math.max(Player.volume - 5, 0);
+			Local.set( "volume", Math.round(Player.volume).toString() );
+			Player.updateVolume();
+			return;
+		}
+		case 77: // M
+		{
+			Player.toggleMute();
+			return;
+		}
+		default:
+		{
+			return;
+		}
+	}
+}
+
 // Called upon clicking the loop icon
 Player.onLoopIconClick = function()
 {
@@ -584,7 +700,7 @@ Player.onNextIconClick = function()
 Player.onSeekbarMouseDown = function(event)
 {
 	if( !SoundCloud.player &&
-		(!YouTube.loaded || YouTube.player.getPlayerState() == 5) )
+		( !YouTube.loaded || YouTube.player.getPlayerState() == 5 ) )
 			return;
 
 	if(Player.draggingSeekbar)
@@ -684,27 +800,14 @@ Player.onVolumeDrag = function()
 // Called upon clicking the mute toggle button
 Player.onSpeakerIconClick = function()
 {
-	if(Player.muted && Player.volume < 1)
-	{
-		Player.volume = Player.lastVolume;
-		$("#volume-fill").width( Player.volume / 100 * $("#volume").width() );
-		Player.muted = false;
-	}
-	else
-	{
-		Player.lastVolume = Player.volume;
-		Player.volume = 0;
-		$("#volume-fill").width(0);
-		Player.muted = true;
-	}
-
-	Player.updateVolume();
+	Player.toggleMute();
 }
 
 Player.init = function()
 {
 	$(document).mousemove(Player.onDocumentMouseMove);
 	$(document).mouseup(Player.onDocumentMouseUp);
+	$(document).keydown(Player.onDocumentKeyDown);
 
 	$("#loop").click(Player.onLoopIconClick);
 	$("#shuffle").click(Player.onShuffleIconClick);
