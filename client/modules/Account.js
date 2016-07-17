@@ -444,7 +444,7 @@ Account.showEmailOverlay = function()
 }
 
 // Update the login overlay
-Account.updateLoginOverlay = function()
+Account.updateLoginOverlay = function(event)
 {
 	Overlay.clearErrors();
 
@@ -455,6 +455,12 @@ Account.updateLoginOverlay = function()
 		? Overlay.setAction("Forgot password",
 			Account.onRestoreClick)
 		: Overlay.setAction(null);
+
+	// Haven't pressed the Enter key, bail out
+	if(!event || event.keyCode != 13)
+		return;
+
+	Account.onLoginConfirmClick();
 }
 
 // Update the sign up overlay
