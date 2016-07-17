@@ -674,6 +674,17 @@ Item.onAddIconClick = function()
 // Called upon clicking the save button in the overlay
 Item.onItemSaveClick = function()
 {
+	// Trim outer and inner whitespace
+	$("#edit-artist, #edit-title").each(function()
+	{
+		$(this).val(
+			$(this)
+				.val()
+				.trim()
+				.replace(/ +/g, " ")
+		);
+	});
+
 	var artist = $("#edit-artist").val();
 	var title = $("#edit-title").val();
 

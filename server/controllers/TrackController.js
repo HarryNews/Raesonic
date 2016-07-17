@@ -425,6 +425,9 @@ module.exports = function(core)
 		if(!TrackController.NAME_REGEX.test(name))
 			return false;
 
+		if( name != name.trim().replace(/ +/g, " ") )
+			return false;
+
 		return true;
 	}
 
