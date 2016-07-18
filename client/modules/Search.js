@@ -14,6 +14,8 @@ var Search =
 // Clear search input
 Search.clear = function()
 {
+	Search.active = null;
+
 	$("#search").val("");
 	$("#search-clear").removeClass("visible");
 }
@@ -95,6 +97,12 @@ Search.globally = function(query)
 
 	$("#search").val(query);
 	$("#search-clear").addClass("visible");
+
+	if(Search.active != null &&
+		Search.active.query == query)
+			return;
+
+	Search.active = { query: query };
 
 	$.ajax
 	({

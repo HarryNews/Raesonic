@@ -208,7 +208,7 @@ Relation.setActiveVote = function(vote, $icon)
 // Return to normal view after viewing recommendations
 Relation.clearView = function()
 {
-	Relation.active = false;
+	Relation.active = null;
 	$("#related-overlay").fadeIn(200);
 
 	var Search = require("./Search.js");
