@@ -49,9 +49,8 @@ ItemList.setItems = function(items, useStorage)
 		ItemList.addItem(item);
 	});
 
+	ItemList.highlightActiveItem();
 	ItemList.setShuffle(ItemList.shuffleEnabled);
-
-	$("#items").scrollTop(0);
 }
 
 // Add item to the item list
