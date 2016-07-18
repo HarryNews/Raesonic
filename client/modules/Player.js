@@ -673,7 +673,7 @@ Player.onMetaArtistClick = function(event)
 	var artist = Item.restoreArtist(artist, true);
 
 	var Search = require("./Search.js");
-	Search.globally("artist: " + artist);
+	Search.globallyThrottled("artist: " + artist);
 }
 
 // Called upon clicking the active track title
@@ -702,14 +702,14 @@ Player.onMetaTitleClick = function()
 		var artistIndex = title.lastIndexOf("(") + 1;
 		var artist = title.slice(artistIndex, -7);
 		title = title.slice(0, artistIndex - 2);
-		Search.globally(artist + " – " + title);
+		Search.globallyThrottled(artist + " – " + title);
 		return;
 	}
 
 	// Look up the alternate versions
 	var artist = Item.restoreArtist(Item.active.artist, true);
 	title = title.replace(/\s\(.+\)/g, "");
-	Search.globally(artist + " – " + title);
+	Search.globallyThrottled(artist + " – " + title);
 }
 
 // Called upon clicking the loop icon
