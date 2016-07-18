@@ -1218,6 +1218,10 @@ body
 {
 	margin-bottom: 15px;
 }
+#email-password
+{
+	margin-top: 25px !important;
+}
 #window input.error
 {
 	border-bottom: 1px solid #C10000;

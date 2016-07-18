@@ -222,18 +222,23 @@ Account.sync = function()
 }
 
 // Create a new user account
-Account.saveEmail = function(email)
+Account.saveEmail = function(email, password)
 {
 	var Toast = require("./Toast.js");
+
+	var data =
+	{
+		email: email,
+		password: Account.own.verified
+			? password
+			: null,
+	};
 
 	$.ajax
 	({
 		url: "/own/account/email/",
 		type: "PUT",
-		data: JSON.stringify
-		({
-			email: email,
-		}),
+		data: JSON.stringify(data),
 		contentType: "application/json",
 		success: function(response)
 		{
@@ -247,13 +252,26 @@ Account.saveEmail = function(email)
 
 			Toast.show("Confirmation email has been sent, check your inbox", Toast.INFO);
 		},
-		error: Toast.onRequestError,
+		error: function(response)
+		{
+			var json = response.responseJSON;
+
+			if(!json || !json.errors)
+				return;
+
+			var error = json.errors[0];
+
+			if(error == "password incorrect")
+				return Overlay.setError("#email-password", "incorrect");
+
+			Toast.onRequestError(response);
+		},
 	});
 }
 Account.saveEmailThrottled = Throttle(10000,
-function(email)
+function(email, password)
 {
-	Account.saveEmail(email);
+	Account.saveEmail(email, password);
 }, true);
 
 // Resend the confirmation email
@@ -434,6 +452,18 @@ Account.showEmailOverlay = function()
 			class: "input-state",
 		},
 		change: Account.updateEmailOverlay,
+	},
+	{
+		tag: "<input>",
+		attributes:
+		{
+			id: "email-password",
+			type: "password",
+			maxlength: 200,
+			placeholder: "Confirm Password",
+			style: "display: none;",
+		},
+		keyup: Account.updateEmailOverlay,
 	}],
 	function onOverlayCreate()
 	{
@@ -510,6 +540,12 @@ Account.updateEmailOverlay = function()
 			? Overlay.setAction("Resend",
 				Account.onEmailResendClickThrottled)
 			: Overlay.setAction(null);
+
+	var $password = $("#email-password");
+
+	Account.own.verified
+		? $password.slideDown(200)
+		: $password.slideUp(200);
 }
 
 // Update the account overlay
@@ -761,6 +797,7 @@ Account.onEmailSettingsClick = function()
 Account.onEmailSaveClick = function()
 {
 	var email = $("#email-address").val();
+	var password = $("#email-password").val();
 
 	if(email.length < 3)
 		Overlay.setError("#email-address", "min. 3 characters");
@@ -768,10 +805,13 @@ Account.onEmailSaveClick = function()
 	if( email.length > 0 && !EmailValidator.validate(email) )
 		Overlay.setError("#email-address", "invalid email address");
 
+	if(Account.own.verified && password.length < 8)
+		Overlay.setError("#email-password", "incorrect");
+
 	if( Overlay.hasErrors() )
 		return;
 
-	Account.saveEmailThrottled(email);
+	Account.saveEmailThrottled(email, password);
 }
 
 // Called upon clicking the resend email button

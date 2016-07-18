@@ -170,6 +170,18 @@ module.exports = function(core)
 			return res.status(401).json({ errors: ["not authenticated"] });
 
 		var user = req.user;
+		var hasVerifiedEmail = UserController.isVerifiedUser(user);
+
+		if(hasVerifiedEmail)
+		{
+			var password = req.body.password;
+
+			if( password == null ||
+				!UserController.equalPasswords
+					(password, user.password) )
+						return res.status(401).json
+							({ errors: ["password incorrect"] });
+		}
 
 		User.findOne
 		({
@@ -424,6 +436,9 @@ module.exports = function(core)
 			paperwork.accept
 			({
 				email: paperwork.all(String, EmailValidator.validate),
+				password: paperwork.optional(
+					paperwork.all(String, UserController.validatePassword)
+				),
 			}),
 			UserController.setAccountEmail);
 
