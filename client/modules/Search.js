@@ -88,6 +88,11 @@ Search.locally = function(query)
 // Search database for the query
 Search.globally = function(query)
 {
+	var Relation = require("./Relation.js");
+
+	if(Relation.active)
+		Relation.clearView();
+
 	$("#search").val(query);
 	$("#search-clear").addClass("visible");
 
@@ -117,6 +122,11 @@ function(query)
 // Returns true if the query looks like a content URL
 Search.createContent = function(query)
 {
+	var Relation = require("./Relation.js");
+
+	if(Relation.active)
+		Relation.clearView();
+
 	var Item = require("./Item.js");
 	var Content = require("./Content.js");
 
@@ -185,10 +195,6 @@ Search.onKeyUp = function(event)
 		Search.locally(query);
 		return;
 	}
-
-	// Content creation and global search are restricted, bail out
-	if(Search.restricted)
-		return;
 
 	var isContentUrl = Search.createContent(query);
 
