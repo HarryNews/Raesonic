@@ -367,7 +367,24 @@ ItemList.restoreStorage = function()
 
 	$("#items").data( "storage", [] );
 
-	ItemList.scrollTo( $(".item.active") );
+	ItemList.highlightActiveItem();
+}
+
+// Highlight and scroll to the item currently playing
+ItemList.highlightActiveItem = function()
+{
+	// No active item or valid identifier, bail out
+	if(!Item.active || !Item.active.itemId)
+		return;
+
+	var $item = $(".item")
+		.filterByData("itemId", Item.active.itemId);
+
+	if(!$item.length)
+		return;
+
+	$item.addClass("active");
+	ItemList.scrollTo($item);
 }
 
 // Called when the user account status has changed

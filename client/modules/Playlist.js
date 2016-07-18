@@ -329,6 +329,7 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 	}
 
 	ItemList.setItems(items);
+	ItemList.highlightActiveItem();
 
 	if(!Relation.active)
 		return;
