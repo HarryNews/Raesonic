@@ -366,24 +366,27 @@ ItemList.restoreStorage = function()
 
 	$("#items").data( "storage", [] );
 
-	ItemList.highlightActiveItem();
+	var $item = ItemList.highlightActiveItem();
+
+	if($item != null)
+		ItemList.scrollTo($item);
 }
 
-// Highlight and scroll to the item currently playing
+// Highlight and return the item currently playing
 ItemList.highlightActiveItem = function()
 {
 	// No active item or valid identifier, bail out
 	if(!Item.active || !Item.active.itemId)
-		return;
+		return null;
 
 	var $item = $(".item")
 		.filterByData("itemId", Item.active.itemId);
 
 	if(!$item.length)
-		return;
+		return null;
 
 	$item.addClass("active");
-	ItemList.scrollTo($item);
+	return $item;
 }
 
 // Called when the user account status has changed
