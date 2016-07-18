@@ -98,7 +98,7 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 			var Playlist = require("./Playlist.js");
 
 			// Prepend the item if added to active hidden playlist
-			if(Playlist.active && Playlist.active.hidden &&
+			if(Playlist.active && Playlist.hidden &&
 				Playlist.active.playlistId == playlistId)
 			{
 				var trackId = response[0];
@@ -606,7 +606,7 @@ Item.onAddIconClick = function()
 				// Skip active playlist unless in another view
 				if(Playlist.active &&
 					Playlist.active.playlistId == playlistId &&
-					!Playlist.active.hidden)
+					!Playlist.hidden)
 						return;
 
 				var name = $playlist.find(".name").text();

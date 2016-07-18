@@ -40,7 +40,7 @@ ItemList.setItems = function(items, useStorage)
 		var Playlist = require("./Playlist.js");
 
 		if(Playlist.active != null)
-			Playlist.active.hidden = true;
+			Playlist.hidden = true;
 	}
 
 	$("#items").empty();
@@ -344,10 +344,10 @@ ItemList.restoreStorage = function()
 		return;
 	}
 
-	if(!Playlist.active.hidden)
+	if(!Playlist.hidden)
 		return;
 
-	Playlist.active.hidden = false;
+	Playlist.hidden = false;
 
 	$("#items")
 		.removeClass("search-results")

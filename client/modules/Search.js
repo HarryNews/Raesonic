@@ -202,7 +202,7 @@ Search.onKeyUp = function(event)
 Search.onClearClick = function()
 {
 	// With input in place, first click doesn't restore the storage
-	if(Search.restricted && $("#search").val().length)
+	if( Search.restricted && $("#search").val().length )
 	{
 		Search.clear();
 		ItemList.clearFilter();
