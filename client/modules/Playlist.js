@@ -1068,14 +1068,9 @@ Playlist.updatePlaylistOverlay = function()
 	$("#overlay label").toggleClass("disabled", deletingPlaylist);
 }
 
-// Show playlist sharing overlay
+// Show the playlist sharing overlay
 Playlist.showShareOverlay = function()
 {
-	var Account = require("./Account.js");
-
-	if(!Account.authenticated)
-		return Account.showLoginOverlay();
-
 	if( Overlay.isActive() )
 		return;
 
@@ -1116,6 +1111,58 @@ Playlist.showShareOverlay = function()
 	});
 }
 
+// Show the playlist export overlay
+Playlist.showExportOverlay = function()
+{
+	if( Overlay.isActive() )
+		return;
+
+	if(!Playlist.active)
+		return;
+
+	Overlay.create
+	("Export playlist",
+	[{
+		tag: "<p>",
+		attributes: { class: "subject" },
+		text: "Copy the links below to store locally"
+	},
+	{
+		tag: "<textarea>",
+		attributes:
+		{
+			id: "export-urls",
+			type: "text",
+		},
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "export-close",
+			class: "window-link",
+		},
+		text: "Close",
+		click: Overlay.destroy,
+	}],
+	function onOverlayCreate()
+	{
+		var Content = require("./Content.js");
+		var links = "";
+
+		$(".item").each(function()
+		{
+			var link = Content.getItemExternalUrl( $(this) );
+
+			if(link != null)
+				links = links + link + "\n";
+		});
+
+		links = links.slice(0, -1);
+		$("#export-urls").text(links);
+	});
+}
+
 // Initialize context menu options for playlist menu
 Playlist.initContextOptions = function()
 {
@@ -1134,7 +1181,7 @@ Playlist.initContextOptions = function()
 	if(Playlist.active.access != Playlist.ACCESS.PRIVATE)
 		Playlist.addContextOption("share", "Share", Playlist.onSharePlaylistClick);
 
-	Playlist.addContextOption("export", "Export");
+	Playlist.addContextOption("export", "Export", Playlist.onExportPlaylistClick);
 }
 
 
@@ -1517,6 +1564,12 @@ Playlist.onEditIconClick = function()
 Playlist.onSharePlaylistClick = function()
 {
 	Playlist.showShareOverlay();
+}
+
+// Called upon clicking the export playlist option
+Playlist.onExportPlaylistClick = function()
+{
+	Playlist.showExportOverlay();
 }
 
 Playlist.init = function()

@@ -61,8 +61,9 @@ Overlay.create = function(name, elements, options, done)
 	// Add spacer element
 	if(!options.noSpacer)
 	{
-		$("#window input:last-of-type").after(
-			$("<div>").attr("id", "window-separator")
+		$("#window input:last-of-type, " +
+			"#window textarea:last-of-type").after(
+				$("<div>").attr("id", "window-separator")
 		);
 	}
 

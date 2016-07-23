@@ -13,6 +13,12 @@ var Content =
 		"YouTube Video",
 		"SoundCloud Track",
 	],
+	SOURCE_URLS:
+	[
+		"None",
+		"https://www.youtube.com/watch?v=",
+		"https://soundcloud.com/tracks/", // todo: fix this part
+	],
 	// Content switch mode
 	AUTO_SWITCH: false,
 	MANUAL_SWITCH: true,
@@ -325,6 +331,20 @@ Content.setSwitchEnabled = function(enabled)
 {
 	$("#content-previous, #content-next")
 		.toggleClass("inactive", !enabled);
+}
+
+// Return external URL of the item's content
+Content.getItemExternalUrl = function($item)
+{
+	var data = $item.data();
+	var sourceId = data.sourceId;
+
+	if(!sourceId)
+		return null;
+
+	var externalId = data.externalId;
+
+	return Content.SOURCE_URLS[sourceId] + externalId;
 }
 
 // Update state of the content replace icon for the item specified
