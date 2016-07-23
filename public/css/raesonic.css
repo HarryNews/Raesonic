@@ -99,7 +99,7 @@ body
 	user-select: none;
 	cursor: default;
 }
-#content-right > .meta, #tabs .column .meta, #tab-content .content-info, #tabs .action .changes, #window p, #article-contents
+#content-right > .meta, #tabs .column .meta, #tabs .action .changes, #window p, #article-contents
 {
 	-webkit-touch-callout: text;
 	-webkit-user-select: text;
@@ -2148,24 +2148,37 @@ a.window-link
 	height: 40px;
 	margin-top: calc(4.4vw - 20px);
 }
-#tab-content .content-info
+#content-nav
 {
 	position: absolute;
-	bottom: calc(35% - 57px);
+	bottom: calc(22% - 16px);
 	left: 0;
 	width: 90%;
 	padding: 0 5%;
 	text-align: center;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
 }
-#tab-content .content-info div
+#content-nav .circle
 {
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
+	width: 16px;
+	height: 16px;
+	border-radius: 100%;
+	background-color: #3D3749;
+	margin: 0 3px;
+	cursor: pointer;
 }
-#tab-content .content-info .info-author
+#content-nav .circle.adjacent
 {
-	font-size: 20px;
+	background-color: #DFDFDF;
+	cursor: default;
+}
+#content-nav .circle.active
+{
+	background-color: #CCC;
+	cursor: default;
 }
 
 #tab-history

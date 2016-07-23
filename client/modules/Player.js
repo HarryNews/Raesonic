@@ -141,8 +141,8 @@ Player.setItem = function($item, isManualSwitch)
 	$("#meta-title").html(title);
 
 	$("#items .item").removeClass("active");
-	$("#content-image, #related-first-image").empty();
-	$("#content-name, #content-author").text("");
+
+	$("#related-first-image").empty();
 
 	var ItemList = require("./ItemList.js");
 	ItemList.scrollTo($item);
@@ -204,9 +204,6 @@ Player.setItem = function($item, isManualSwitch)
 		// Update the related tab if viewing recommendations
 		if(data.rating != null)
 			$("#related-first-image").html( $("#content-image").html() );
-
-		$("#content-name").text("Video #" + externalId);
-		$("#content-author").text("YouTube");
 
 		return;
 	}
@@ -302,9 +299,6 @@ Player.setItem = function($item, isManualSwitch)
 				.unbind()
 				.hover(SoundCloud.onCoverHoverIn,
 					SoundCloud.onCoverHoverOut);
-
-			$("#content-name").text(response.title);
-			$("#content-author").text(response.user.username);
 		})
 		.catch(function(error)
 		{
@@ -345,8 +339,7 @@ Player.clearContent = function()
 		)
 		.show();
 
-	$("#content-name").text("No content available");
-	$("#content-author").text("–");
+	$("#content-nav").empty();
 }
 
 // Play next/previous item
@@ -522,9 +515,6 @@ Player.onTick = function()
 // Called upon a playback error
 Player.onPlaybackError = function()
 {
-	$("#content-name").text("Failed to load content");
-	$("#content-author").text("–");
-
 	var Content = require("./Content.js");
 	var ItemList = require("./ItemList.js");
 	var Item = require("./Item.js");

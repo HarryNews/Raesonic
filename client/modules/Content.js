@@ -68,7 +68,25 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 				return;
 			}
 
-			$("#tab-content").data("content", response);
+			var content = response;
+
+			$("#tab-content").data("content", content);
+
+			var $nav = $("#content-nav");
+			$nav.empty();
+
+			content.forEach(
+			function()
+			{
+				$nav
+					.append(
+						$("<div>")
+							.addClass("circle")
+							.click(Content.onCircleClick)
+					);
+			});
+
+			Content.highlightActiveCircle(0);
 			
 			// Switch tab to content tab unless viewing recommendations
 			if($item.data("rating") == null)
@@ -77,7 +95,7 @@ Content.request = function(trackId, assignToItem, switchDirection, skipTrack, cu
 				Tab.setActive(Tab.Content);
 			}
 
-			var nearest = response[0];
+			var nearest = content[0];
 
 			// Not being assigned to item, means it's an automatic switch
 			if(!assignToItem)
@@ -165,29 +183,33 @@ Content.switchContent = function(isManualSwitch, forward, skipTrack, missingCont
 		return;
 	}
 
-	var newContent;
+	var contentIndex;
 
 	// Look for content before/after the active one
 	for(var index = 0; index < content.length; index++)
 	{
-		if($item.data("sourceId") == content[index][0] &&
-			$item.data("externalId") == content[index][1])
+		if( $item.data("sourceId") == content[index][0] &&
+			$item.data("externalId") == content[index][1] )
 		{
-			newContent = forward
-				? content[++index]
-				: content[--index];
+			contentIndex = forward
+				? index + 1
+				: index - 1;
 
 			break;
 		}
 	}
 
 	// Cycle to the first/last content
-	if(!newContent)
-		newContent = forward
-			? content[0]
-			: content[content.length - 1];
+	if( content[contentIndex] == null )
+		contentIndex = forward
+			? 0
+			: content.length - 1;
 
-	var isInitialContent = Content.updateReplaceIconState($item, newContent);
+	var newContent = content[contentIndex];
+	Content.highlightActiveCircle(contentIndex);
+
+	var isInitialContent =
+		Content.updateReplaceIconState($item, newContent);
 
 	$item
 		.data
@@ -202,6 +224,41 @@ Content.switchContent = function(isManualSwitch, forward, skipTrack, missingCont
 	Item.play($item, Item.active.isManualSwitch);
 
 	Content.setSwitchEnabled(true);
+}
+
+// Switch to the content with specified index
+Content.setContent = function(contentIndex, $circle)
+{
+	var $item = $(".item.active");
+
+	// No active item, disable content switch
+	if(!$item.length)
+		return Content.setSwitchEnabled(false);
+
+	var content = $("#tab-content").data("content");
+
+	// No content data, request and retry
+	if(!content || !content.length)
+		return;
+
+	var newContent = content[contentIndex];
+
+	Content.highlightActiveCircle(contentIndex);
+
+	var isInitialContent =
+		Content.updateReplaceIconState($item, newContent);
+
+	$item
+		.data
+		({
+			sourceId: newContent[0],
+			externalId: newContent[1],
+			unsaved: !isInitialContent,
+		})
+		.removeClass("active");
+
+	var Item = require("./Item.js");
+	Item.play($item, Item.active.isManualSwitch);
 }
 
 // Save active content selection as the item's content
@@ -302,11 +359,26 @@ Content.updateReplaceIconState = function($item, overrideContent)
 	return isInitialContent;
 }
 
-// Called when an item is selected, and when it is made active
+// Set active class on the active content circle
+Content.highlightActiveCircle = function(contentIndex)
+{
+	$("#content-nav div").removeClass("active");
+
+	var $circle = $("#content-nav div").eq(contentIndex);
+
+	if(!$circle.length)
+		return;
+
+	$circle.addClass("active");
+}
+
+// Called when an item is selected (once)
 Content.onItemChange = function($item)
 {
+	$("#content-image").empty();
+
 	// Keep content data if the itemId is the same
-	if($item.data("itemId") == $("#tab-content").data("itemId"))
+	if( $item.data("itemId") == $("#tab-content").data("itemId") )
 		return;
 
 	$("#tab-content").data
@@ -314,6 +386,18 @@ Content.onItemChange = function($item)
 		"itemId": $item.data("itemId"),
 		"content": [],
 	});
+
+	$("#content-nav")
+		.empty()
+		.append(
+			$("<div>")
+				.addClass("circle adjacent"),
+			$("<div>")
+				.addClass("circle active")
+				.click(Content.onCircleClick),
+			$("<div>")
+				.addClass("circle adjacent")
+		);
 
 	Content.setSwitchEnabled(true);
 	Content.updateReplaceIconState($item);
@@ -353,6 +437,17 @@ Content.onReplaceIconClick = function()
 		return $icon.removeClass("active");
 
 	Content.saveItemContent($item);
+}
+
+// Called upon clicking the content circle
+Content.onCircleClick = function()
+{
+	var $circle = $(this);
+
+	if( $circle.is(".active") )
+		return;
+
+	Content.setContent( $circle.index(), $circle );
 }
 
 Content.init = function()
