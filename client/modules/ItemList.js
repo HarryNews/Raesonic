@@ -280,18 +280,37 @@ ItemList.setFilter = function(query)
 
 		var hidden = true;
 
-		$(this)
-			.children()
-			.slice(0, 2)
-			.each(function()
-			{
-				var field = $(this)
-					.text()
-					.toLowerCase();
+		var $children = $(this).children();
+		var parts = query.split(/\s(-|–)\s/g);
 
-				if(field.indexOf(query) != -1)
+		if(parts.length > 1)
+		{
+			// Match both artist and title
+			var artist = parts[0];
+			var title = parts[2];
+
+			var itemArtist = $children.eq(0).text().toLowerCase();
+			var itemTitle = $children.eq(1).text().toLowerCase();
+
+			if( itemArtist.indexOf(artist) != -1 &&
+				itemTitle.indexOf(title) != -1 )
 					hidden = false;
-			});
+		}
+
+		if(hidden)
+		{
+			$children
+				.slice(0, 2)
+				.each(function()
+				{
+					var field = $(this)
+						.text()
+						.toLowerCase();
+
+					if(field.indexOf(query) != -1)
+						hidden = false;
+				});
+		}
 
 		$(this)
 			.toggleClass("hidden", hidden)
