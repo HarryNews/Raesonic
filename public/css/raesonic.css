@@ -1,42 +1,43 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.add { width: 26px; height: 26px; background-position: -41px 0; }
+.add { width: 26px; height: 26px; background-position: -41px -41px; }
 .addlarge { width: 40px; height: 40px; background-position: 0 0; }
-.addsmall { width: 26px; height: 26px; background-position: -41px -46px; }
-.arrowleft { width: 40px; height: 40px; background-position: -119px 0; }
-.arrowup { width: 40px; height: 40px; background-position: -160px 0; }
-.avatar { width: 43px; height: 43px; background-position: -155px -41px; }
-.checklarge { width: 50px; height: 40px; background-position: -68px 0; }
-.clock { width: 15px; height: 15px; background-position: 0 -41px; }
-.edit { width: 26px; height: 26px; background-position: -119px -69px; }
-.explorelarge { width: 50px; height: 50px; background-position: -68px -41px; }
-.flag { width: 15px; height: 15px; background-position: -146px -85px; }
-.flaglarge { width: 40px; height: 40px; background-position: 0 -60px; }
-.listfavorites { width: 26px; height: 26px; background-position: -41px -73px; }
-.listflags { width: 26px; height: 26px; background-position: -41px -100px; }
-.listplaylists { width: 26px; height: 26px; background-position: -132px -101px; }
-.listrecent { width: 26px; height: 26px; background-position: -133px -128px; }
-.listrelated { width: 26px; height: 26px; background-position: -106px -134px; }
-.listsubcat { width: 26px; height: 26px; background-position: -133px -155px; }
-.logo { width: 50px; height: 50px; background-position: -41px -177px; }
-.loop { width: 35px; height: 19px; background-position: -162px -85px; }
-.menusmall { width: 26px; height: 26px; background-position: -106px -161px; }
-.muted { width: 40px; height: 40px; background-position: -68px -92px; }
-.navarrow { width: 6px; height: 14px; background-position: -146px -69px; }
-.pause { width: 40px; height: 40px; background-position: 0 -101px; }
-.play { width: 40px; height: 40px; background-position: -160px -105px; }
-.previous { width: 40px; height: 40px; background-position: 0 -142px; }
-.shuffle { width: 35px; height: 27px; background-position: -119px -41px; }
-.soundcloud { width: 64px; height: 43px; background-position: -41px -133px; }
-.speakerloud { width: 40px; height: 40px; background-position: -160px -146px; }
-.speakernormal { width: 40px; height: 40px; background-position: 0 -183px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -160px -187px; }
-.speakersilent { width: 40px; height: 40px; background-position: -92px -188px; }
-.subcatexpand { width: 26px; height: 26px; background-position: -133px -182px; }
-.tabcontent { width: 22px; height: 18px; background-position: -41px -27px; }
-.tabcontentlinks { width: 22px; height: 18px; background-position: -16px -41px; }
-.tabhistory { width: 22px; height: 18px; background-position: -109px -96px; }
-.tabrelated { width: 22px; height: 18px; background-position: -109px -115px; }
-.tabtrackedits { width: 22px; height: 18px; background-position: -133px -209px; }
+.addsmall { width: 26px; height: 26px; background-position: -68px -41px; }
+.arrowleft { width: 40px; height: 40px; background-position: -41px 0; }
+.arrowup { width: 40px; height: 40px; background-position: -82px 0; }
+.avatar { width: 43px; height: 43px; background-position: -51px -136px; }
+.checklarge { width: 50px; height: 40px; background-position: 0 -136px; }
+.clock { width: 15px; height: 15px; background-position: 0 -114px; }
+.edit { width: 26px; height: 26px; background-position: -95px -41px; }
+.explorelarge { width: 50px; height: 50px; background-position: 0 -177px; }
+.flag { width: 15px; height: 15px; background-position: -58px -199px; }
+.flaglarge { width: 40px; height: 40px; background-position: -123px 0; }
+.listfavorites { width: 26px; height: 26px; background-position: -39px -109px; }
+.listflags { width: 26px; height: 26px; background-position: -66px -109px; }
+.listplaylists { width: 26px; height: 26px; background-position: -93px -109px; }
+.listrecent { width: 26px; height: 26px; background-position: -95px -136px; }
+.listrelated { width: 26px; height: 26px; background-position: -97px -208px; }
+.listsubcat { width: 26px; height: 26px; background-position: -59px -218px; }
+.logo { width: 50px; height: 50px; background-position: -113px -236px; }
+.loop { width: 35px; height: 19px; background-position: -23px -228px; }
+.menusmall { width: 26px; height: 26px; background-position: -86px -235px; }
+.muted { width: 40px; height: 40px; background-position: 0 -41px; }
+.navarrow { width: 6px; height: 14px; background-position: -51px -199px; }
+.pause { width: 40px; height: 40px; background-position: -123px -41px; }
+.play { width: 40px; height: 40px; background-position: -41px -68px; }
+.playlistsmenu { width: 36px; height: 31px; background-position: 0 -82px; }
+.previous { width: 40px; height: 40px; background-position: -82px -68px; }
+.shuffle { width: 35px; height: 27px; background-position: -124px -208px; }
+.soundcloud { width: 64px; height: 43px; background-position: -97px -164px; }
+.speakerloud { width: 40px; height: 40px; background-position: -123px -82px; }
+.speakernormal { width: 40px; height: 40px; background-position: -122px -123px; }
+.speakerquiet { width: 40px; height: 40px; background-position: 0 -248px; }
+.speakersilent { width: 40px; height: 40px; background-position: -41px -248px; }
+.subcatexpand { width: 26px; height: 26px; background-position: -82px -262px; }
+.tabcontent { width: 22px; height: 18px; background-position: -16px -114px; }
+.tabcontentlinks { width: 22px; height: 18px; background-position: -51px -180px; }
+.tabhistory { width: 22px; height: 18px; background-position: -74px -180px; }
+.tabrelated { width: 22px; height: 18px; background-position: -74px -199px; }
+.tabtrackedits { width: 22px; height: 18px; background-position: 0 -228px; }
 
 html
 {
@@ -175,7 +176,7 @@ body
 	vertical-align: -11px;
 	display: inline-block;
 	position: relative;
-	width: 280px;
+	width: 235px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -193,7 +194,7 @@ body
 	margin-top: -7px;
 	position: absolute;
 	top: 33px;
-	width: 280px;
+	width: 235px;
 	left: 9px;
 }
 
@@ -231,6 +232,53 @@ body
 	margin: 0 4px -2px 2px;
 	border-radius: 100%;
 	box-shadow: 0 1px 0 0 #222;
+}
+#playlist-context
+{
+	opacity: 0;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
+}
+#header-left.active #playlist-context
+{
+	opacity: 1;
+}
+#playlist-context .icon
+{
+	position: absolute;
+	top: 10px;
+	left: 255px;
+	cursor: pointer;
+}
+#playlist-options-container
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 300px;
+	z-index: 2;
+	display: none;
+	height: calc(100vh - 101px);
+	background-color: rgba(0, 0, 0, 0.6);
+}
+#playlist-options .option
+{
+	padding: 8px 10px;
+	background-color: #E2E2E2;
+}
+#playlist-options .option:nth-child(even)
+{
+	background-color: #DBDBDB;
+}
+#playlist-options .option:hover
+{
+	background-color: #EFEFEF;
+}
+#playlist-options .option:nth-child(even):hover
+{
+	background-color: #DFDFDF;
 }
 
 #user-avatar

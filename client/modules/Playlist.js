@@ -1057,6 +1057,39 @@ Playlist.updatePlaylistOverlay = function()
 	$("#overlay label").toggleClass("disabled", deletingPlaylist);
 }
 
+// Initialize context menu options for playlist menu
+Playlist.initContextOptions = function()
+{
+	var $options = $("#playlist-options");
+	$options.empty();
+
+	// Not a playlist owner, the playlist has a valid id
+	if(!Playlist.active.user && Playlist.active.playlistId)
+	{
+		Playlist.addContextOption("favorite", "Add to favorites");
+	}
+
+	Playlist.addContextOption("share", "Share");
+	Playlist.addContextOption("export", "Export");
+}
+
+
+// Add a new context menu option to the playlist menu
+Playlist.addContextOption = function(optionId, name, handler)
+{
+	var $options = $("#playlist-options");
+
+	var $option = $("<div>")
+		.attr("id", "playlist-" + optionId)
+		.addClass("option")
+		.text(name);
+
+	if(typeof handler == "function")
+		$option.click(handler);
+
+	$options.append($option);
+}
+
 // Returns true if the playlist passed validation
 Playlist.hasPassedInputValidation = function()
 {
@@ -1208,8 +1241,14 @@ Playlist.onWindowPopState = function()
 }
 
 // Called upon clicking the playlist header
-Playlist.onHeaderClick = function()
+Playlist.onHeaderClick = function(event)
 {
+	// Ignore clicks on the context menu icon
+	var $target = $(event.target);
+
+	if( $target.is("#playlist-context-icon") )
+		return;
+
 	Playlist.toggleSidebar();
 }
 
@@ -1253,6 +1292,25 @@ Playlist.onNewPlaylistClick = function()
 	Playlist.deleting = null;
 
 	Playlist.showPlaylistOverlay();
+}
+
+// Called upon clicking the context menu button
+Playlist.onContextIconClick = function()
+{
+	var $container = $("#playlist-options-container");
+	var $options = $("#playlist-options");
+
+	if( $options.is(":visible") )
+	{
+		$container.fadeOut(200);
+		$options.slideUp(200);
+		return;
+	}
+
+	$container.fadeIn(200);
+	$options.slideDown(200);
+
+	Playlist.initContextOptions();
 }
 
 // Called when the create playlist button is clicked
@@ -1396,9 +1454,10 @@ Playlist.init = function()
 	$(window).on("popstate", Playlist.onWindowPopState);
 
 	$("#header-left").click(Playlist.onHeaderClick);
-	$("#playlist-active").click(Playlist.onActivePlaylistClick)
+	$("#playlist-active").click(Playlist.onActivePlaylistClick);
 
-	$("#playlist-new").click(Playlist.onNewPlaylistClick)
+	$("#playlist-new").click(Playlist.onNewPlaylistClick);
+	$("#playlist-context-icon").click(Playlist.onContextIconClick);
 }
 
 module.exports = Playlist;
