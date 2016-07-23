@@ -21,6 +21,7 @@ var Playlist =
 	PERSONAL_SECTIONS: ["private", "shared", "public"],
 	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
+	PLAYLIST_URL: "http://raesonic.com/playlist/",
 };
 
 Playlist.ACCESS_LABELS = {};
@@ -1057,19 +1058,72 @@ Playlist.updatePlaylistOverlay = function()
 	$("#overlay label").toggleClass("disabled", deletingPlaylist);
 }
 
+// Show playlist sharing overlay
+Playlist.showShareOverlay = function()
+{
+	var Account = require("./Account.js");
+
+	if(!Account.authenticated)
+		return Account.showLoginOverlay();
+
+	if( Overlay.isActive() )
+		return;
+
+	if(!Playlist.active)
+		return;
+
+	Overlay.create
+	("Share playlist",
+	[{
+		tag: "<p>",
+		attributes: { class: "subject" },
+		text: "Copy the URL below to share the playlist"
+	},
+	{
+		tag: "<input>",
+		attributes:
+		{
+			id: "share-url",
+			type: "text",
+			maxlength: 100,
+			placeholder: "Playlist URL",
+		},
+		val: Playlist.PLAYLIST_URL + Playlist.active.alias + "/",
+	},
+	{
+		tag: "<div>",
+		attributes:
+		{
+			id: "share-close",
+			class: "window-link",
+		},
+		text: "Close",
+		click: Overlay.destroy,
+	}],
+	function onOverlayCreate()
+	{
+
+	});
+}
+
 // Initialize context menu options for playlist menu
 Playlist.initContextOptions = function()
 {
 	var $options = $("#playlist-options");
 	$options.empty();
 
-	// Not a playlist owner, the playlist has a valid id
-	if(!Playlist.active.user && Playlist.active.playlistId)
-	{
-		Playlist.addContextOption("favorite", "Add to favorites");
-	}
+	// Service playlist, bail out
+	if(!Playlist.active.playlistId)
+		return;
 
-	Playlist.addContextOption("share", "Share");
+	// Allow adding to favorites if not the playlist owner
+	if(!Playlist.active.user)
+		Playlist.addContextOption("favorite", "Add to favorites");
+
+	// Allow sharing playlist unless it has a private access
+	if(Playlist.active.access != Playlist.ACCESS.PRIVATE)
+		Playlist.addContextOption("share", "Share", Playlist.onSharePlaylistClick);
+
 	Playlist.addContextOption("export", "Export");
 }
 
@@ -1447,6 +1501,12 @@ Playlist.onEditIconClick = function()
 	Playlist.deleting = null;
 
 	Playlist.showPlaylistOverlay(data.playlistId, name, data.access);
+}
+
+// Called upon clicking the share playlist option
+Playlist.onSharePlaylistClick = function()
+{
+	Playlist.showShareOverlay();
 }
 
 Playlist.init = function()
