@@ -710,6 +710,16 @@ Playlist.toggleSidebar = function()
 			.unbind("mousedown",
 				Playlist.onDocumentMouseDown);
 
+		// Hide the options context menu
+		var $container = $("#playlist-options-container");
+		var $options = $("#playlist-options");
+
+		if( $options.is(":visible") )
+		{
+			$container.fadeOut(200);
+			$options.slideUp(200);
+		}
+
 		return;
 	}
 
