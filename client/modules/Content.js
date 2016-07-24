@@ -7,6 +7,11 @@ var Content =
 		YOUTUBE: 1,
 		SOUNDCLOUD: 2,
 	},
+	REGEX:
+	{
+		YOUTUBE: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
+		SOUNDCLOUD: /^https?:\/\/(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/,
+	},
 	SOURCE_NAMES:
 	[
 		"None",
@@ -17,7 +22,7 @@ var Content =
 	[
 		"None",
 		"https://www.youtube.com/watch?v=",
-		"https://soundcloud.com/tracks/", // todo: fix this part
+		"https://api.soundcloud.com/tracks/",
 	],
 	// Content switch mode
 	AUTO_SWITCH: false,

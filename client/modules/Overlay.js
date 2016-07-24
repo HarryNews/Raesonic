@@ -223,6 +223,23 @@ Overlay.onClick = function(event)
 	Overlay.destroy();
 }
 
+// Prevent the input from being changed
+Overlay.onReadOnlyKeyDown = function(event)
+{
+	// Allow Ctrl combinations except X/V/Backspace
+	if(event.ctrlKey &&
+		[8, 86, 88]
+			.indexOf(event.keyCode) == -1)
+				return;
+
+	// Ignore arrow keys
+	if([37, 38, 39, 40]
+		.indexOf(event.keyCode) != -1)
+			return;
+
+	event.preventDefault();
+}
+
 Overlay.init = function()
 {
 	$("#overlay").click(Overlay.onClick);

@@ -21,7 +21,7 @@ var Playlist =
 	PERSONAL_SECTIONS: ["private", "shared", "public"],
 	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
-	PLAYLIST_URL: "http://raesonic.com/playlist/",
+	PLAYLIST_URL: window.location.origin + "/playlist/",
 };
 
 Playlist.ACCESS_LABELS = {};
@@ -186,6 +186,39 @@ Playlist.deleteThrottled = Throttle(5000,
 function(playlistId)
 {
 	Playlist.delete(playlistId);
+});
+
+// Add the playlist to personal favorites
+Playlist.addFavorite = function(playlistId)
+{
+	var Toast = require("./Toast.js");
+
+	$.ajax
+	({
+		url: "/own/playlists/favorites/",
+		type: "POST",
+		data: JSON.stringify({ playlistId: playlistId }),
+		contentType: "application/json",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			// todo: update context menu
+
+			if(Playlist.active.playlistId == playlistId)
+				Playlist.active.favorited = true;
+
+			Toast.show("Playlist has been added to favorites",
+				Toast.INFO);
+		},
+		error: Toast.onRequestError,
+	});
+}
+Playlist.addFavoriteThrottled = Throttle(5000,
+function(playlistId)
+{
+	Playlist.addFavorite(playlistId);
 });
 
 // Retrieve playlist tracks and metadata
@@ -710,14 +743,14 @@ Playlist.toggleSidebar = function()
 			.unbind("mousedown",
 				Playlist.onDocumentMouseDown);
 
-		// Hide the options context menu
-		var $container = $("#playlist-options-container");
+		// Hide the playlist options
 		var $options = $("#playlist-options");
+		var $list = $("#playlist-options-list");
 
 		if( $options.is(":visible") )
 		{
-			$container.fadeOut(200);
-			$options.slideUp(200);
+			$options.fadeOut(200);
+			$list.slideUp(200);
 		}
 
 		return;
@@ -772,9 +805,7 @@ Playlist.setActiveSection = function(alias)
 Playlist.setSectionPlaylists = function(playlists, sectionAlias)
 {
 	if(playlists)
-	{
 		playlists.forEach(Playlist.addSectionPlaylist);
-	}
 
 	var storage = [];
 
@@ -1081,8 +1112,8 @@ Playlist.showShareOverlay = function()
 	("Share playlist",
 	[{
 		tag: "<p>",
-		attributes: { class: "subject" },
-		text: "Copy the URL below to share the playlist"
+		attributes: { class: "hint" },
+		text: "Anyone with this link can view the playlist",
 	},
 	{
 		tag: "<input>",
@@ -1090,10 +1121,10 @@ Playlist.showShareOverlay = function()
 		{
 			id: "share-url",
 			type: "text",
-			maxlength: 100,
-			placeholder: "Playlist URL",
+			spellcheck: "false",
 		},
 		val: Playlist.PLAYLIST_URL + Playlist.active.alias + "/",
+		keydown: Overlay.onReadOnlyKeyDown,
 	},
 	{
 		tag: "<div>",
@@ -1124,16 +1155,18 @@ Playlist.showExportOverlay = function()
 	("Export playlist",
 	[{
 		tag: "<p>",
-		attributes: { class: "subject" },
-		text: "Copy the links below to store locally"
+		attributes: { class: "hint" },
+		text: "Remember to create backups to prevent data loss",
 	},
 	{
 		tag: "<textarea>",
 		attributes:
 		{
-			id: "export-urls",
+			id: "export-text",
 			type: "text",
+			spellcheck: "false",
 		},
+		keydown: Overlay.onReadOnlyKeyDown,
 	},
 	{
 		tag: "<div>",
@@ -1148,47 +1181,56 @@ Playlist.showExportOverlay = function()
 	function onOverlayCreate()
 	{
 		var Content = require("./Content.js");
-		var links = "";
+		var text = Playlist.active.name + "\n";
 
 		$(".item").each(function()
 		{
 			var link = Content.getItemExternalUrl( $(this) );
 
 			if(link != null)
-				links = links + link + "\n";
+				text = text + link + "\n";
 		});
 
-		links = links.slice(0, -1);
-		$("#export-urls").text(links);
+		text = text.slice(0, -1);
+		$("#export-text").text(text);
 	});
 }
 
-// Initialize context menu options for playlist menu
-Playlist.initContextOptions = function()
+// Initialize the options for playlist menu
+Playlist.initPlaylistOptions = function()
 {
-	var $options = $("#playlist-options");
-	$options.empty();
+	$("#playlist-options-list").empty();
 
 	// Service playlist, bail out
 	if(!Playlist.active.playlistId)
 		return;
 
-	// Allow adding to favorites if not the playlist owner
-	if(!Playlist.active.user)
-		Playlist.addContextOption("favorite", "Add to favorites");
+	// Allow adding/removing favorites if not the playlist owner
+	if(Playlist.active.user != null)
+	{
+		Playlist.active.favorited
+			? Playlist.addMenuOption("remove-favorite",
+				"Remove from Favorites",
+				Playlist.onRemoveFavoriteClick)
+			: Playlist.addMenuOption("add-favorite",
+				"Add to Favorites",
+				Playlist.onAddFavoriteClick)
+	}
 
 	// Allow sharing playlist unless it has a private access
 	if(Playlist.active.access != Playlist.ACCESS.PRIVATE)
-		Playlist.addContextOption("share", "Share", Playlist.onSharePlaylistClick);
+		Playlist.addMenuOption("share", "Share",
+			Playlist.onSharePlaylistClick);
 
-	Playlist.addContextOption("export", "Export", Playlist.onExportPlaylistClick);
+	Playlist.addMenuOption("export", "Export",
+		Playlist.onExportPlaylistClick);
 }
 
 
-// Add a new context menu option to the playlist menu
-Playlist.addContextOption = function(optionId, name, handler)
+// Add a new option to the playlist menu
+Playlist.addMenuOption = function(optionId, name, handler)
 {
-	var $options = $("#playlist-options");
+	var $list = $("#playlist-options-list");
 
 	var $option = $("<div>")
 		.attr("id", "playlist-" + optionId)
@@ -1198,7 +1240,7 @@ Playlist.addContextOption = function(optionId, name, handler)
 	if(typeof handler == "function")
 		$option.click(handler);
 
-	$options.append($option);
+	$list.append($option);
 }
 
 // Returns true if the playlist passed validation
@@ -1313,12 +1355,15 @@ Playlist.onDocumentMouseMove = function(event)
 	if( $dropdown.is(".manual") )
 		return;
 
+	var $options = $("#playlist-options");
+
 	$dropdown.toggleClass("visible",
 		$dropdown.is(".visible")
 			? ( event.pageX < $("#sidebar").width() )
 			: ( event.pageX < 5 &&
 				$("#sidebar").is(":hover") &&
-				!$dropdown.is(":hover") )
+				!$dropdown.is(":hover") &&
+				!$options.is(":visible") )
 	);
 }
 
@@ -1354,10 +1399,10 @@ Playlist.onWindowPopState = function()
 // Called upon clicking the playlist header
 Playlist.onHeaderClick = function(event)
 {
-	// Ignore clicks on the context menu icon
+	// Ignore clicks on the playlist menu icon
 	var $target = $(event.target);
 
-	if( $target.is("#playlist-context-icon") )
+	if( $target.is("#playlist-menu-icon") )
 		return;
 
 	Playlist.toggleSidebar();
@@ -1405,23 +1450,23 @@ Playlist.onNewPlaylistClick = function()
 	Playlist.showPlaylistOverlay();
 }
 
-// Called upon clicking the context menu button
-Playlist.onContextIconClick = function()
+// Called upon clicking the playlist menu button
+Playlist.onMenuIconClick = function()
 {
-	var $container = $("#playlist-options-container");
 	var $options = $("#playlist-options");
+	var $list = $("#playlist-options-list");
 
 	if( $options.is(":visible") )
 	{
-		$container.fadeOut(200);
-		$options.slideUp(200);
+		$options.fadeOut(200);
+		$list.slideUp(200);
 		return;
 	}
 
-	$container.fadeIn(200);
-	$options.slideDown(200);
+	$options.fadeIn(200);
+	$list.slideDown(200);
 
-	Playlist.initContextOptions();
+	Playlist.initPlaylistOptions();
 }
 
 // Called when the create playlist button is clicked
@@ -1560,6 +1605,18 @@ Playlist.onEditIconClick = function()
 	Playlist.showPlaylistOverlay(data.playlistId, name, data.access);
 }
 
+// Called upon clicking the add to favorites option
+Playlist.onAddFavoriteClick = function()
+{
+	Playlist.addFavoriteThrottled(Playlist.active.playlistId);
+}
+
+// Called upon clicking the remove from favorites option
+Playlist.onRemoveFavoriteClick = function()
+{
+	Playlist.removeFavoriteThrottled(Playlist.active.playlistId);
+}
+
 // Called upon clicking the share playlist option
 Playlist.onSharePlaylistClick = function()
 {
@@ -1580,7 +1637,7 @@ Playlist.init = function()
 	$("#playlist-active").click(Playlist.onActivePlaylistClick);
 
 	$("#playlist-new").click(Playlist.onNewPlaylistClick);
-	$("#playlist-context-icon").click(Playlist.onContextIconClick);
+	$("#playlist-menu-icon").click(Playlist.onMenuIconClick);
 }
 
 module.exports = Playlist;

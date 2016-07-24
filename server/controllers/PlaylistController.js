@@ -37,6 +37,7 @@ module.exports = function(core)
 	var Content = sequelize.models.Content;
 	var Playlist = sequelize.models.Playlist;
 	var Item = sequelize.models.Item;
+	var FavoritePlaylist = sequelize.models.FavoritePlaylist;
 
 	var isVerificationRequired = config.auth.verification;
 
@@ -216,7 +217,47 @@ module.exports = function(core)
 	// Retrieve a list of favorite playlists
 	PlaylistController.getFavoritesSection = function(req, res)
 	{
-		// return PlaylistController.getFavorites(req, res);
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		Playlist.all
+		({
+			attributes: ["playlistId", "name", "access", "alias", "count", "userId"],
+			order: [ [FavoritePlaylist, "favoriteId", "ASC"] ],
+			where:
+			{
+				access:
+				{
+					$ne: PlaylistController.ACCESS.PRIVATE,
+				},
+			},
+			include:
+			[{
+				model: FavoritePlaylist,
+				where: { userId: req.user.userId },
+			}]
+		})
+		.then(function(playlists)
+		{
+			if(!playlists)
+				return res.json( [] );
+
+			var response = [];
+
+			for(var index in playlists)
+			{
+				response.push
+				([
+					playlists[index].playlistId,
+					playlists[index].name,
+					playlists[index].access,
+					playlists[index].alias,
+					playlists[index].count,
+				]);
+			}
+
+			res.json(response);
+		});
 	}
 
 	// Retrieve a list of own playlists from the section
@@ -255,6 +296,40 @@ module.exports = function(core)
 			}
 
 			res.json(response);
+		});
+	}
+
+	// Add a playlist to personal favorites
+	PlaylistController.addFavoritePlaylist = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		Playlist.findOne
+		({
+			attributes: ["playlistId", "userId"],
+			where: { playlistId: req.body.playlistId },
+		})
+		.then(function(playlist)
+		{
+			if(!playlist)
+				return res.status(404).json({ errors: ["playlist not found"] });
+
+			if(playlist.userId == req.user.userId)
+				return res.status(403).json({ errors: ["cannot favorite own playlist"] });
+
+			FavoritePlaylist.findOrCreate
+			({
+				where:
+				{
+					playlistId: playlist.playlistId,
+					userId: req.user.userId,
+				},
+			})
+			.spread(function(favorite, created)
+			{
+				res.json( [] );
+			});
 		});
 	}
 
@@ -493,6 +568,12 @@ module.exports = function(core)
 		});
 	}
 
+	// Returns true if the id is in valid range
+	PlaylistController.validateId = function(id)
+	{
+		return (id > 0);
+	}
+
 	// Returns true if the playlist name is valid
 	PlaylistController.validateName = function(name)
 	{
@@ -550,6 +631,13 @@ module.exports = function(core)
 
 		app.get("/own/playlists/favorites",
 			PlaylistController.getFavoritesSection);
+
+		app.post("/own/playlists/favorites",
+			paperwork.accept
+			({
+				playlistId: paperwork.all(Number, PlaylistController.validateId),
+			}),
+			PlaylistController.addFavoritePlaylist);
 
 		app.put("/playlists/:playlistId(\\d+)",
 			paperwork.accept
