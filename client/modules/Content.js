@@ -7,11 +7,22 @@ var Content =
 		YOUTUBE: 1,
 		SOUNDCLOUD: 2,
 	},
+	REGEX:
+	{
+		YOUTUBE: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
+		SOUNDCLOUD: /^https?:\/\/(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/,
+	},
 	SOURCE_NAMES:
 	[
 		"None",
 		"YouTube Video",
 		"SoundCloud Track",
+	],
+	SOURCE_URLS:
+	[
+		"None",
+		"https://www.youtube.com/watch?v=",
+		"https://api.soundcloud.com/tracks/",
 	],
 	// Content switch mode
 	AUTO_SWITCH: false,
@@ -325,6 +336,20 @@ Content.setSwitchEnabled = function(enabled)
 {
 	$("#content-previous, #content-next")
 		.toggleClass("inactive", !enabled);
+}
+
+// Return external URL of the item's content
+Content.getItemExternalUrl = function($item)
+{
+	var data = $item.data();
+	var sourceId = data.sourceId;
+
+	if(!sourceId)
+		return null;
+
+	var externalId = data.externalId;
+
+	return Content.SOURCE_URLS[sourceId] + externalId;
 }
 
 // Update state of the content replace icon for the item specified

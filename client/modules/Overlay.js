@@ -61,8 +61,9 @@ Overlay.create = function(name, elements, options, done)
 	// Add spacer element
 	if(!options.noSpacer)
 	{
-		$("#window input:last-of-type").after(
-			$("<div>").attr("id", "window-separator")
+		$("#window input:last-of-type, " +
+			"#window textarea:last-of-type").after(
+				$("<div>").attr("id", "window-separator")
 		);
 	}
 
@@ -220,6 +221,23 @@ Overlay.onClick = function(event)
 		return;
 
 	Overlay.destroy();
+}
+
+// Prevent the input from being changed
+Overlay.onReadOnlyKeyDown = function(event)
+{
+	// Allow Ctrl combinations except X/V/Backspace
+	if(event.ctrlKey &&
+		[8, 86, 88]
+			.indexOf(event.keyCode) == -1)
+				return;
+
+	// Ignore arrow keys
+	if([37, 38, 39, 40]
+		.indexOf(event.keyCode) != -1)
+			return;
+
+	event.preventDefault();
 }
 
 Overlay.init = function()

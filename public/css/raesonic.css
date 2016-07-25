@@ -1,42 +1,43 @@
 .icon, .logo, .avatar { background: url("/img/sprites.png") no-repeat; }
-.add { width: 26px; height: 26px; background-position: -41px 0; }
-.addlarge { width: 40px; height: 40px; background-position: 0 0; }
-.addsmall { width: 26px; height: 26px; background-position: -41px -46px; }
+.add { width: 26px; height: 26px; background-position: -51px 0; }
+.addlarge { width: 40px; height: 40px; background-position: -78px 0; }
+.addsmall { width: 26px; height: 26px; background-position: -51px -78px; }
 .arrowleft { width: 40px; height: 40px; background-position: -119px 0; }
 .arrowup { width: 40px; height: 40px; background-position: -160px 0; }
-.avatar { width: 43px; height: 43px; background-position: -155px -41px; }
-.checklarge { width: 50px; height: 40px; background-position: -68px 0; }
-.clock { width: 15px; height: 15px; background-position: 0 -41px; }
-.edit { width: 26px; height: 26px; background-position: -119px -69px; }
-.explorelarge { width: 50px; height: 50px; background-position: -68px -41px; }
-.flag { width: 15px; height: 15px; background-position: -146px -85px; }
-.flaglarge { width: 40px; height: 40px; background-position: 0 -60px; }
-.listfavorites { width: 26px; height: 26px; background-position: -41px -73px; }
-.listflags { width: 26px; height: 26px; background-position: -41px -100px; }
-.listplaylists { width: 26px; height: 26px; background-position: -132px -101px; }
-.listrecent { width: 26px; height: 26px; background-position: -133px -128px; }
-.listrelated { width: 26px; height: 26px; background-position: -106px -134px; }
-.listsubcat { width: 26px; height: 26px; background-position: -133px -155px; }
-.logo { width: 50px; height: 50px; background-position: -41px -177px; }
-.loop { width: 35px; height: 19px; background-position: -162px -85px; }
-.menusmall { width: 26px; height: 26px; background-position: -106px -161px; }
-.muted { width: 40px; height: 40px; background-position: -68px -92px; }
-.navarrow { width: 6px; height: 14px; background-position: -146px -69px; }
-.pause { width: 40px; height: 40px; background-position: 0 -101px; }
-.play { width: 40px; height: 40px; background-position: -160px -105px; }
-.previous { width: 40px; height: 40px; background-position: 0 -142px; }
-.shuffle { width: 35px; height: 27px; background-position: -119px -41px; }
-.soundcloud { width: 64px; height: 43px; background-position: -41px -133px; }
-.speakerloud { width: 40px; height: 40px; background-position: -160px -146px; }
-.speakernormal { width: 40px; height: 40px; background-position: 0 -183px; }
-.speakerquiet { width: 40px; height: 40px; background-position: -160px -187px; }
-.speakersilent { width: 40px; height: 40px; background-position: -92px -188px; }
-.subcatexpand { width: 26px; height: 26px; background-position: -133px -182px; }
-.tabcontent { width: 22px; height: 18px; background-position: -41px -27px; }
-.tabcontentlinks { width: 22px; height: 18px; background-position: -16px -41px; }
-.tabhistory { width: 22px; height: 18px; background-position: -109px -96px; }
-.tabrelated { width: 22px; height: 18px; background-position: -109px -115px; }
-.tabtrackedits { width: 22px; height: 18px; background-position: -133px -209px; }
+.avatar { width: 43px; height: 43px; background-position: -27px -133px; }
+.checklarge { width: 50px; height: 40px; background-position: 0 0; }
+.clock { width: 15px; height: 15px; background-position: -160px -102px; }
+.edit { width: 26px; height: 26px; background-position: -51px -105px; }
+.explorelarge { width: 50px; height: 50px; background-position: 0 -82px; }
+.flag { width: 15px; height: 15px; background-position: -71px -164px; }
+.flaglarge { width: 40px; height: 40px; background-position: 0 -41px; }
+.listfavorites { width: 26px; height: 26px; background-position: 0 -133px; }
+.listflags { width: 26px; height: 26px; background-position: 0 -160px; }
+.listplaylists { width: 26px; height: 26px; background-position: -135px -164px; }
+.listrecent { width: 26px; height: 26px; background-position: -30px -177px; }
+.listrelated { width: 26px; height: 26px; background-position: -57px -180px; }
+.listsubcat { width: 26px; height: 26px; background-position: 0 -206px; }
+.logo { width: 50px; height: 50px; background-position: -84px -183px; }
+.loop { width: 35px; height: 19px; background-position: -160px -41px; }
+.menu { width: 36px; height: 31px; background-position: -41px -46px; }
+.menusmall { width: 26px; height: 26px; background-position: -27px -206px; }
+.muted { width: 40px; height: 40px; background-position: -78px -41px; }
+.navarrow { width: 6px; height: 14px; background-position: 0 -187px; }
+.pause { width: 40px; height: 40px; background-position: -119px -41px; }
+.play { width: 40px; height: 40px; background-position: -160px -61px; }
+.previous { width: 40px; height: 40px; background-position: -78px -82px; }
+.shuffle { width: 35px; height: 27px; background-position: -162px -162px; }
+.soundcloud { width: 64px; height: 43px; background-position: -135px -191px; }
+.speakerloud { width: 40px; height: 40px; background-position: -119px -82px; }
+.speakernormal { width: 40px; height: 40px; background-position: -160px -121px; }
+.speakerquiet { width: 40px; height: 40px; background-position: -78px -123px; }
+.speakersilent { width: 40px; height: 40px; background-position: -119px -123px; }
+.subcatexpand { width: 26px; height: 26px; background-position: -54px -207px; }
+.tabcontent { width: 22px; height: 18px; background-position: -51px -27px; }
+.tabcontentlinks { width: 22px; height: 18px; background-position: -176px -102px; }
+.tabhistory { width: 22px; height: 18px; background-position: -87px -164px; }
+.tabrelated { width: 22px; height: 18px; background-position: -110px -164px; }
+.tabtrackedits { width: 22px; height: 18px; background-position: -7px -187px; }
 
 html
 {
@@ -175,7 +176,7 @@ body
 	vertical-align: -11px;
 	display: inline-block;
 	position: relative;
-	width: 280px;
+	width: 235px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -193,7 +194,7 @@ body
 	margin-top: -7px;
 	position: absolute;
 	top: 33px;
-	width: 280px;
+	width: 235px;
 	left: 9px;
 }
 
@@ -231,6 +232,56 @@ body
 	margin: 0 4px -2px 2px;
 	border-radius: 100%;
 	box-shadow: 0 1px 0 0 #222;
+}
+#playlist-menu-icon
+{
+	position: absolute;
+	top: 10px;
+	left: 258px;
+	cursor: pointer;
+	pointer-events: none;
+	opacity: 0;
+	-webkit-transition: opacity ease-out 200ms;
+	-moz-transition: opacity ease-out 200ms;
+	-o-transition: opacity ease-out 200ms;
+	transition: opacity ease-out 200ms;
+}
+#header-left.active #playlist-menu-icon
+{
+	pointer-events: all;
+	opacity: 1;
+}
+#playlist-options
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 300px;
+	z-index: 2;
+	display: none;
+	height: calc(100vh - 101px);
+	background-color: rgba(0, 0, 0, 0.6);
+}
+#playlist-options-list .option
+{
+	padding: 8px 10px;
+	border-bottom: 1px solid #CCC;
+	color: #3A3A3A;
+	font-size: 14px;
+	cursor: pointer;
+	background-color: #E2E2E2;
+	-webkit-transition: background-color ease-out 200ms;
+	-moz-transition: background-color ease-out 200ms;
+	-o-transition: background-color ease-out 200ms;
+	transition: background-color ease-out 200ms;
+}
+#playlist-options-list .option:hover
+{
+	background-color: #EAEAEA;
+}
+#playlist-options-list .option:last-of-type
+{
+	border-bottom: none;
 }
 
 #user-avatar
@@ -945,15 +996,9 @@ body
 	line-height: 15px;
 	font-size: 14px;
 }
-#window p.semitext
-{
-	line-height: 17px;
-}
-#window p.text
-{
-	line-height: 20px;
-}
-#window p.subject
+#window p.semitext { line-height: 17px; }
+#window p.text { line-height: 20px; }
+#window p.subject, #window p.hint
 {
 	background-color: #F5F5F5;
 	color: #3D3749;
@@ -965,27 +1010,16 @@ body
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-#window p.subject.content
-{
-	padding-left: 77px;
-}
+#window p.hint { margin-top: 20px; }
+#window p.subject.content { padding-left: 77px; }
 #window p.subject span.padded
 {
 	margin-left: 2px;
 	opacity: 0.8;
 }
-#window p.subject span.removed
-{
-	display: none;
-}
-#window p.extra.subject
-{
-	margin-top: 3px;
-}
-#window p.final.subject
-{
-	margin-bottom: 20px;
-}
+#window p.subject span.removed { display: none; }
+#window p.extra.subject { margin-top: 3px; }
+#window p.final.subject { margin-bottom: 20px; }
 #window p a, #window label a
 {
 	text-decoration: none;
@@ -1049,7 +1083,7 @@ body
 	object-fit: contain;
 	background-color: #000;
 }
-#window input
+#window input, #window textarea
 {
 	background: none;
 	width: calc(100% - 40px);
@@ -1065,16 +1099,41 @@ body
 	-o-transition: border-color ease-out 200ms, box-shadow ease-out 200ms;
 	transition: border-color ease-out 200ms, box-shadow ease-out 200ms;
 }
+#window textarea
+{
+	height: 150px;
+	overflow-y: scroll;
+	background-color: #F5F5F5;
+	padding: 8px 20px;
+	width: calc(100% - 40px);
+	border-bottom: none;
+	font-size: 13px;
+	margin: 20px 0 0 0;
+}
+#window textarea::-webkit-scrollbar
+{
+	height: 12px;
+	width: 13px;
+	background: rgba(0, 0, 0, 0);
+	border-left: rgba(0, 0, 0, 0);
+	border-right: none;
+}
+#window textarea::-webkit-scrollbar-thumb
+{
+	background: #CACACA;
+	border-left: rgba(0, 0, 0, 0);
+	border-right: none;
+}
 #window input:focus
 {
 	border-bottom: 1px solid #75698C;
 	box-shadow: 0px -1px 0 0 #75698C inset;
 }
-#window input:read-only
+#window input:read-only, #window textarea:read-only
 {
 	opacity: 0.6;
 }
-#window input:read-only:focus
+#window input:read-only:focus, #window textarea:read-only:focus
 {
 	border-bottom: 1px solid rgba(59, 55, 74, 0.2);
 	box-shadow: none;

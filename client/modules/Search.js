@@ -3,11 +3,6 @@ var ItemList = require("./ItemList.js");
 
 var Search =
 {
-	REGEX:
-	{
-		YOUTUBE: /(youtu.be\/|youtube.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"\'>]+)/,
-		SOUNDCLOUD: /^https?:\/\/(soundcloud.com|snd.sc)\/(.*)$/,
-	},
 	restricted: false,
 }
 
@@ -139,7 +134,7 @@ Search.createContent = function(query)
 	var Content = require("./Content.js");
 
 	// Find and create YouTube content
-	var match = Search.REGEX.YOUTUBE.exec(query);
+	var match = Content.REGEX.YOUTUBE.exec(query);
 	if( match && match[5] )
 	{
 		var externalId = match[5];
@@ -148,7 +143,7 @@ Search.createContent = function(query)
 	}
 
 	// Find and create SoundCloud content
-	match = Search.REGEX.SOUNDCLOUD.exec(query);
+	match = Content.REGEX.SOUNDCLOUD.exec(query);
 	if( match && match[2] )
 	{
 		if(typeof SC == "undefined")

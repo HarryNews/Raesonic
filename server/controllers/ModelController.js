@@ -8,6 +8,8 @@ module.exports = function(sequelize)
 		Playlist: require("../models/PlaylistModel.js")(sequelize),
 		Item: require("../models/ItemModel.js")(sequelize),
 
+		FavoritePlaylist: require("../models/FavoritePlaylistModel.js")(sequelize),
+
 		Relation: require("../models/RelationModel.js")(sequelize),
 		RelationVote: require("../models/RelationVoteModel.js")(sequelize),
 		RelationFlag: require("../models/RelationFlagModel.js")(sequelize),
