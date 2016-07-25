@@ -107,6 +107,17 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 			if(response.errors)
 				return;
 
+			var playlist =
+			{
+				playlistId: playlistId,
+				name: name,
+				access: access,
+				alias: alias,
+				user: Playlist.active.user,
+				favorited: Playlist.active.favorited,
+				count: Playlist.active.count,
+			};
+
 			var accessChanged = (access != Playlist.editing.access);
 
 			if(accessChanged)
@@ -122,30 +133,12 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 			}
 			else
 			{
-				// Update name and access of the sidebar item
-				$(".playlist")
-					.filterByData("playlistId", playlistId)
-					.find(".name")
-					.text(name)
-					.data("access", access);
+				Playlist.updateCachedSectionPlaylist(playlist, sectionAlias);
 			}
 
 			// If the changed playlist is active, update the values
 			if(Playlist.active && playlistId == Playlist.active.playlistId)
-			{
-				var playlist =
-				{
-					playlistId: playlistId,
-					name: name,
-					access: access,
-					alias: alias,
-					user: Playlist.active.user,
-					favorited: Playlist.active.favorited,
-					count: Playlist.active.count,
-				};
-
 				Playlist.setActive(playlist);
-			}
 
 			Overlay.destroy();
 
@@ -599,6 +592,51 @@ Playlist.addCachedSectionPlaylist = function(playlist, sectionAlias)
 	Playlist.highlightActivePlaylist();
 }
 
+// Update playlist on the cached section
+Playlist.updateCachedSectionPlaylist = function(playlist, sectionAlias)
+{
+	var playlistId = playlist.playlistId;
+	var name = playlist.name;
+	var access = playlist.access;
+	var alias = playlist.alias;
+
+	var activeSectionAlias =
+		$("#playlists-dropdown .dropdown-item.active")
+			.data("alias");
+
+	if(activeSectionAlias != null &&
+		activeSectionAlias == sectionAlias)
+	{
+		// Update name and access on the active section
+		$(".playlist")
+			.filterByData("playlistId", playlistId)
+			.data("access", access)
+			.find(".name")
+			.text(name);
+	}
+
+	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
+
+	if(storage == null)
+		return;
+
+	storage.forEach(function($playlist, playlistIndex)
+	{
+		if( $playlist.data("alias") == alias )
+		{
+			$playlist
+				.data("access", access)
+				.find(".name")
+				.text(name);
+		}
+	});
+
+	$("#playlists")
+		.data(sectionAlias.toLowerCase(), storage);
+
+	Playlist.highlightActivePlaylist();
+}
+
 // Remove playlist from the cached section
 Playlist.removeCachedSectionPlaylist = function(playlistAlias, sectionAlias)
 {
@@ -627,10 +665,7 @@ Playlist.removeCachedSectionPlaylist = function(playlistAlias, sectionAlias)
 	});
 
 	$("#playlists")
-		.data(sectionAlias.toLowerCase(), storage)
-		.animate({
-			scrollTop: $("#playlists").prop("scrollHeight"),
-		}, 0);
+		.data(sectionAlias.toLowerCase(), storage);
 
 	Playlist.highlightActivePlaylist();
 }
