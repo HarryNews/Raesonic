@@ -544,6 +544,17 @@ Playlist.addCachedSectionPlaylist = function(playlist, sectionAlias)
 	if(storage == null)
 		return;
 
+	var isDuplicate = false;
+
+	storage.forEach(function($playlist)
+	{
+		if( $playlist.data("alias") == playlist[3] )
+			isDuplicate = true;
+	});
+
+	if(isDuplicate)
+		return;
+
 	var $playlist = Playlist.addSectionPlaylist(playlist);
 	storage.push( $playlist.clone(true) );
 	
