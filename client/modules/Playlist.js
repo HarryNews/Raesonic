@@ -52,32 +52,18 @@ Playlist.create = function(name, access, sectionAlias)
 			var alias = response[1];
 			var items = [];
 
-			var storage =
-				$("#playlists").data( sectionAlias.toLowerCase() );
-
 			Playlist.setActiveSection(sectionAlias);
 
-			// Add playlist to the section if it's already cached
-			if(storage != null)
-			{
-				var playlist =
-				[
-					playlistId,
-					name,
-					access,
-					alias,
-					0, // items count
-				];
+			var playlist =
+			[
+				playlistId,
+				name,
+				access,
+				alias,
+				0, // items count
+			];
 
-				var $playlist = Playlist.addSectionPlaylist(playlist);
-				storage.push( $playlist.clone(true) );
-
-				$("#playlists")
-					.data(sectionAlias.toLowerCase(), storage)
-					.animate({
-						scrollTop: $("#playlists").prop("scrollHeight"),
-					}, 0);
-			}
+			Playlist.addCachedSectionPlaylist(playlist, sectionAlias);
 
 			Playlist.setActive(playlistId, name, access, alias, null, items);
 
@@ -204,12 +190,21 @@ Playlist.addFavorite = function(playlistId)
 			if(response.errors)
 				return;
 
-			// todo: update context menu
-
 			if(Playlist.active.playlistId == playlistId)
 				Playlist.active.favorited = true;
 
-			Toast.show("Playlist has been added to favorites",
+			var playlist =
+			[
+				Playlist.active.playlistId,
+				Playlist.active.name,
+				Playlist.active.access,
+				Playlist.active.alias,
+				Playlist.active.count,
+			];
+
+			Playlist.addCachedSectionPlaylist(playlist, "FAVORITES");
+
+			Toast.show("Playlist has been added to Favorites",
 				Toast.INFO);
 		},
 		error: Toast.onRequestError,
@@ -219,6 +214,40 @@ Playlist.addFavoriteThrottled = Throttle(5000,
 function(playlistId)
 {
 	Playlist.addFavorite(playlistId);
+});
+
+// Add the playlist to personal favorites
+Playlist.removeFavorite = function(playlistId)
+{
+	var Toast = require("./Toast.js");
+
+	$.ajax
+	({
+		url: "/own/playlists/favorites/" + playlistId + "/",
+		type: "DELETE",
+		success: function(response)
+		{
+			if(response.errors)
+				return;
+
+			if(Playlist.active.playlistId == playlistId)
+			{
+				Playlist.active.favorited = false;
+
+				Playlist.removeCachedSectionPlaylist
+					(Playlist.active.alias, "FAVORITES");
+			}
+
+			Toast.show("Playlist has been removed from Favorites",
+				Toast.INFO);
+		},
+		error: Toast.onRequestError,
+	});
+}
+Playlist.removeFavoriteThrottled = Throttle(5000,
+function(playlistId)
+{
+	Playlist.removeFavorite(playlistId);
 });
 
 // Retrieve playlist tracks and metadata
@@ -252,8 +281,17 @@ Playlist.loadMain = function()
 }
 
 // Set the playlist as active
-Playlist.setActive = function(playlistId, name, access, alias, user, items)
+Playlist.setActive = function(playlist)
 {
+	var playlistId = playlist.playlistId;
+	var name = playlist.name;
+	var access = playlist.access;
+	var alias = playlist.alias;
+	var user = playlist.user;
+	var favorited = playlist.favorited;
+	var items = playlist.items;
+	var count = items.length;
+
 	$("#items").removeClass("no-active-playlist");
 
 	var accessName = Playlist.PERSONAL_SECTIONS[access - 1];
@@ -265,6 +303,8 @@ Playlist.setActive = function(playlistId, name, access, alias, user, items)
 		access: access,
 		alias: alias,
 		user: user,
+		favorited: favorited,
+		count: count,
 	};
 
 	var $access = $("<span>")
@@ -487,6 +527,72 @@ Playlist.addSectionPlaylist = function(playlist)
 	$("#playlists").append($playlist);
 
 	return $playlist;
+}
+
+// Add playlist to the cached section
+Playlist.addCachedSectionPlaylist = function(playlist, sectionAlias)
+{
+	var activeSectionAlias =
+		$("#playlists-dropdown .dropdown-item.active")
+			.data("alias");
+
+	var isActiveSection = (activeSectionAlias != null &&
+		activeSectionAlias == sectionAlias);
+
+	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
+
+	if(storage == null)
+		return;
+
+	var $playlist = Playlist.addSectionPlaylist(playlist);
+	storage.push( $playlist.clone(true) );
+	
+	if(!isActiveSection)
+		$playlist.remove();
+
+	$("#playlists")
+		.data(sectionAlias.toLowerCase(), storage)
+		.animate({
+			scrollTop: $("#playlists").prop("scrollHeight"),
+		}, 0);
+
+	Playlist.highlightActivePlaylist();
+}
+
+// Remove playlist from the cached section
+Playlist.removeCachedSectionPlaylist = function(playlistAlias, sectionAlias)
+{
+	var activeSectionAlias =
+		$("#playlists-dropdown .dropdown-item.active")
+			.data("alias");
+
+	if(activeSectionAlias != null &&
+		activeSectionAlias == sectionAlias)
+	{
+		// Remove playlist from the active section
+		$(".playlist")
+			.filterByData("alias", playlistAlias)
+			.remove();
+	}
+
+	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
+
+	if(storage == null)
+		return;
+
+	storage.forEach(function($playlist, playlistIndex)
+	{
+		if( $playlist.data("alias") == playlistAlias )
+			storage.splice(playlistIndex);
+	});
+
+	$("#playlists")
+		.data(sectionAlias.toLowerCase(), storage)
+		.animate({
+			scrollTop: $("#playlists").prop("scrollHeight"),
+		}, 0);
+
+	Playlist.highlightActivePlaylist();
 }
 
 // Remove active class from all playlists but the active one
@@ -743,16 +849,7 @@ Playlist.toggleSidebar = function()
 			.unbind("mousedown",
 				Playlist.onDocumentMouseDown);
 
-		// Hide the playlist options
-		var $options = $("#playlist-options");
-		var $list = $("#playlist-options-list");
-
-		if( $options.is(":visible") )
-		{
-			$options.fadeOut(200);
-			$list.slideUp(200);
-		}
-
+		Playlist.hidePlaylistOptions();
 		return;
 	}
 
@@ -1196,6 +1293,21 @@ Playlist.showExportOverlay = function()
 	});
 }
 
+// Hide the playlist options menu, return true if it was hidden
+Playlist.hidePlaylistOptions = function()
+{
+	var $options = $("#playlist-options");
+	var $list = $("#playlist-options-list");
+
+	if( !$options.is(":visible") )
+		return false;
+
+	$options.fadeOut(200);
+	$list.slideUp(200);
+
+	return true;
+}
+
 // Initialize the options for playlist menu
 Playlist.initPlaylistOptions = function()
 {
@@ -1300,16 +1412,21 @@ Playlist.onLoadResponse = function(response)
 	if(response.errors)
 		return Playlist.onLoadError(response);
 
-	var playlist = response[0];
+	var data = response[0];
 	var items = response[1];
 
-	var playlistId = playlist[0];
-	var name = playlist[1];
-	var access = playlist[2];
-	var alias = playlist[3];
-	var user = playlist[4];
+	var playlist =
+	{
+		playlistId: data[0],
+		name: data[1],
+		access: data[2],
+		alias: data[3],
+		user: data[4],
+		favorited: data[5],
+		items: items,
+	};
 
-	Playlist.setActive(playlistId, name, access, alias, user, items);
+	Playlist.setActive(playlist);
 }
 
 // Called when the playlist failed to load
@@ -1453,20 +1570,25 @@ Playlist.onNewPlaylistClick = function()
 // Called upon clicking the playlist menu button
 Playlist.onMenuIconClick = function()
 {
-	var $options = $("#playlist-options");
-	var $list = $("#playlist-options-list");
+	var isMenuVisible = Playlist.hidePlaylistOptions();
 
-	if( $options.is(":visible") )
-	{
-		$options.fadeOut(200);
-		$list.slideUp(200);
+	if(isMenuVisible)
 		return;
-	}
 
-	$options.fadeIn(200);
-	$list.slideDown(200);
+	$("#playlist-options").fadeIn(200);
+	$("#playlist-options-list").slideDown(200);
 
 	Playlist.initPlaylistOptions();
+}
+
+// Called upon clicking the playlist options container
+Playlist.onPlaylistOptionsClick = function(event)
+{
+	// The click wasn't outside the list
+	if(event.target != this)
+		return;
+
+	Playlist.hidePlaylistOptions();
 }
 
 // Called when the create playlist button is clicked
@@ -1572,13 +1694,13 @@ Playlist.onPlaylistClick = function()
 	if(Relation.active)
 		Relation.clearView();
 
-	var isPublicPlaylist =
-		( $playlist.data("access") == Playlist.ACCESS.PUBLIC );
+	var isPrivatePlaylist =
+		( $playlist.data("access") == Playlist.ACCESS.PRIVATE );
 
 	var playlistAlias = $playlist.data(
-		isPublicPlaylist
-			? "alias"
-			: "playlistId"
+		isPrivatePlaylist
+			? "playlistId"
+			: "alias"
 	);
 
 	Playlist.load(playlistAlias);
@@ -1609,24 +1731,28 @@ Playlist.onEditIconClick = function()
 Playlist.onAddFavoriteClick = function()
 {
 	Playlist.addFavoriteThrottled(Playlist.active.playlistId);
+	Playlist.hidePlaylistOptions();
 }
 
 // Called upon clicking the remove from favorites option
 Playlist.onRemoveFavoriteClick = function()
 {
 	Playlist.removeFavoriteThrottled(Playlist.active.playlistId);
+	Playlist.hidePlaylistOptions();
 }
 
 // Called upon clicking the share playlist option
 Playlist.onSharePlaylistClick = function()
 {
 	Playlist.showShareOverlay();
+	Playlist.hidePlaylistOptions();
 }
 
 // Called upon clicking the export playlist option
 Playlist.onExportPlaylistClick = function()
 {
 	Playlist.showExportOverlay();
+	Playlist.hidePlaylistOptions();
 }
 
 Playlist.init = function()
@@ -1638,6 +1764,7 @@ Playlist.init = function()
 
 	$("#playlist-new").click(Playlist.onNewPlaylistClick);
 	$("#playlist-menu-icon").click(Playlist.onMenuIconClick);
+	$("#playlist-options").click(Playlist.onPlaylistOptionsClick);
 }
 
 module.exports = Playlist;

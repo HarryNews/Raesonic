@@ -88,30 +88,43 @@ module.exports = function(core)
 		PlaylistController.verifyAccess(req.user, condition, res,
 		function onConfirm()
 		{
+			var include =
+			[{
+				model: User,
+				attributes: ["userId", "username", "email", "emailToken"],
+			},
+			{
+				model: Item,
+				attributes: ["itemId"],
+				include:
+				[{
+					model: Content,
+					attributes: ["sourceId", "externalId"],
+					include:
+					[{
+						model: Track,
+						attributes: ["trackId", "artist", "title"]
+					}]
+				}]
+			}];
+
+			if(req.user)
+			{
+				include.push
+				({
+					model: FavoritePlaylist,
+					attributes: ["playlistId", "userId"],
+					where: { userId: req.user.userId },
+					required: false,
+				});
+			}
+
 			Playlist.findOne
 			({
 				attributes: ["playlistId", "name", "access", "alias", "userId"],
 				where: condition,
 				order: [ [Item, "itemId", "DESC"] ],
-				include:
-				[{
-					model: User,
-					attributes: ["userId", "username", "email", "emailToken"],
-				},
-				{
-					model: Item,
-					attributes: ["itemId"],
-					include:
-					[{
-						model: Content,
-						attributes: ["sourceId", "externalId"],
-						include:
-						[{
-							model: Track,
-							attributes: ["trackId", "artist", "title"]
-						}]
-					}]
-				}]
+				include: include,
 			})
 			.then(function(playlist)
 			{
@@ -133,8 +146,8 @@ module.exports = function(core)
 							!playlistOwner.emailToken )
 					);
 
-					playlistData.push
-					([
+					var userData =
+					[
 						playlistOwner.username,
 						Gravatar.url(
 							hasVerifiedEmail
@@ -142,7 +155,12 @@ module.exports = function(core)
 								: playlistOwner.username,
 							{ s: "13", r: "pg", d: "retro" }
 						),
-					]);
+					];
+
+					var isFavorited = (playlist.FavoritePlaylists != null)
+						&& (playlist.FavoritePlaylists[0] != null);
+
+					playlistData.push(userData, isFavorited);
 				}
 
 				var items = playlist.Items;
@@ -330,6 +348,29 @@ module.exports = function(core)
 			{
 				res.json( [] );
 			});
+		});
+	}
+
+	// Remove a playlist from the personal favorites
+	PlaylistController.removeFavoritePlaylist = function(req, res)
+	{
+		if(!req.user)
+			return res.status(401).json({ errors: ["not authenticated"] });
+
+		FavoritePlaylist.destroy
+		({
+			where:
+			{
+				playlistId: req.params.playlistId,
+				userId: req.user.userId,
+			},
+		})
+		.then(function(amount)
+		{
+			if(amount < 1)
+				return res.status(500).json({ errors: ["internal error"] });
+
+			res.json( [] );
 		});
 	}
 
@@ -638,6 +679,9 @@ module.exports = function(core)
 				playlistId: paperwork.all(Number, PlaylistController.validateId),
 			}),
 			PlaylistController.addFavoritePlaylist);
+
+		app.delete("/own/playlists/favorites/:playlistId(\\d+)",
+			PlaylistController.removeFavoritePlaylist);
 
 		app.put("/playlists/:playlistId(\\d+)",
 			paperwork.accept
