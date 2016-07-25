@@ -65,7 +65,18 @@ Playlist.create = function(name, access, sectionAlias)
 
 			Playlist.addCachedSectionPlaylist(playlist, sectionAlias);
 
-			Playlist.setActive(playlistId, name, access, alias, null, items);
+			var playlistData =
+			{
+				playlistId: playlistId,
+				name: name,
+				access: access,
+				alias: alias,
+				user: null,
+				favorited: false,
+				items: items,
+			};
+
+			Playlist.setActive(playlistData);
 
 			Overlay.destroy();
 
@@ -121,7 +132,20 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 
 			// If the changed playlist is active, update the values
 			if(Playlist.active && playlistId == Playlist.active.playlistId)
-				Playlist.setActive(playlistId, name, access, alias);
+			{
+				var playlist =
+				{
+					playlistId: playlistId,
+					name: name,
+					access: access,
+					alias: alias,
+					user: Playlist.active.user,
+					favorited: Playlist.active.favorited,
+					count: Playlist.active.count,
+				};
+
+				Playlist.setActive(playlist);
+			}
 
 			Overlay.destroy();
 
@@ -290,7 +314,12 @@ Playlist.setActive = function(playlist)
 	var user = playlist.user;
 	var favorited = playlist.favorited;
 	var items = playlist.items;
-	var count = items.length;
+
+	var count = (playlist.count != null)
+		? playlist.count
+		: (items.length != null)
+			? items.length
+			: 0;
 
 	$("#items").removeClass("no-active-playlist");
 
