@@ -79,22 +79,14 @@ ItemList.addItem = function(item, prepend, useStorage)
 	// If the itemId is known, store extra values
 	if( item[3] != null )
 	{
-		var Reputation = require("./Reputation.js");
-
-		var isEditingAllowed = Reputation.hasPermission(
-			Reputation.PERMISSION.EDIT_OWN_TRACKS, true
-		);
-
 		var hasItemId = ( item[3] != 0 );
 
 		var $edit = $("<div>")
 			.addClass("edit icon")
-			.toggleClass("disabled", !isEditingAllowed || !hasItemId)
+			.toggleClass("disabled", !hasItemId)
 			.click(Item.onEditIconClick);
 
-		if(!isEditingAllowed)
-			$edit.attr("title", "Not enough reputation");
-		else if(!hasItemId)
+		if(!hasItemId)
 			$edit.attr("title", "Not available in current mode");
 
 		$item
@@ -411,19 +403,7 @@ ItemList.highlightActiveItem = function()
 // Called when the user account status has changed
 ItemList.onAccountSync = function()
 {
-	// Update all edit icons based on reputation
-	var Reputation = require("./Reputation.js");
-
-	var isEditingAllowed = Reputation.hasPermission(
-		Reputation.PERMISSION.EDIT_OWN_TRACKS, true
-	);
-
-	$(".item > .edit.icon")
-		.toggleClass("disabled", !isEditingAllowed)
-		.attr("title", isEditingAllowed
-			? ""
-			: "Not enough reputation"
-		);
+	
 }
 
 module.exports = ItemList;

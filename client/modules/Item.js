@@ -534,6 +534,14 @@ Item.onEditIconClick = function()
 
 		var Reputation = require("./Reputation.js");
 
+		if( !Reputation.hasPermission(
+			Reputation.PERMISSION.EDIT_OWN_TRACKS) )
+		{
+			$("#edit-artist, #edit-title")
+				.prop("readOnly", true)
+				.attr("title", "Not enough reputation");
+		}
+
 		if( Reputation.hasPermission(
 			Reputation.PERMISSION.AUTOCHECK_GUIDELINES) )
 		{
