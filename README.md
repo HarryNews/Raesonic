@@ -2,9 +2,9 @@
 Raesonic is a [Node.js](http://nodejs.org) web application for listening to your favorite tracks on [YouTube](https://youtube.com) and [SoundCloud®](https://soundcloud.com), with the ability to discover and share music through community-oriented features. It is currently available in an early access form at [raesonic.com](https://raesonic.com).
 
 # Screenshots
-![Screenshot 1](http://fkids.net/files/projects/raesonic/screenshots/20160531-03.png)
+![Screenshot 1](http://fkids.net/files/projects/raesonic/screenshots/20160726-01.png)
 
-![Screenshot 2](http://fkids.net/files/projects/raesonic/screenshots/20160531-02.png)
+![Screenshot 2](http://fkids.net/files/projects/raesonic/screenshots/20160726-02.png)
 
 # Running Locally
 Raesonic requires [node](http://nodejs.org) to run.
