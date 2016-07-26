@@ -182,7 +182,7 @@ Account.logout = function()
 			if(response.errors)
 				return;
 
-			Account.sync();
+			Account.setAuthenticated(false);
 		}
 	});
 }
