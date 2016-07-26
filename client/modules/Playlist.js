@@ -352,6 +352,7 @@ Playlist.setActive = function(playlist)
 		history.pushState(null, null, playlistUrl);
 
 	Playlist.setTrackCounter(items.length);
+	$("#playlist-details-user").remove();
 
 	var sectionAlias =
 		$("#playlists-dropdown .dropdown-item.active")
@@ -498,12 +499,9 @@ Playlist.setActive = function(playlist)
 Playlist.clearActive = function()
 {
 	Playlist.active = null;
-
-	$("#playlist-name").empty();
+	Playlist.clearActiveHeader();
 
 	Playlist.highlightActivePlaylist();
-
-	Playlist.clearTrackCounter();
 
 	var ItemList = require("./ItemList.js");
 	ItemList.setItems( [] );
@@ -1088,9 +1086,8 @@ Playlist.setTrackCounter = function(count, relative)
 	if(count == null)
 		count = $("#playlist-details").data("count") + relative;
 
-	$("#playlist-details")
-		.data("count", count)
-		.text(count + " tracks");
+	$("#playlist-details").data("count", count)
+	$("#playlist-details-count").text(count + " tracks");
 
 	Playlist.updateSectionCounter(Playlist.active.playlistId,
 		Playlist.active.access, count);
@@ -1149,10 +1146,12 @@ Playlist.updateSectionCounter = function(playlistId, access, count, relative)
 	});
 }
 
-// Cleat the track counter text
-Playlist.clearTrackCounter = function()
+// Clear the active playlist information
+Playlist.clearActiveHeader = function()
 {
-	$("#playlist-details").text("");
+	$("#playlist-name").empty();
+	$("#playlist-details-count").empty();
+	$("#playlist-details-user").remove();
 }
 
 // Load playlist according to URL

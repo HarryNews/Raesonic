@@ -214,7 +214,11 @@ body
 	margin-left: 4px;
 	color: #7A738C;
 }
-#playlist-details:empty::after
+#playlist-details-count
+{
+	display: inline-block;
+}
+#playlist-details-count:empty::after
 {
 	content: "–";
 }
