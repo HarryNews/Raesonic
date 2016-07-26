@@ -785,6 +785,10 @@ Playlist.updateSection = function(previousAlias)
 
 		// Load active section from the server and bail out
 		Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
+
+		if(Playlist.active)
+			Playlist.setTrackCounter(Playlist.active.count);
+
 		return;
 	}
 
@@ -819,6 +823,9 @@ Playlist.updateSection = function(previousAlias)
 
 	// No storage found, load active section from the server
 	Playlist.loadSection( Playlist.SECTION[sectionAlias], sectionAlias );
+	
+	if(Playlist.active)
+		Playlist.setTrackCounter(Playlist.active.count);
 }
 
 // Update nav in the playlists dropdown header button
@@ -1050,9 +1057,6 @@ Playlist.setActiveSection = function(alias)
 	$section.addClass("active");
 	
 	Playlist.updateSection(previousAlias);
-
-	if(Playlist.active)
-		Playlist.setTrackCounter(Playlist.active.count);
 }
 
 // Set the playlists of the active section
