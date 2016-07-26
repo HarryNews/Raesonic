@@ -22,6 +22,7 @@ var Playlist =
 	SUBCAT_ITEM: true,
 	NAME_REGEX: /^[a-z0-9?!@#$%^&*();:_+\-= \[\]{}/|\\"<>'.,]+$/i,
 	PLAYLIST_URL: window.location.origin + "/playlist/",
+	MAX_RECENT_HISTORY: 20,
 };
 
 Playlist.ACCESS_LABELS = {};
@@ -128,7 +129,7 @@ Playlist.edit = function(playlistId, name, access, alias, sectionAlias)
 					.remove();
 
 				// Clear storage and update the new section
-				$("#playlists").removeData( sectionAlias.toLowerCase() )
+				$("#playlists").removeData( sectionAlias.toLowerCase() );
 				Playlist.setActiveSection(sectionAlias);
 			}
 			else
@@ -352,6 +353,10 @@ Playlist.setActive = function(playlist)
 
 	Playlist.setTrackCounter(items.length);
 
+	var sectionAlias =
+		$("#playlists-dropdown .dropdown-item.active")
+			.data("alias");
+
 	if(user != null)
 	{
 		// Show user data for playlists made by other users
@@ -371,16 +376,65 @@ Playlist.setActive = function(playlist)
 			.prepend($avatar);
 
 		$("#playlist-details").append($user);
+
+		// Default to private section if the playlist is not owned
+		if(sectionAlias == null)
+			Playlist.setActiveSection("PRIVATE");
+
+		if(sectionAlias == null || sectionAlias != "RECENT")
+		{
+			// Store data about recently viewed playlist
+			var Local = require("./Local.js");
+			var recent = Local.get( "recent", [] );
+
+			// Remove duplicates
+			recent.forEach(function(recentPlaylist, recentIndex)
+			{
+				if( recentPlaylist[0] == playlistId )
+					recent.splice(recentIndex, 1);
+			});
+
+			var recentData =
+			[
+				playlistId,
+				name,
+				alias,
+			];
+
+			// Add to the start, limit to a constant size
+			recent.unshift(recentData);
+			recent.slice(0, Playlist.MAX_RECENT_HISTORY);
+
+			Local.set( "recent", JSON.stringify(recent) );
+		}
 	}
 	else
 	{
 		if(playlistId != 0)
 		{
-			// Own playlist, switch the section to match it
-			var sectionAlias =
-				Playlist.PERSONAL_SECTIONS[access - 1];
+			// Remove recent data matching own playlist
+			var Local = require("./Local.js");
+			var recent = Local.get( "recent", [] );
 
-			Playlist.setActiveSection(sectionAlias);
+			recent.forEach(function(recentPlaylist, recentIndex)
+			{
+				if( recentPlaylist[0] == playlistId )
+					recent.splice(recentIndex, 1);
+			});
+
+			Local.set( "recent", JSON.stringify(recent) );
+
+			if(sectionAlias != null && sectionAlias == "RECENT")
+				Playlist.updateSection("RECENT");
+
+			// Default to the owned playlist's section
+			if(sectionAlias == null)
+			{
+				var switchAlias =
+					Playlist.PERSONAL_SECTIONS[access - 1];
+
+				Playlist.setActiveSection(switchAlias);
+			}
 		}
 		else
 		{
@@ -464,7 +518,32 @@ Playlist.loadSection = function(sectionId, sectionAlias)
 	{
 		case Playlist.SECTION.RECENT:
 		{
-			// todo: retrieve from local storage
+			var sectionAlias =
+				$("#playlists-dropdown .dropdown-item.active")
+					.data("alias");
+
+			if(sectionAlias != null && sectionAlias == "RECENT")
+				$(".playlist").remove();
+
+			var Local = require("./Local.js");
+			var recent = Local.get( "recent", [] );
+			var playlists = [];
+
+			recent.forEach(function(recentPlaylist)
+			{
+				playlists.push
+				([
+					recentPlaylist[0], // playlistId
+					recentPlaylist[1], // name
+					2, // access
+					recentPlaylist[2], // alias
+					"view",
+				]);
+			});
+
+			// Clear storage and add recent playlists
+			$("#playlists").removeData( sectionAlias.toLowerCase() );
+			Playlist.setSectionPlaylists(playlists, sectionAlias);
 			return;
 		}
 		case Playlist.SECTION.FLAGS:
@@ -661,7 +740,7 @@ Playlist.removeCachedSectionPlaylist = function(playlistAlias, sectionAlias)
 	storage.forEach(function($playlist, playlistIndex)
 	{
 		if( $playlist.data("alias") == playlistAlias )
-			storage.splice(playlistIndex);
+			storage.splice(playlistIndex, 1);
 	});
 
 	$("#playlists")
@@ -697,11 +776,13 @@ Playlist.updateSection = function(previousAlias)
 
 	var storage = $("#playlists").data( sectionAlias.toLowerCase() );
 
+	var isSectionCached =
+		( storage != null && sectionAlias != "RECENT" );
+
 	// If the active section has not changed
 	if(previousAlias == null)
 	{
-		// Active section is already up-to-date, bail out
-		if(storage != null)
+		if(isSectionCached)
 			return;
 
 		// Load active section from the server and bail out
@@ -720,7 +801,7 @@ Playlist.updateSection = function(previousAlias)
 	$("#playlists").data(previousAlias.toLowerCase(), previousStorage);
 
 	// Section storage contains the playlists, retrieve them and bail out
-	if(storage != null)
+	if(isSectionCached)
 	{
 		storage.forEach(function($playlist)
 		{
@@ -971,6 +1052,9 @@ Playlist.setActiveSection = function(alias)
 	$section.addClass("active");
 	
 	Playlist.updateSection(previousAlias);
+
+	if(Playlist.active)
+		Playlist.setTrackCounter(Playlist.active.count);
 }
 
 // Set the playlists of the active section
