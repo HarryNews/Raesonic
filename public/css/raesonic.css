@@ -1732,13 +1732,16 @@ a.window-link
 	opacity: 0.8;
 }
 
-#content-right > .meta
+#meta
 {
 	background-color: #383243;
-	padding-left: 8px;
 	flex-shrink: 0;
+	position: relative;
+}
+#meta > .meta
+{
 	color: #FFF;
-	padding-right: 50px;
+	margin: 0 50px 0 8px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
@@ -1807,7 +1810,7 @@ a.window-link
 }
 #loop
 {
-	margin-top: -51px;
+	top: 6px;
 }
 #loop.active
 {
@@ -1816,7 +1819,7 @@ a.window-link
 }
 #shuffle
 {
-	margin-top: -32px;
+	bottom: 5px;
 }
 #shuffle.active
 {
