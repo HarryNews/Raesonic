@@ -110,7 +110,15 @@ Search.globally = function(query)
 			if(response.errors)
 				return;
 
-			var items = response;
+			var items = [];
+			response.forEach(function(response){
+				items.push
+				({
+					trackId: response[0],
+					artist: response[1],
+					title: response[2],
+				});
+			});
 			ItemList.setItems(items, ItemList.USE_STORAGE);
 		}
 	});

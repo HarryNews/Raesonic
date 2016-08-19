@@ -28,18 +28,42 @@ module.exports = function(core)
 			// User is the playlist owner, delete the item
 			sequelize.transaction(function(tr)
 			{
-				return Item.destroy
-				({
-					where: { itemId: req.params.itemId },
-					transaction: tr,
+				return Item.findOne
+				({ 
+					attributes: ["playlistPosition"],
+					where: { itemId : req.params.itemId }
 				})
-				.then(function(amount)
+				.then(function(toDelete)
 				{
-					// Haven't deleted any rows
-					if(amount < 1)
-						throw new Error("no rows deleted");
+					if(!toDelete)
+						throw new Error("No such item exists for deletion.");
 
-					return playlist.decrement("count", { transaction: tr });
+					return Item.update(
+						{ playlistPosition: sequelize.literal("playlistPosition - 1") },
+						{ 
+							where: {
+								playlistId: playlist.playlistId,
+								playlistPosition: { $gt: toDelete.playlistPosition }
+							},
+							transaction: tr
+						}
+					)
+					.then(function()
+					{
+
+						return Item.destroy
+						({
+							where: { itemId: req.params.itemId },
+							transaction: tr
+						})
+						.then(function(amount)
+						{
+							if(amount < 1)
+								throw new Error("no rows deleted");
+							
+							return playlist.decrement("count", { transaction: tr });
+						});
+					});
 				});
 			})
 			.then(function()

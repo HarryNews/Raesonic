@@ -57,7 +57,7 @@ ItemList.setItems = function(items, useStorage)
 // If the boolean is true, item is added to the beginning
 ItemList.addItem = function(item, prepend, useStorage)
 {
-	var isContentAttached = ( item[4] != null );
+	var isContentAttached = ( item.sourceId != null );
 
 	var $item =
 		$("<div>")
@@ -65,21 +65,21 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.append(
 				$("<div>")
 					.addClass("artist")
-					.html( Item.formatArtist( item[1] ) ),
+					.html( Item.formatArtist( item.artist ) ),
 				$("<div>")
 					.addClass("title")
-					.html( Item.formatTitle( item[2] ) ),
+					.html( Item.formatTitle( item.title ) ),
 				$("<div>")
 					.addClass("add icon")
 					.toggleClass("hidden", !isContentAttached)
 					.click(Item.onAddIconClick)
 			)
-			.data("trackId", item[0]);
+			.data("trackId", item.trackId);
 
 	// If the itemId is known, store extra values
-	if( item[3] != null )
+	if( item.itemId != null )
 	{
-		var hasItemId = ( item[3] != 0 );
+		var hasItemId = ( item.itemId != 0 );
 
 		var $edit = $("<div>")
 			.addClass("edit icon")
@@ -92,26 +92,26 @@ ItemList.addItem = function(item, prepend, useStorage)
 		$item
 			.data
 			({
-				"itemId": item[3],
-				"sourceId": item[4],
-				"externalId": item[5],
+				"itemId": item.itemId,
+				"sourceId": item.sourceId,
+				"externalId": item.externalId,
 				"initial":
 				[
-					item[4],
-					item[5],
+					item.sourceId,
+					item.externalId,
 				],
 			})
 			.append($edit);
 	}
 
 	// If the relation rating is known, store relation values
-	if( item[6] != null )
+	if( item.rating != null )
 	{
 		$item.data
 		({
-			"rating": item[6],
-			"vote": item[7],
-			"flagged": item[8],
+			"rating": item.rating,
+			"vote": item.vote,
+			"flagged": item.flagged,
 		});
 	}
 

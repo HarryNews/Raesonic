@@ -77,17 +77,14 @@ Relation.request = function(trackId, resumeTrackId)
 			relations.forEach(function(relation)
 			{
 				items.push
-				([
-					relation[0], // trackId
-					relation[1], // artist
-					relation[2], // title
-					null, // no itemId
-					null, // no sourceId
-					null, // no externalId
-					relation[3], // rating
-					relation[4], // vote
-					relation[5], // flagged
-				]);
+				({
+					trackId: relation[0],
+					artist: relation[1],
+					title: relation[2],
+					rating: relation[3],
+					vote: relation[4],
+					flagged: relation[5],
+				});
 			});
 
 			items.sort(function(a, b)

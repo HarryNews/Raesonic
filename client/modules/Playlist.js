@@ -1575,7 +1575,21 @@ Playlist.onLoadResponse = function(response)
 		return Playlist.onLoadError(response);
 
 	var data = response[0];
-	var items = response[1];
+	var items = [];
+
+	response[1].forEach(function(item)
+	{
+		items.push
+		({
+			trackId: item[0],
+			artist: item[1],
+			title: item[2],
+			itemId: item[3],
+			sourceId: item[4],
+			externalId: item[5],
+			playlistPosition: item[6],
+		});
+	});
 
 	var playlist =
 	{

@@ -40,24 +40,20 @@ Item.create = function(sourceId, externalId)
 			if(response.errors)
 				return;
 
-			var trackId = response[0];
-			var artist = response[1];
-			var title = response[2];
-			var itemId = response[3];
-
 			var ItemList = require("./ItemList.js");
 			ItemList.clearFilter();
 			ItemList.restoreStorage();
 
 			var item =
-			[
-				trackId,
-				artist,
-				title,
-				itemId,
-				sourceId,
-				externalId,
-			];
+			{
+				trackId: response[0],
+				artist: response[1],
+				title: response[2],
+				itemId: response[3],
+				playlistPosition: response[4],
+				sourceId: sourceId,
+				externalId: externalId,
+			};
 
 			ItemList.addItem(item, ItemList.PREPEND);
 			$("#items").scrollTop(0);
@@ -105,14 +101,14 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 				var itemId = response[3];
 
 				var item =
-				[
-					trackId,
-					artist,
-					title,
-					itemId,
-					sourceId,
-					externalId,
-				];
+				{
+					trackId: response[0],
+					artist: artist,
+					title: title,
+					itemId: response[3],
+					sourceId: sourceId,
+					externalId: externalId,
+				};
 
 				var ItemList = require("./ItemList.js");
 				ItemList.addItem(item, ItemList.PREPEND,
