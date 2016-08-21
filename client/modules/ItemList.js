@@ -116,10 +116,6 @@ ItemList.addItem = function(item, prepend, useStorage)
 		});
 	}
 
-	// $item
-	// 	.children()
-	// 	.slice(0, 2)
-	// 	.click(Item.onClick);
 	$item.on("click", ".playbutton", Item.onClick);
 
 	if(useStorage)
@@ -483,6 +479,66 @@ ItemList.onMouseDown = function(event)
 		$(document).one("mouseup.dragItems", function(event)
 		{
 			$marker.replaceWith( $dragged.removeClass("dragged") );
+
+			var data = { itemId: $dragged.data("itemId") };
+
+			var dragPos = $dragged.data("playlistPosition");
+
+			var nextPos = $dragged.next().data("playlistPosition");
+
+			if(nextPos !== null && nextPos > dragPos)
+			{
+				data.to = nextPos;
+			}
+			else
+			{
+				var prevPos = $dragged.prev().data("playlistPosition");
+
+				if(prevPos !== null && prevPos < dragPos)
+				{
+					data.to = prevPos;
+				}
+				else
+				{
+					return;
+				}
+
+			}
+
+			$.ajax
+				({
+					url: "/items/move",
+					type: "PUT",
+					data: JSON.stringify(data),
+					contentType: "application/json",
+					success: function(response)
+					{
+						$list.children(".item").each(function(index, element)
+						{
+							var $element = $(element);
+
+							var position = $element.data("playlistPosition");
+
+							//If it's going forwards
+							if( dragPos < data.to && position > dragPos && position <= data.to)
+							{
+								$element.data("playlistPosition", position - 1);
+							}
+							//If it's going backwards
+							else if( dragPos > data.to && position < dragPos && position >= data.to)
+							{
+								$element.data("playlistPosition", position + 1);
+							}
+						});
+
+						$dragged.data("playlistPosition", data.to);
+					},
+					error: function(response)
+					{
+						console.log("Hello, it failed!");
+					}
+				});
+
 		});
 	});
 	$(document).one("mouseup.dragItems", function(event)

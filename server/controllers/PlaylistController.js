@@ -123,7 +123,7 @@ module.exports = function(core)
 			({
 				attributes: ["playlistId", "name", "access", "alias", "userId"],
 				where: condition,
-				order: [ [Item, "itemId", "DESC"] ],
+				order: [ [Item, "playlistPosition", "DESC"] ],
 				include: include,
 			})
 			.then(function(playlist)
