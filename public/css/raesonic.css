@@ -871,6 +871,15 @@ body
 	opacity: 0.2;
 	cursor: default;
 }
+#marker
+{
+	border: solid 2px #6145FF;
+}
+.dragged
+{
+	pointer-events: none;
+	opacity: 0.5;
+}
 #add-list
 {
 	position: absolute;

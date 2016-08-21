@@ -64,10 +64,10 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.addClass("item")
 			.append(
 				$("<div>")
-					.addClass("artist")
+					.addClass("artist dragsurface playbutton")
 					.html( Item.formatArtist( item.artist ) ),
 				$("<div>")
-					.addClass("title")
+					.addClass("title dragsurface playbutton")
 					.html( Item.formatTitle( item.title ) ),
 				$("<div>")
 					.addClass("add icon")
@@ -93,6 +93,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.data
 			({
 				"itemId": item.itemId,
+				"playlistPosition": item.playlistPosition,
 				"sourceId": item.sourceId,
 				"externalId": item.externalId,
 				"initial":
@@ -115,10 +116,11 @@ ItemList.addItem = function(item, prepend, useStorage)
 		});
 	}
 
-	$item
-		.children()
-		.slice(0, 2)
-		.click(Item.onClick);
+	// $item
+	// 	.children()
+	// 	.slice(0, 2)
+	// 	.click(Item.onClick);
+	$item.on("click", ".playbutton", Item.onClick);
 
 	if(useStorage)
 	{
@@ -400,10 +402,104 @@ ItemList.highlightActiveItem = function()
 	return $item;
 }
 
+ItemList.onMouseDown = function(event)
+{
+	event.preventDefault();
+
+	var $dragged = $(this).closest(".item");
+
+	if(!$dragged.length)
+		return;
+
+	var $list = $("#items");
+
+	var mouseInitial = event.clientY;
+
+	$list.on("mousemove.dragItems.dragMove.dragInit", function(event)
+	{
+		event.preventDefault();
+
+		if( Math.abs(event.clientY - mouseInitial) < 5 )
+			return;
+
+		$list.off("mousemove.dragInit");
+
+		var offsetInitial = $dragged.offset();
+
+		var $marker = $("<div>")
+			.attr("id", "marker")
+			.insertAfter($dragged);
+		
+		var $draggedWrapper = $("<div>")
+			.addClass("dragged")
+			.insertAfter($list)
+			.offset
+			({
+				top: event.clientY - $dragged.height() / 2,
+				left: offsetInitial.left
+			})
+			.append($dragged);
+
+		$list.on("mousemove.dragItems.dragMove", function(event)
+		{
+			event.preventDefault();
+
+			$draggedWrapper.offset
+			({ 
+				top: event.clientY - $dragged.height() / 2,
+				left: offsetInitial.left
+			});
+
+			var $target = $(event.target).closest(".item");
+
+			if( $target.size() )
+			{
+				var center = $target.offset().top + $target.height() / 2;
+				
+				if( event.clientY < center && !$target.prev().is($marker) )
+				{
+					$target.before($marker);
+				}
+				else if( event.clientY >= center && !$target.next().is($marker) )
+				{
+					$target.after($marker);
+				}
+			}
+			else
+			{
+				var last = $list.children(".item:last")
+
+				if( event.clientY > last.offset().top + last.height() )
+				{
+					$list.append($marker);
+				}
+				else if( event.clientY < $list.first().offset().top )
+				{
+					$list.prepend($marker);
+				}
+			}
+		});
+		
+		$(document).one("mouseup.dragItems", function(event)
+		{
+			$marker.replaceWith( $dragged.removeClass("dragged") );
+		});
+	});
+	$(document).one("mouseup.dragItems", function(event)
+	{
+		$list.off("mousemove.dragMove");
+	});
+}
+
 // Called when the user account status has changed
 ItemList.onAccountSync = function()
 {
 	
+}
+
+ItemList.init = function()
+{
+	$("#items").on("mousedown.dragItems", ".dragsurface", ItemList.onMouseDown);
 }
 
 module.exports = ItemList;

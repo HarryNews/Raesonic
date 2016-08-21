@@ -436,7 +436,7 @@ Item.onItemRename = function(match, previousTrackId, trackId, artist, title)
 // Called upon clicking the item's artist or title element
 Item.onClick = function()
 {
-	var $item = $(this).parent();
+	var $item = $(this).closest(".item");
 	var ItemList = require("./ItemList.js");
 
 	Item.play($item, ItemList.MANUAL_SWITCH);

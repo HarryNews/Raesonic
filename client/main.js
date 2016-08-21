@@ -33,6 +33,7 @@ $(document).ready(function()
 	Overlay.init();
 	Article.init();
 	Tab.init();
+	ItemList.init();
 
 	function onAccountSync()
 	{
