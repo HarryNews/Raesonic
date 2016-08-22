@@ -64,10 +64,10 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.addClass("item")
 			.append(
 				$("<div>")
-					.addClass("artist dragsurface playbutton")
+					.addClass("artist")
 					.html( Item.formatArtist( item.artist ) ),
 				$("<div>")
-					.addClass("title dragsurface playbutton")
+					.addClass("title")
 					.html( Item.formatTitle( item.title ) ),
 				$("<div>")
 					.addClass("add icon")
@@ -93,7 +93,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 			.data
 			({
 				"itemId": item.itemId,
-				"playlistPosition": item.playlistPosition,
+				"position": item.position,
 				"sourceId": item.sourceId,
 				"externalId": item.externalId,
 				"initial":
@@ -116,7 +116,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 		});
 	}
 
-	$item.on("click", ".playbutton", Item.onClick);
+	$item.on("click", ".artist, .title", Item.onClick);
 
 	if(useStorage)
 	{
@@ -402,12 +402,16 @@ ItemList.onMouseDown = function(event)
 {
 	event.preventDefault();
 
+	var $list = $("#items");
+
+	if( $list.hasClass("filtered") )
+		return;
+
 	var $dragged = $(this).closest(".item");
 
 	if(!$dragged.length)
 		return;
 
-	var $list = $("#items");
 
 	var mouseInitial = event.clientY;
 
@@ -465,7 +469,7 @@ ItemList.onMouseDown = function(event)
 			{
 				var last = $list.children(".item:last")
 
-				if( event.clientY > last.offset().top + last.height() )
+				if( !last.size() || event.clientY > last.offset().top + last.height() )
 				{
 					$list.append($marker);
 				}
@@ -478,13 +482,15 @@ ItemList.onMouseDown = function(event)
 		
 		$(document).one("mouseup.dragItems", function(event)
 		{
-			$marker.replaceWith( $dragged.removeClass("dragged") );
+			$marker.replaceWith( $dragged );
+
+			$draggedWrapper.remove();
 
 			var data = { itemId: $dragged.data("itemId") };
 
-			var dragPos = $dragged.data("playlistPosition");
+			var dragPos = $dragged.data("position");
 
-			var nextPos = $dragged.next().data("playlistPosition");
+			var nextPos = $dragged.next().data("position");
 
 			if(nextPos !== null && nextPos > dragPos)
 			{
@@ -492,7 +498,7 @@ ItemList.onMouseDown = function(event)
 			}
 			else
 			{
-				var prevPos = $dragged.prev().data("playlistPosition");
+				var prevPos = $dragged.prev().data("position");
 
 				if(prevPos !== null && prevPos < dragPos)
 				{
@@ -502,7 +508,6 @@ ItemList.onMouseDown = function(event)
 				{
 					return;
 				}
-
 			}
 
 			$.ajax
@@ -517,25 +522,25 @@ ItemList.onMouseDown = function(event)
 						{
 							var $element = $(element);
 
-							var position = $element.data("playlistPosition");
+							var position = $element.data("position");
 
 							//If it's going forwards
 							if( dragPos < data.to && position > dragPos && position <= data.to)
 							{
-								$element.data("playlistPosition", position - 1);
+								$element.data("position", position - 1);
 							}
 							//If it's going backwards
 							else if( dragPos > data.to && position < dragPos && position >= data.to)
 							{
-								$element.data("playlistPosition", position + 1);
+								$element.data("position", position + 1);
 							}
 						});
 
-						$dragged.data("playlistPosition", data.to);
+						$dragged.data("position", data.to);
 					},
 					error: function(response)
 					{
-						console.log("Hello, it failed!");
+						$list.children(".item").eq(dragPos).after($dragged);
 					}
 				});
 
@@ -555,7 +560,7 @@ ItemList.onAccountSync = function()
 
 ItemList.init = function()
 {
-	$("#items").on("mousedown.dragItems", ".dragsurface", ItemList.onMouseDown);
+	$("#items").on("mousedown.dragItems", ".artist, .title", ItemList.onMouseDown);
 }
 
 module.exports = ItemList;

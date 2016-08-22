@@ -30,7 +30,7 @@ module.exports = function(core)
 			{
 				return Item.findOne
 				({ 
-					attributes: ["playlistPosition"],
+					attributes: ["position"],
 					where: { itemId : req.params.itemId }
 				})
 				.then(function(toDelete)
@@ -39,11 +39,11 @@ module.exports = function(core)
 						throw new Error("No such item exists for deletion.");
 
 					return Item.update(
-						{ playlistPosition: sequelize.literal("playlistPosition - 1") },
+						{ position: sequelize.literal("position - 1") },
 						{ 
 							where: {
 								playlistId: playlist.playlistId,
-								playlistPosition: { $gt: toDelete.playlistPosition }
+								position: { $gt: toDelete.position }
 							},
 							transaction: tr
 						}
@@ -97,7 +97,7 @@ module.exports = function(core)
 			{
 				return Item.findOne
 				({
-					attributes: ["playlistPosition", "itemId"],
+					attributes: ["position", "itemId"],
 					where: { itemId: req.body.itemId }
 				})
 				.then(function(item)
@@ -105,27 +105,27 @@ module.exports = function(core)
 					if(!item)
 						throw new Error("no such item exists");
 
-					var direction = Math.sign(item.playlistPosition - req.body.to);
+					var direction = Math.sign(item.position - req.body.to);
 
-					var between = [ item.playlistPosition - direction, req.body.to ];
+					var between = [ item.position - direction, req.body.to ];
 					
 					if(between[0] > between[1])
 						between.reverse();
 
 					return Item.update(
-					{ playlistPosition: sequelize.literal("playlistPosition + " + direction) },
+					{ position: sequelize.literal("position + " + direction) },
 					{
 						where:
 						{
 							playlistId: playlist.playlistId,
-							playlistPosition: { $between: between }
+							position: { $between: between }
 						},
 						transaction: tr
 					})
 					.then(function()
 					{
 						return item.update(
-						{ playlistPosition: req.body.to },
+						{ position: req.body.to },
 						{ transaction: tr }
 						);
 					});

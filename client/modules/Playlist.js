@@ -1587,7 +1587,7 @@ Playlist.onLoadResponse = function(response)
 			itemId: item[3],
 			sourceId: item[4],
 			externalId: item[5],
-			playlistPosition: item[6],
+			position: item[6],
 		});
 	});
 

@@ -6,7 +6,7 @@ module.exports = function(sequelize)
 	var Item = sequelize.define("Item",
 	{
 		itemId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		playlistPosition: { type: Sequelize.INTEGER },
+		position: { type: Sequelize.INTEGER },
 	});
 	
 	var Content = sequelize.models.Content;

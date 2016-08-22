@@ -50,7 +50,7 @@ Item.create = function(sourceId, externalId)
 				artist: response[1],
 				title: response[2],
 				itemId: response[3],
-				playlistPosition: response[4],
+				position: response[4],
 				sourceId: sourceId,
 				externalId: externalId,
 			};
@@ -97,9 +97,6 @@ Item.copy = function(playlistId, name, access, sourceId, externalId)
 			if(Playlist.active && Playlist.hidden &&
 				Playlist.active.playlistId == playlistId)
 			{
-				var trackId = response[0];
-				var itemId = response[3];
-
 				var item =
 				{
 					trackId: response[0],

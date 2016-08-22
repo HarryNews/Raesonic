@@ -95,7 +95,7 @@ module.exports = function(core)
 			},
 			{
 				model: Item,
-				attributes: ["itemId", "playlistPosition"],
+				attributes: ["itemId", "position"],
 				include:
 				[{
 					model: Content,
@@ -123,7 +123,7 @@ module.exports = function(core)
 			({
 				attributes: ["playlistId", "name", "access", "alias", "userId"],
 				where: condition,
-				order: [ [Item, "playlistPosition", "DESC"] ],
+				order: [ [Item, "position", "DESC"] ],
 				include: include,
 			})
 			.then(function(playlist)
@@ -176,7 +176,7 @@ module.exports = function(core)
 						items[index].itemId,
 						items[index].Content.sourceId,
 						items[index].Content.externalId,
-						items[index].playlistPosition
+						items[index].position
 					]);
 				}
 
@@ -476,7 +476,7 @@ module.exports = function(core)
 					({
 						playlistId: req.params.playlistId,
 						contentId: content.contentId,
-						playlistPosition: playlist.count
+						position: playlist.count
 					},
 					{ transaction: tr })
 					.then(function(item)
@@ -498,7 +498,7 @@ module.exports = function(core)
 								track.artist,
 								track.title,
 								item.itemId,
-								item.playlistPosition,
+								item.position,
 							];
 
 							return response;
