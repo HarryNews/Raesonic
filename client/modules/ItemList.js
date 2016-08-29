@@ -74,7 +74,7 @@ ItemList.addItem = function(item, prepend, useStorage)
 					.toggleClass("hidden", !isContentAttached)
 					.click(Item.onAddIconClick)
 			)
-			.data("trackId", item.trackId);
+			.data(item);
 
 	// If the itemId is known, store extra values
 	if( item.itemId != null )
@@ -92,10 +92,6 @@ ItemList.addItem = function(item, prepend, useStorage)
 		$item
 			.data
 			({
-				"itemId": item.itemId,
-				"position": item.position,
-				"sourceId": item.sourceId,
-				"externalId": item.externalId,
 				"initial":
 				[
 					item.sourceId,
@@ -103,17 +99,6 @@ ItemList.addItem = function(item, prepend, useStorage)
 				],
 			})
 			.append($edit);
-	}
-
-	// If the relation rating is known, store relation values
-	if( item.rating != null )
-	{
-		$item.data
-		({
-			"rating": item.rating,
-			"vote": item.vote,
-			"flagged": item.flagged,
-		});
 	}
 
 	$item.on("click", ".artist, .title", Item.onClick);
